@@ -40,3 +40,58 @@ export function newProgress(wordId: string): WordProgress {
     misspellings: {}, focus: false, parentKnown: false,
   }
 }
+
+export type PlacementLevel = 'y1cew' | 'days' | 'hfw' | 'y2cew' | 'y34'
+
+export interface PlacementLevelState {
+  level: PlacementLevel
+  sampledIds: string[]
+  answers: Record<string, boolean>
+  status: 'pending' | 'done'
+  placed: boolean
+}
+
+export type UnitStatus = 'checking' | 'learning' | 'known' | 'complete'
+
+export interface UnitState {
+  unitId: string
+  status: UnitStatus
+  startedOn: DateStr
+  completedOn: DateStr | null
+  taughtWordIds: string[]
+}
+
+export interface SchoolListItem {
+  text: string
+  wordId: string
+  sentence?: string
+}
+
+export interface SchoolList {
+  id: string
+  createdAt: DateStr
+  testDate: DateStr
+  items: SchoolListItem[]
+  score?: number
+  outOf?: number
+}
+
+export interface PlannerSettings {
+  sessionMinutes: number
+  newWordsPerDay: number
+}
+
+export interface LearnerState {
+  today: DateStr
+  progress: ReadonlyMap<string, WordProgress>
+  units: ReadonlyMap<string, UnitState>
+  placement: readonly PlacementLevelState[]
+  schoolLists: readonly SchoolList[]
+  recentGames: readonly GameType[]
+  lastNewKind: 'words' | 'unit' | null
+  settings: PlannerSettings
+}
+
+export function getProgress(state: Pick<LearnerState, 'progress'>, id: string): WordProgress {
+  return state.progress.get(id) ?? newProgress(id)
+}
