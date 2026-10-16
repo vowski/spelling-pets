@@ -82,3 +82,47 @@ dies
 dying
 wee
 gay
+# found in the final review (2026-10-16); plurals and endings of every word above are blocked too (src/content/blocking.ts)
+cum
+cums
+lager
+cider
+alcohol
+coke
+sect
+# not UK spellings
+busses
+# contractions without their apostrophe: she is learning these WITH the apostrophe
+cant
+wont
+dont
+isnt
+didnt
+doesnt
+wasnt
+werent
+arent
+hasnt
+havent
+hadnt
+couldnt
+wouldnt
+shouldnt
+mustnt
+hes
+shes
+youre
+theyre
+theyve
+weve
+youve
+ive
+thats
+whats
+theres
+heres
+wheres
+youll
+theyll
+youd
+theyd

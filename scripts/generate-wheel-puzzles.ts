@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import wordlist from 'wordlist-english'
+import { isBlockedBy } from '../src/content/blocking'
 import { BUILTIN_BANK } from '../src/content/index'
 import type { WheelPuzzle } from '../src/content/wheel'
 import { hashString, makeRng, shuffle } from '../src/engine/rng'
@@ -11,9 +12,9 @@ const blocked = new Set(readFileSync(here('./blocklist.txt'), 'utf8').split(/\r?
 const bankTexts = new Set([...BUILTIN_BANK.words.values()].map(w => w.text).filter(t => /^[a-z]{3,}$/.test(t)))
 const dict = new Set<string>()
 for (const k of ['english/10', 'english/20', 'english/british/10', 'english/british/20']) {
-  for (const w of wordlist[k]) { const lw = w.toLowerCase(); if (/^[a-z]{3,}$/.test(lw) && !blocked.has(lw)) dict.add(lw) }
+  for (const w of wordlist[k]) { const lw = w.toLowerCase(); if (/^[a-z]{3,}$/.test(lw) && !isBlockedBy(lw, blocked)) dict.add(lw) }
 }
-for (const t of bankTexts) if (!blocked.has(t)) dict.add(t)
+for (const t of bankTexts) if (!isBlockedBy(t, blocked)) dict.add(t)
 const dictList = [...dict]
 
 const counts = (w: string) => { const m = new Map<string, number>(); for (const ch of w) m.set(ch, (m.get(ch) ?? 0) + 1); return m }

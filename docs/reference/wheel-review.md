@@ -13,13 +13,13 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | once | once, one, con |  |
 | friend | friend, find, rein, ride, diner, finer | dine, dire, end, fed, fine, fined, fire, fired, fried, infer, red, rend, rid |
 | school | school, cools, cool, solo |  |
-| house | house, she, use, shoe | hes, sue |
+| house | house, she, use, shoe | sue |
 | floor | floor, for, fool, roof |  |
 | because | because, bee, sea, see, use, cause | ace, base, bus, case, cease, cube, cue, ease, sauce, sue |
 | kind | kind, ink, kid |  |
 | behind | behind, bend, bind, dine, hide, bed | bid, bin, end, hid |
 | child | child, hid, lid |  |
-| children | children, child, cried, nicer, rein, rich | cider, dice, dine, diner, dire, end, held, her, herd, hid, hide, hire, hired, ice, idle, inch, led, lend, lid, lie, lied, line, lined, nice, nil, red, rend, rice, rid, ride |
+| children | children, child, cried, nicer, rein, rich | dice, dine, diner, dire, end, held, her, herd, hid, hide, hire, hired, ice, idle, inch, led, lend, lid, lie, lied, line, lined, nice, nil, red, rend, rice, rid, ride |
 | gold | gold, old, dog | log |
 | told | told, old, dot | lot |
 | every | every, very, eye, ever |  |
@@ -44,7 +44,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | would | would, old, loud, low |  |
 | whole | whole, hole, how, who | low, owe |
 | many | many, any, man, may | nay |
-| clothes | clothes, those, echo, hole, she, the | chest, chose, close, closet, cloth, clothe, cost, hes, holes, host, hot, hotel, lest, let, lets, lose, lost, lot, lots, sect, set, shoe, shot, slot, sole, stole, toe, toes |
+| clothes | clothes, those, echo, hole, she, the | chest, chose, close, closet, cloth, clothe, cost, holes, host, hot, hotel, lest, let, lets, lose, lost, lot, lots, set, shoe, shot, slot, sole, stole, toe, toes |
 | busy | busy, buys, bus, buy |  |
 | people | people, pole, pope, pop |  |
 | water | water, wear, are, war | art, ate, ear, eat, era, rat, rate, raw, tea, tear, wet |
@@ -70,13 +70,13 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | straight | straight, right, shirt, start, hair, that | air, art, artist, arts, ash, gas, hairs, has, hat, hats, his, hit, hits, its, rag, rash, rat, rats, rights, sat, sigh, sight, sir, sit, stair, star, stir, tag, thirst, this |
 | centre | centre, recent, tree, enter, cent, rent | net, ten |
 | century | century, true, tune, turn, cry, try | cent, cue, cure, cut, cute, entry, net, nut, rent, run, ten, tyre, yet |
-| certain | certain, nicer, train, care, near, race | ace, act, air, arc, are, art, ate, can, cant, car, cat, cater, cent, cite, ear, earn, eat, era, ice, inter, irate, neat, net, nice, rain, ran, rant, rat, rate, react |
+| certain | certain, nicer, train, care, near, race | ace, act, air, arc, are, art, ate, can, car, cat, cater, cent, cite, ear, earn, eat, era, ice, inter, irate, neat, net, nice, rain, ran, rant, rat, rate, react, rein |
 | circle | circle, ice, lie, rice |  |
 | bicycle | bicycle, ice, lie, cycle, bye |  |
 | decide | decide, ice, deed, dice, did |  |
 | medicine | medicine, mind, ice, mined, deem, dice | dim, dine, end, men, mend, mice, mine, need, nice |
 | notice | notice, coin, into, once, ice, one | cent, cite, con, icon, ion, net, nice, not, note, ten, tie, tin, toe, ton, tone |
-| sentence | sentence, scene, seen, see, tense, cent | nest, net, nets, sect, sent, set, ten, tens |
+| sentence | sentence, scene, seen, see, tense, cent | nest, net, nets, sent, set, ten, tens |
 | exercise | exercise, ice, see, cries, rice, rise | sic, sir, six |
 | recent | recent, centre, tree, enter, cent, rent | net, ten |
 | increase | increase, nicer, scene, care, near, race | ace, air, arc, are, arise, arisen, can, cans, car, cares, cars, case, cease, cries, ear, earn, earns, ears, ease, easier, era, erase, ice, nice, races, rain, rains, raise, ran, rein |
@@ -94,7 +94,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | pressure | pressure, sure, see, use, peers, press | err, peer, per, pure, reuse, sees, spur, sue, sues, super, ups, user, users, uses |
 | grammar | grammar, arm, rag, ram |  |
 | possess | possess, poses, pose |  |
-| accident | accident, dance, and, can, ice, tie | accent, ace, acid, act, acted, aid, ate, cant, cat, cent, cite, cited, date, dice, diet, dine, eat, edit, end, idea, neat, net, nice, tea, ten, tend, tied, tin |
+| accident | accident, dance, and, can, ice, tie | accent, ace, acid, act, acted, aid, ate, cat, cent, cite, cited, date, dice, diet, dine, eat, edit, end, idea, neat, net, nice, tea, ten, tend, tied, tin |
 | occasion | occasion, coin, soon, can, son, con | cans, coins, icon, icons, ion, scan, sic |
 | actual | actual, act, cat, cut |  |
 | actually | actually, actual, call, all, ally, tall | act, cat, cut, lay |
@@ -103,7 +103,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | special | special, ice, lie, pie, sea, places | ace, cap, caps, case, clip, clips, epic, leap, lies, lip, lips, lisp, pace, pale, pile, piles, place, plea, sail, sale, scale, seal, sic, slice, slip, space |
 | peculiar | peculiar, care, clue, pair, pear, race | ace, air, arc, are, cap, car, clear, clip, cruel, cue, cup, cure, ear, epic, era, ice, leap, lie, lip, pace, pale, par, per, pie, pile, place, plea, price, pure, rail |
 | popular | popular, our, polar, oral, pour, pulp | oar, par, pop, pro |
-| regular | regular, rule, age, are, larger, argue | ear, era, err, gear, glue, lag, lager, large, leg, rag, rage, rare, real, rear, ruler, rural, urge |
+| regular | regular, rule, age, are, larger, argue | ear, era, err, gear, glue, lag, large, leg, rag, rage, rare, real, rear, ruler, rural, urge |
 | calendar | calendar, dance, learn, care, dare, dear | ace, and, arc, arcade, arcane, are, area, arena, can, car, card, cared, clean, clear, deal, ear, earn, end, era, lad, land, lane, lead, lean, led, lend, near, race, raced, ran |
 | ordinary | ordinary, rain, road, air, and, any | aid, day, diary, don, drain, dry, ion, iron, irony, nay, nor, oar, radio, raid, ran, ray, rid, rod, yard |
 | mention | mention, into, time, not, one, tie | emit, ion, item, men, met, mine, mint, net, nine, none, note, omit, ten, tin, toe, tome, ton, tone |
@@ -111,7 +111,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | question | question, quiet, quite, into, tune, not | ion, its, nest, net, nets, noise, nose, note, notes, nut, nuts, one, ones, onus, out, quest, quit, quits, quote, quotes, sent, set, sine, sit, site, son, stone, stun, sue, suit |
 | imagine | imagine, main, mane, age, gem, aiming | aim, gain, game, image, man, mean, men, mine, name |
 | interest | interest, tries, rein, seen, tree, see | enter, enters, entire, entries, insert, inter, its, nest, net, nets, rent, resent, reset, rest, rise, risen, sent, set, sine, sir, sit, site, steer, stir, street, ten, tens, tense, terse, test |
-| business | business, buses, sun, use, busses, issues | bin, bus, buss, issue, sine, sue, sues, uses |
+| business | business, buses, sun, use, issues, issue | bin, bus, buss, sine, sue, sues, uses |
 | woman | woman, now, own, won | man, moan |
 | women | women, new, now, one | men, owe, own, won |
 | minute | minute, time, tune, tie, unite, emit | item, men, menu, met, mine, mint, net, nut, ten, tin, unit |
@@ -119,14 +119,14 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | answer | answer, near, swan, wear, are, new | ear, earn, earns, ears, era, news, ran, raw, sane, saw, sea, swear, war, warn, warns, wars, was, wears, wren |
 | often | often, not, one, toe | font, net, note, ten, ton, tone |
 | length | length, then, get, the, lent, leg | let, net, ten |
-| strength | strength, then, get, her, she, gets | hes, nest, net, nets, rent, rest, sent, set, ten, tens, tenth, test, the |
+| strength | strength, then, get, her, she, gets | nest, net, nets, rent, rest, sent, set, ten, tens, tenth, test, the |
 | forward | forward, dwarf, draw, road, word, for | arrow, far, oar, raw, rod, row, war, ward |
 | forwards | forwards, forward, dwarf, draw, road, word | arrow, arrows, draws, far, for, oar, raw, roads, rod, row, rows, sad, saw, sword, war, ward, wars, was, words |
 | quarter | quarter, true, are, rare, rate, rear | art, ate, ear, eat, era, err, rat, tea, tear |
 | complete | complete, come, meet, toe, compete, compel | cope, elect, let, lot, melt, met, mole, opt, pet, plot, poem, poet, pole, pot, temple, tome, top |
 | extreme | extreme, meet, term, tree, meter, metre | mere, met |
-| describe | describe, cried, bird, ride, side, bee | bed, beds, beers, beside, bid, bids, birds, bred, breed, breeds, cider, creed, cries, desire, dice, dire, disc, dries, ice, red, reside, rice, rid, rides, rids, rise, see, seed, sic, sir |
-| consider | consider, cried, nicer, score, coin, once | censor, cider, code, codes, coined, coins, con, core, corn, cries, dice, dine, diner, dines, dire, disc, disco, doe, does, don, done, dons, dose, dries, end, ends, ice, icon, icons, ion |
+| describe | describe, cried, bird, ride, side, bee | bed, beds, beside, bid, bids, birds, bred, breed, breeds, creed, cries, desire, dice, dire, disc, dries, ice, red, reside, rice, rid, rides, rids, rise, see, seed, sic, sir |
+| consider | consider, cried, nicer, score, coin, once | censor, code, codes, coined, coins, con, core, corn, cries, dice, dine, diner, dines, dire, disc, disco, doe, does, don, done, dons, dose, dries, end, ends, ice, icon, icons, ion, iron |
 | continue | continue, notice, coin, into, once, tune | cent, cite, con, count, cue, cut, cute, ice, icon, ion, net, nice, nine, none, not, note, noun, nun, nut, one, out, ten, tie, tin, toe, ton, tone, union, unit, unite |
 | history | history, shirt, short, this, his, toy | hit, hits, host, hot, its, riot, rot, shot, shy, sir, sit, sort, stir, story, thy, toys, try |
 | library | library, air, rail, bar, bay, lab | lay, ray |
@@ -140,7 +140,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | purpose | purpose, sure, our, use, pours, prose | opus, ours, per, pop, pope, pops, pose, pour, pro, pure, rope, rose, sore, soup, spur, sue, super, upper, ups, user |
 | famous | famous, foam, sum |  |
 | various | various, air, our, virus, ours, oar | sir, via |
-| perhaps | perhaps, share, hear, pear, are, has | ash, ear, ears, era, heap, hears, her, hes, paper, papers, par, parse, per, phase, phrase, rash, sea, shape, sharp, she, spare |
+| perhaps | perhaps, share, hear, pear, are, has | ash, ear, ears, era, heap, hears, her, paper, papers, par, parse, per, phase, phrase, rash, sea, shape, sharp, she, spare |
 | probably | probably, play, boy, lobby, polar, royal | baby, bar, bay, blob, bob, lab, lay, oar, oral, par, pay, ploy, pray, pro, ray |
 | separate | separate, past, pear, tree, are, sea | apart, apt, area, areas, art, arts, ate, ear, ears, ease, east, eat, eater, eats, era, erase, par, parse, part, parts, paste, pat, peer, peers, per, pet, rat, rate, rates, rats |
 | remember | remember, bee, member, mere, err |  |
@@ -162,7 +162,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | think | think, kit, hint, thin | hit, ink, tin |
 | pink | pink, ink, pin |  |
 | wink | wink, ink, win |  |
-| pocket | pocket, toe, coke, cope, poet, poke | kept, opt, pet, pot, top |
+| pocket | pocket, toe, cope, kept, poet, poke | opt, pet, pot, top |
 | rabbit | rabbit, air, art, bar, bat, bit | rat, tab |
 | carrot | carrot, coat, car, actor, act, arc | art, cat, oar, rat, rot |
 | thunder | thunder, hunted, hunter, under, hurt, rude | due, end, her, herd, hunt, hut, net, nut, red, rend, rent, run, ten, tend, the, then, trend, true, tune, tuned, turn, turned |
@@ -179,10 +179,10 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | spends | spends, pends, sends, spend, ends, pens | end, pen, send, sped |
 | rocks | rocks, sock, rock |  |
 | thanks | thanks, ask, has, tanks, thank, sank | ash, hat, hats, sat, tank, task, than |
-| catches | catches, catch, cats, each, has, sea | ace, act, acts, ash, ate, case, cash, cast, cat, chase, chat, chats, cheat, cheats, chest, east, eat, eats, hat, hats, heat, heats, hes, sat, seat, sect, set, she, tea, teach |
-| dishes | dishes, side, his, she, hides, sheds | dish, hes, hid, hide, shed, sides |
+| catches | catches, catch, cats, each, has, sea | ace, act, acts, ash, ate, case, cash, cast, cat, chase, chat, chats, cheat, cheats, chest, east, eat, eats, hat, hats, heat, heats, sat, seat, set, she, tea, teach, the |
+| dishes | dishes, side, his, she, hides, sheds | dish, hid, hide, shed, sides |
 | buses | buses, use, buss, sues | bus, sue, uses |
-| wishes | wishes, his, she, wise, wish, hes |  |
+| wishes | wishes, his, she, wise, wish |  |
 | hunting | hunting, night, tuning, thing, hint, hung | gut, hit, hunt, hut, nun, nut, thin, tin, ugh, unit |
 | hunted | hunted, then, tune, the, tuned, hunt | due, end, hut, net, nut, ten, tend |
 | hunter | hunter, hurt, then, true, tune, turn | her, hunt, hut, net, nut, rent, run, ten, the |
@@ -194,10 +194,10 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | jumper | jumper, jump, pure, per |  |
 | grander | grander, garden, dare, dear, near, age | aged, and, anger, are, danger, drag, ear, earn, end, era, err, gear, grade, grand, rag, rage, ran, rang, range, ranged, rare, read, rear, red, regard, rend |
 | grandest | grandest, strange, garden, grate, great, dare | age, aged, agent, agents, ages, and, anger, are, art, arts, ate, danger, dangers, dares, date, dates, dear, drag, drags, ear, earn, earns, ears, east, eat, eats, end, ends, era, gardens |
-| fresher | fresher, refresh, here, her, see, she | err, fee, fees, free, frees, fresh, hes, refer, refers, sheer |
-| freshest | freshest, there, these, here, tree, her | fee, fees, feet, free, frees, fresh, hes, reset, resets, rest, rests, see, sees, set, sets, she, sheer, sheet, sheets, steer, steers, terse, the, thee, theses, three, trees |
+| fresher | fresher, refresh, here, her, see, she | err, fee, fees, free, frees, fresh, refer, refers, sheer |
+| freshest | freshest, there, these, here, tree, her | fee, fees, feet, free, frees, fresh, reset, resets, rest, rests, see, sees, set, sets, she, sheer, sheet, sheets, steer, steers, terse, the, thee, theses, three, trees |
 | quicker | quicker, ice, quick, cure, rice, cue |  |
-| quickest | quickest, quiet, quite, ice, kit, tie | cite, cites, cue, cut, cute, cuts, its, kits, quest, quick, quit, quits, sect, set, sic, sick, sit, site, stick, stuck, sue, suit, suite, tick, ties, use |
+| quickest | quickest, quiet, quite, ice, kit, tie | cite, cites, cue, cut, cute, cuts, its, kits, quest, quick, quit, quits, set, sic, sick, sit, site, stick, stuck, sue, suit, suite, tick, ties, use |
 | rain | rain, air, ran |  |
 | train | train, rain, air, rant | art, ran, rat, tin |
 | paid | paid, aid, dip, pad |  |
@@ -208,10 +208,10 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | enjoy | enjoy, one, joy |  |
 | annoy | annoy, any, nay |  |
 | take | take, ate, eat, tea |  |
-| these | these, see, she, the | hes, set, sheet, thee |
+| these | these, see, she, the | set, sheet, thee |
 | theme | theme, meet, them, the | met, thee |
 | ride | ride, dire, red, rid |  |
-| those | those, she, the, toe | hes, host, hot, set, shoe, shot, toes |
+| those | those, she, the, toe | host, hot, set, shoe, shot, toes |
 | rude | rude, due, red |  |
 | tube | tube, but, bet |  |
 | tune | tune, net, nut, ten |  |
@@ -236,12 +236,12 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | turn | turn, nut, run |  |
 | burst | burst, but, bust, bus | rub |
 | short | short, host, shot, sort | hot, rot |
-| horse | horse, shore, her, she | hero, hes, rose, shoe, sore |
+| horse | horse, shore, her, she | hero, rose, shoe, sore |
 | morning | morning, minor, grim, iron, norm, ring | ion, nor |
 | score | score, core, rose, sore |  |
 | before | before, bee, for, beef, bore, free | fee |
 | wore | wore, owe, row |  |
-| shore | shore, horse, her, she | hero, hes, rose, shoe, sore |
+| shore | shore, horse, her, she | hero, rose, shoe, sore |
 | boat | boat, bat, tab |  |
 | coat | coat, act, cat |  |
 | road | road, oar, rod |  |
@@ -251,14 +251,14 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | around | around, road, undo, and, our, round | don, nor, oar, ran, rod, run |
 | sound | sound, undo, son, sun | don, dons, onus |
 | brown | brown, born, now, own | bow, nor, row, won, worn |
-| town | town, not, now, own | ton, two, won, wont |
+| town | town, not, now, own | ton, two, won |
 | blow | blow, bowl, bow, low |  |
 | snow | snow, now, own, owns | son, won |
 | show | show, how, who |  |
 | rescue | rescue, sure, see, use, secure, cures | cue, cure, curse, reuse, sue, user |
 | drew | drew, red, wed |  |
 | threw | threw, her, the, wet |  |
-| cried | cried, ride, ice, cider | dice, dire, red, rice, rid |
+| cried | cried, ride, ice, dice | dire, red, rice, rid |
 | tried | tried, ride, tie, tired | diet, dire, dirt, edit, red, rid, tied, tire |
 | dried | dried, ride, dire, did | red, rid |
 | chief | chief, chef, ice |  |
@@ -278,7 +278,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | bare | bare, bear, are, bar | ear, era |
 | dare | dare, dear, are, read | ear, era, red |
 | care | care, race, are, car | ace, arc, ear, era |
-| share | share, hear, are, has | ash, ear, ears, era, hears, her, hes, rash, sea, she |
+| share | share, hear, are, has | ash, ear, ears, era, hears, her, rash, sea, she |
 | scared | scared, care, dare, dear, race, are | ace, arc, car, card, cards, cared, cares, cars, case, cased, dares, ear, ears, era, raced, races, read, reads, red, sacred, sad, scare, sea |
 | dear | dear, dare, are, read | ear, era, red |
 | hear | hear, are, her, ear | era |
@@ -297,7 +297,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | alphabet | alphabet, table, bath, help, path, the | able, alpha, apt, ate, bat, beat, belt, bet, beta, eat, halt, hat, heap, heat, lab, late, leap, let, pale, pat, pet, plate, plea, tab, tale, tap, tape, tea |
 | phonics | phonics, coin, his, son, chips, chops | chip, chop, coins, con, hip, icon, icons, inch, ion, pin, pinch, pins, ship, shop, sic, spin |
 | elephant | elephant, plane, plant, help, path, then | apt, ate, eat, eaten, halt, hat, heap, heat, heel, lane, late, lean, leap, lent, let, neat, net, pale, pan, panel, pant, pat, pen, pet, plan, planet, plate, plea, tale, tap |
-| sketch | sketch, she, the, chest, sect, set | hes |
+| sketch | sketch, she, the, chest, set |  |
 | skin | skin, sink, ink |  |
 | frisky | frisky, risky, risk, fry, sir, sky |  |
 | kitten | kitten, kit, tie, ink, ken, net | ten, tin |
@@ -309,7 +309,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | football | football, ball, boat, foot, all, too | ballot, bat, bolt, boot, fall, flat, float, fool, lab, lot, tab, tall, toll, tool |
 | farmyard | farmyard, arm, day, dry, drama, radar | army, array, far, farm, fry, mad, marry, may, ram, ray, yard |
 | bedroom | bedroom, door, more, redo, boredom, bored | bed, boom, bore, bred, doe, doom, mob, mod, mode, mood, red, rod, rode, room |
-| sunshine | sunshine, his, she, sun, use, shines | hes, issue, nine, nun, nuns, shine, sine, sue, sues, uses |
+| sunshine | sunshine, his, she, sun, use, shines | issue, nine, nun, nuns, shine, sine, sue, sues, uses |
 | badge | badge, age, aged, bad | bag, bed, beg |
 | bridge | bridge, bird, ride, big, bred, dire | bed, beg, bid, dig, grid, red, rid |
 | dodge | dodge, doe, dog, ego | odd |
@@ -362,7 +362,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | copied | copied, ice, pie, coped, code, cope | dice, dip, doe, epic |
 | copier | copier, ice, pie, price, cope, core | crop, epic, per, pro, rice, rip, rope |
 | happier | happier, hair, hear, pair, pear, air | are, ear, era, heap, her, hip, hire, paper, par, per, pie, pipe, rip |
-| happiest | happiest, past, path, this, has, his | apt, ash, ate, east, eat, eats, hat, hats, heap, heat, heats, hes, hip, hit, hits, its, paste, pat, paths, pet, phase, pie, pipe, pipes, pit, sat, sea, seat, set, shape |
+| happiest | happiest, past, path, this, has, his | apt, ash, ate, east, eat, eats, hat, hats, heap, heat, heats, hip, hit, hits, its, paste, pat, paths, pet, phase, pie, pipe, pipes, pit, sat, sea, seat, set, shape, she |
 | replied | replied, ride, lie, pie, relied, pride | deep, dip, dire, drip, idle, led, lid, lied, lip, peer, per, pile, red, rid, rip |
 | copying | copying, coin, coping, copy, icon, con | ion, pig, pin |
 | crying | crying, cry, ring |  |
@@ -371,7 +371,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | hiked | hiked, hide, hid, kid |  |
 | hiker | hiker, her, hire |  |
 | nicer | nicer, rein, ice, nice | rice |
-| nicest | nicest, ice, tie, insect, cites, since | cent, cite, its, nest, net, nets, nice, sect, sent, set, sic, sine, sit, site, ten, tens, ties, tin, tins |
+| nicest | nicest, ice, tie, insect, cites, since | cent, cite, its, nest, net, nets, nice, sent, set, sic, sine, sit, site, ten, tens, ties, tin, tins |
 | shiny | shiny, his, shy |  |
 | patting | patting, giant, gnat, paint, pain, pant | apt, gain, gap, pan, pat, pig, pin, pint, pit, tag, tap, tin, tip |
 | patted | patted, date, tape, ate, eat, pad | apt, pat, pet, tap, tea |
@@ -414,14 +414,14 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | sadness | sadness, and, sea, sends, ends, sand | end, sad, sane, send |
 | careful | careful, care, clue, fare, race, rule | ace, arc, are, car, clear, cruel, cue, cure, ear, era, face, far, farce, fear, fuel, fur, leaf, real |
 | playful | playful, full, play, pull, all, ally | fall, fly, fully, lay, pay |
-| hopeless | hopeless, help, hole, hope, see, she | else, heel, heels, helps, hes, holes, hopes, less, lose, loses, loss, pole, pose, poses, sees, sheep, shoe, shoes, shop, shops, sleep, sleeps, slope, sole, soles |
+| hopeless | hopeless, help, hole, hope, see, she | else, heel, heels, helps, holes, hopes, less, lose, loses, loss, pole, pose, poses, sees, sheep, shoe, shoes, shop, shops, sleep, sleeps, slope, sole, soles |
 | badly | badly, day, lady, bay | bad, lab, lad, lay |
 | happily | happily, happy, play, apply, hail, hay | hip, lay, lip, pay |
 | station | station, into, not, son, ion | its, saint, sat, sit, tin, tins, toast, ton, tons |
 | fiction | fiction, coin, into, not | con, fit, font, icon, info, ion, tin, ton |
 | motion | motion, into, moon, not, too, mint | ion, omit, onto, tin, ton |
 | national | national, into, not, oil, nation, lain | ion, lion, lit, loan, lot, nail, nil, tail, tin, ton |
-| section | section, nicest, notice, coin, into, once | cent, cite, cites, coins, con, cost, ice, icon, icons, insect, ion, its, nest, net, nets, nice, noise, nose, not, note, notes, notices, one, ones, sect, sent, set, sic, since, sine |
+| section | section, nicest, notice, coin, into, once | cent, cite, cites, coins, con, cost, ice, icon, icons, insect, ion, its, nest, net, nets, nice, noise, nose, not, note, notes, notices, one, ones, sent, set, sic, since, sine, sit |
 | lotion | lotion, into, not, oil, too, lion | ion, lit, lot, nil, onto, tin, ton, tool |
 | quite | quite, quiet, tie, quit |  |
 | quiet | quiet, quite, tie, quit |  |
@@ -436,7 +436,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | misspell | misspell, miss, lie, pie, simple, smells | ill, less, lies, lip, lips, lisp, mess, mile, miles, mill, pile, piles, pill, pills, sell, sells, slim, slip, slips, smell, smile, smiles, spell, spells, spies, spill |
 | untidy | untidy, unity, duty, tidy, tiny, nut | tin, unit |
 | unlucky | unlucky, lucky, luck |  |
-| inactive | inactive, vein, can, ice, tie, invite | ace, act, active, ate, cant, cat, cave, cent, cite, eat, naive, native, neat, net, nice, tea, ten, tin, vain, van, vat, vet, via, vice |
+| inactive | inactive, vein, can, ice, tie, invite | ace, act, active, ate, cat, cave, cent, cite, eat, naive, native, neat, net, nice, tea, ten, tin, vain, van, vat, vet, via, vice |
 | illegal | illegal, age, all, lie, legal, ill | lag, leg |
 | immature | immature, meat, term, time, true, air | aim, are, arm, art, ate, ear, eat, emit, era, irate, item, mate, mature, merit, met, mum, ram, rat, rate, tame, tea, team, tear, tie, timer, tire |
 | sadly | sadly, day, days, lady | lad, lay, lays, sad, say |
@@ -445,12 +445,12 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | angrily | angrily, girl, rain, air, any, laying | align, angry, gain, grain, lag, lain, lay, lying, nail, nay, nil, rag, rail, ran, rang, ray, ring |
 | gently | gently, get, lent, leg, let | net, ten, yet |
 | simply | simply, imply, lips, lisp, slim, slip | lip, spy |
-| enormous | enormous, moon, more, some, soon, one | men, menu, menus, moons, morons, mouse, nor, norm, nose, nurse, ones, onus, our, ours, room, rooms, rose, run, runs, sermon, son, sooner, sore, sue, sum, sun, sure, use, user |
+| enormous | enormous, moon, more, some, soon, one | men, menu, menus, moons, mouse, nor, norm, nose, nurse, ones, onus, our, ours, room, rooms, rose, run, runs, sermon, son, sooner, sore, sue, sum, sun, sure, use, user |
 | jealous | jealous, sea, use, also, lose, sale | seal, sole, soul, sue |
 | humorous | humorous, hour, our, humour, hours, rooms | hum, ours, room, rush, sum |
 | serious | serious, sure, our, use, issue, rises | ours, rise, rose, sir, sore, sue, sues, user, users, uses |
 | curious | curious, our, ours, sic, sir |  |
-| sleigh | sleigh, his, lie, she, legs, lies | hes, leg, sigh |
+| sleigh | sleigh, his, lie, she, legs, lies | leg, sigh |
 | obey | obey, boy, bye |  |
 | accept | accept, pace, tape, ace, act, apt | ate, cap, cat, eat, pat, pet, tap, tea |
 | except | except, expect, pet |  |
@@ -463,7 +463,7 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | scene | scene, seen, see |  |
 | weather | weather, earth, heart, there, threw, water | are, art, ate, ear, eat, eater, era, hat, hear, heat, her, here, rat, rate, raw, tea, tear, the, thee, three, tree, war, wear, were, wet, what, where, wrath |
 | whether | whether, there, threw, where, here, were | her, the, thee, three, tree, wet |
-| whose | whose, show, how, she | hes, owe, owes, shoe, who |
+| whose | whose, show, how, she | owe, owes, shoe, who |
 | missed | missed, miss, side, sides, mess | dim |
 | mist | mist, its, sit |  |
 | main | main, aim, man |  |
@@ -471,11 +471,11 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | fare | fare, are, fear, ear | era, far |
 | grate | grate, great, age, are | art, ate, ear, eat, era, gate, gear, get, rag, rage, rat, rate, tag, tea, tear |
 | redo | redo, rode, doe, red | rod |
-| refresh | refresh, fresher, here, her, see, she | err, fee, fees, free, frees, fresh, hes, refer, refers, sheer |
+| refresh | refresh, fresher, here, her, see, she | err, fee, fees, free, frees, fresh, refer, refers, sheer |
 | return | return, true, tune, turn, rent, err | net, nut, run, ten |
 | reappear | reappear, appear, pear, are, prepare, paper | area, ear, era, err, par, peer, per, rare, rear |
-| submerge | submerge, sure, bee, gem, see, use | beers, beg, bug, bugs, bus, gum, mere, merge, merges, mug, mugs, resume, reuse, rub, seem, smug, sue, sum, urge, urges, user |
-| interact | interact, certain, nicer, train, care, near | ace, act, air, arc, are, art, ate, can, cant, car, cat, cater, cent, cite, ear, earn, eat, era, ice, intact, inter, irate, neat, net, nice, race, rain, ran, rant, rat |
+| submerge | submerge, sure, bee, gem, see, use | beg, bug, bugs, bus, gum, mere, merge, merges, mug, mugs, resume, reuse, rub, seem, smug, sue, sum, urge, urges, user |
+| interact | interact, certain, nicer, train, care, near | ace, act, air, arc, are, art, ate, can, car, cat, cater, cent, cite, ear, earn, eat, era, ice, intact, inter, irate, neat, net, nice, race, rain, ran, rant, rat, rate |
 | beginner | beginner, green, reign, rein, big, engine | bee, been, beg, begin, being, bin, bring, gene, genre, inner, nine, ring |
 | gardener | gardener, grander, garden, green, dare, dear | age, aged, agree, agreed, and, anger, are, danger, derange, drag, eager, ear, earn, earned, edge, end, era, err, gear, geared, gender, gene, genre, grade, grand, greed, near, nearer, need, rag |
 | limiting | limiting, timing, limit, mint, tin | lit, nil |
@@ -495,13 +495,13 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | division | division, son, vision, dons, void, don | ion |
 | invasion | invasion, son, vision, vain, vans, ion | van, via |
 | decision | decision, coin, once, side, one, son | code, codes, coined, coins, con, dice, dine, dines, disc, disco, doe, does, don, done, dons, dose, end, ends, ice, icon, icons, inside, ion, nice, node, nodes, noise, nose, ones, second |
-| action | action, coat, coin, into, not, cant | act, can, cat, con, icon, ion, tin, ton |
+| action | action, coat, coin, into, not, icon | act, can, cat, con, ion, tin, ton |
 | tension | tension, into, not, one, son, tie | ion, its, nest, net, nets, nine, noise, none, nose, note, notes, ones, sent, set, sine, sit, site, stone, ten, tennis, tens, ties, tin, tins, toe, toes, ton, tone, tones, tons |
-| musician | musician, main, can, sun, mains, cans | aim, aims, cam, cums, man, mans, minus, music, scan, scum, sic, sum |
+| musician | musician, main, can, sun, mains, cans | aim, aims, cam, man, mans, minus, music, scan, scum, sic, sum |
 | magician | magician, again, magic, main, can, aiming | aim, cam, gain, man, mania |
-| scheme | scheme, see, she, seem, hes |  |
+| scheme | scheme, see, she, seem |  |
 | chorus | chorus, hour, such, our, hours, ours | crush, rush |
-| chemist | chemist, mist, them, this, time, him | chest, cite, cites, emit, ethic, ethics, hes, his, hit, hits, ice, item, items, its, met, mice, sect, set, she, sic, sit, site, smith, stem, the, tie, ties, times |
+| chemist | chemist, mist, them, this, time, him | chest, cite, cites, emit, ethic, ethics, his, hit, hits, ice, item, items, its, met, mice, set, she, sic, sit, site, smith, stem, the, tie, ties, times |
 | anchor | anchor, can, car, acorn, arch, char | arc, con, corn, horn, nor, oar, ran |
 | chalet | chalet, each, the, cheat, leach, teach | ace, act, ate, cat, chat, eat, halt, hat, heat, late, let, tale, tea |
 | machine | machine, came, each, main, mane, ice | ace, aim, cam, can, chain, cinema, ham, him, inch, man, mean, men, mice, mine, name, nice |
@@ -510,5 +510,5 @@ Skim for any word that is unsuitable for a 7-year-old. Add it to scripts/blockli
 | tongue | tongue, tune, get, one, out, toe | ego, gone, got, gut, net, not, note, nut, ten, ton, tone, unto |
 | antique | antique, quiet, quite, tune, tie, unite | ate, aunt, eat, neat, net, nut, quit, tea, ten, tin, unit |
 | science | science, scene, seen, ice, see, nice | sic, since, sine |
-| crescent | crescent, centre, recent, scene, seen, tree | cent, centres, enter, enters, nest, net, nets, rent, resent, reset, rest, screen, secret, sect, see, sent, set, steer, ten, tens, tense, terse, trees |
+| crescent | crescent, centre, recent, scene, seen, tree | cent, centres, enter, enters, nest, net, nets, rent, resent, reset, rest, screen, secret, see, sent, set, steer, ten, tens, tense, terse, trees |
 | scissors | scissors, cross, sic, sir |  |

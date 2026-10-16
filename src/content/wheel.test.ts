@@ -33,4 +33,10 @@ describe('Word Wheel puzzles', () => {
       expect(p.cols).toBeLessThanOrEqual(10)
     }
   })
+  it('never asks for apostrophe-less contractions or US forms, and has no adult or unkind words', () => {
+    const never = new Set(['cant', 'hes', 'shes', 'wont', 'dont', 'isnt', 'didnt', 'busses', 'cums', 'beers', 'lager', 'cider', 'morons', 'coke', 'sect'])
+    for (const p of WHEEL_PUZZLES) {
+      for (const w of [...p.grid.map(g => g.word), ...p.bonus]) expect(never.has(w), `${p.id}: ${w}`).toBe(false)
+    }
+  })
 })
