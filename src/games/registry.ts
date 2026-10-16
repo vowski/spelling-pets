@@ -4,6 +4,7 @@ import { PupPost } from './pupPost/PupPost'
 import { StoryTime } from './storyTime/StoryTime'
 import { TreasureHunt } from './treasureHunt/TreasureHunt'
 import type { GameProps } from './types'
+import { WordWheel } from './wheel/WordWheel'
 import { BubblePop } from './bubblePop/BubblePop'
 import { Hedgehog } from './hedgehog/Hedgehog'
 import { WordBuilder } from './builder/WordBuilder'
@@ -28,4 +29,5 @@ export const GAME_COMPONENTS: Partial<Record<GameType, ComponentType<GameProps>>
   builder: WordBuilder,
   hedgehog: Hedgehog,
   bubblePop: BubblePop,
+  wheel: WordWheel,
 }
