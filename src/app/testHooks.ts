@@ -3,7 +3,8 @@ import { fixedClock, systemClock, type Clock } from './clock'
 
 declare global {
   interface Window {
-    __SPELLING_TEST__?: { now?: string; speechLog?: string[]; noSpeech?: boolean }
+    __SPELLING_TEST__?: { now?: string; speechLog?: string[]; noSpeech?: boolean; fast?: boolean }
+    __SPELLING_REPO__?: import('../storage/repo').Repo
   }
 }
 
