@@ -58,6 +58,7 @@ describe('planSession', () => {
     expect(acts[1].onlyIfUnitNotKnown).toBe(true)
     expect(acts[2].onlyIfUnitNotKnown).toBe(true)
     expect(acts[3].onlyIfUnitNotKnown).toBe(true)
+    expect(acts[3].unitId).toBe('y3-revise-suffixes') // so the runner can skip it once the unit is known
     expect(acts[4]).toMatchObject({ finale: true, wordIds: ['w-was'] })
   })
 

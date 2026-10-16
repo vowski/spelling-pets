@@ -162,7 +162,12 @@ export function planSession(bank: Bank, state: LearnerState, opts: PlannerOption
   }
 
   // 4. Quick check
-  if (taught.length) push({ gameType: 'pupPost', wordIds: [...taught], onlyIfUnitNotKnown: nm.kind === 'unit' && nm.day === 1 })
+  if (taught.length) {
+    push({
+      gameType: 'pupPost', wordIds: [...taught], onlyIfUnitNotKnown: nm.kind === 'unit' && nm.day === 1,
+      ...(nm.kind === 'unit' ? { unitId: nm.unitId } : {}),
+    })
+  }
 
   // 5. Finale
   const used = new Set(acts.flatMap(a => a.wordIds))
