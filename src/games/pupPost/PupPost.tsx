@@ -1,31 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useServices } from '../../app/services'
-import { sayWord } from '../../speech/voice'
-import { useSpeechAvailable } from '../../speech/useSpeech'
 import { Button } from '../../ui/Button'
 import { TypeAndCheck } from '../../ui/TypeAndCheck'
 import { WordDisplay } from '../../ui/WordDisplay'
 import { GameFrame } from '../GameFrame'
 import type { GameProps } from '../types'
+import { useDictation } from '../useDictation'
 
 export function PupPost({ activity, words, onAttempt, onDone }: GameProps) {
-  const { speaker, delays } = useServices()
-  const canSpeak = useSpeechAvailable()
+  const { speaker } = useServices()
   const [i, setI] = useState(0)
-  const [peeking, setPeeking] = useState(true)
   const word = words[i]
-
-  useEffect(() => {
-    if (!word || canSpeak === null) return
-    if (canSpeak) {
-      setPeeking(false)
-      void sayWord(speaker, word, delays.gap)
-      return
-    }
-    setPeeking(true)
-    const t = setTimeout(() => setPeeking(false), delays.peek)
-    return () => clearTimeout(t)
-  }, [word, canSpeak, speaker, delays.peek, delays.gap])
+  const { canSpeak, peeking, replay } = useDictation(word)
 
   if (!word) return null
   if (canSpeak === null) return <p>Getting ready…</p>
@@ -35,7 +21,7 @@ export function PupPost({ activity, words, onAttempt, onDone }: GameProps) {
     <GameFrame title={activity.practiceTest ? 'Practice test for tomorrow!' : 'Pup Post'} emoji="✉️" done={i} total={words.length}>
       {canSpeak ? (
         <div className="row">
-          <Button variant="secondary" onClick={() => void sayWord(speaker, word, delays.gap)}>🔊 Hear it again</Button>
+          <Button variant="secondary" onClick={replay}>🔊 Hear it again</Button>
           {word.sentence && <Button variant="ghost" onClick={() => void speaker.speak(word.sentence)}>Hear the sentence</Button>}
         </div>
       ) : peeking ? (
