@@ -4,6 +4,7 @@ import { PupPost } from './pupPost/PupPost'
 import { StoryTime } from './storyTime/StoryTime'
 import { TreasureHunt } from './treasureHunt/TreasureHunt'
 import type { GameProps } from './types'
+import { SortPen } from './sortPen/SortPen'
 import { Burrow } from './burrow/Burrow'
 import { BunnyHop } from './bunnyHop/BunnyHop'
 import { Wombat } from './wombat/Wombat'
@@ -20,4 +21,5 @@ export const GAME_COMPONENTS: Partial<Record<GameType, ComponentType<GameProps>>
   wombat: Wombat,
   bunnyHop: BunnyHop,
   burrow: Burrow,
+  sortPen: SortPen,
 }
