@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useState } from 'react'
 import { BADGES, FRIENDS, STICKERS } from '../content/rewards'
+import { petStageRank } from '../engine/rewards'
 import { Hatch } from '../pet/Hatch'
 import { Button } from '../ui/Button'
 import { usePetMood } from './petMood'
@@ -17,7 +18,7 @@ export function Celebration({ outcome, earned, onHome }: { outcome: SessionOutco
   if (hatching) {
     return <Hatch species={settings.petSpecies} name={settings.petName} onDone={() => { void repo.updateSettings({ hatched: true }); setHatching(false) }} />
   }
-  const grew = outcome.stageBefore !== outcome.stageAfter && outcome.stageBefore !== 'egg'
+  const grew = outcome.stageBefore !== 'egg' && petStageRank(outcome.stageAfter) > petStageRank(outcome.stageBefore)
   return (
     <section className="card">
       <h1>Adventure complete! 🎉</h1>

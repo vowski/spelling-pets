@@ -38,4 +38,9 @@ describe('achievements', () => {
     expect((await repo.getRealRewards())[0]).toMatchObject({ status: 'earned', earnedAt: T })
     expect(await settleRealRewards(repo, bank, T)).toEqual([])
   })
+  it('counts words ever made Secure, so a slip back to box 3 never shrinks the pet or re-awards stickers', async () => {
+    const repo = Repo.open(`ac-${Math.random()}`)
+    await repo.putProgress([prog('w-said', { box: 3, secureOn: '2026-10-01' }), prog('w-was', { box: 4, secureOn: T }), prog('w-the', { box: 3 })])
+    expect((await buildSnapshot(repo, bank)).secureTotal).toBe(2)
+  })
 })

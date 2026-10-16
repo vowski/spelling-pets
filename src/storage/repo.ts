@@ -106,6 +106,11 @@ export class Repo {
     })
   }
 
+  /** Words that have ever reached Secure. It never goes down, so the pet never shrinks after a slip. */
+  everSecureCount(): Promise<number> {
+    return this.db.progress.filter(p => !!p.secureOn).count()
+  }
+
   async spendCoins(price: number, reason: string, nowMs: number): Promise<boolean> {
     return this.db.transaction('rw', [this.db.wallet, this.db.settings], async () => {
       if ((await this.balance()) < price) return false

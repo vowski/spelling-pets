@@ -17,7 +17,7 @@ export function Home() {
   const main = useLiveQuery(() => repo.getSessionForDay(today, 'main'), [repo, today])
   const dates = useLiveQuery(() => repo.completeSessionDates(), [repo])
   const placement = useLiveQuery(() => repo.getPlacement(), [repo])
-  const secure = useLiveQuery(() => repo.db.progress.where('box').aboveOrEqual(4).count(), [repo])
+  const secure = useLiveQuery(() => repo.everSecureCount(), [repo])
   useEffect(() => {
     if (settings?.musicOn) { sfx.startMusic(); return () => sfx.stopMusic() }
   }, [settings?.musicOn, sfx])

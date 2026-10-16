@@ -29,4 +29,11 @@ describe('Celebration', () => {
     await user.click(screen.getByRole('button', { name: 'Back home' }))
     expect(onHome).toHaveBeenCalled()
   })
+  it('only says the pet grew when it reached a bigger stage', async () => {
+    const services = makeTestServices()
+    await services.repo.updateSettings({ petName: 'Biscuit', petSpecies: 'puppy', hatched: true })
+    renderWithServices(<Celebration earned={20} onHome={() => {}} outcome={{ coins: 20, weeklyGoalJustMet: false, hatched: false, stageBefore: 'young', stageAfter: 'baby', awards: [], earnedRewards: [] }} />, services)
+    expect(await screen.findByText('Adventure complete! 🎉')).toBeInTheDocument()
+    expect(screen.queryByText(/grew bigger/)).not.toBeInTheDocument()
+  })
 })

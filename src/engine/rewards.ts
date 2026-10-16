@@ -17,6 +17,9 @@ export function coinsForAttempt(role: Role, correct: boolean, firstTry: boolean,
 export type PetStage = 'egg' | 'baby' | 'young' | 'grown' | 'super' | 'sparkly'
 const STAGES: [PetStage, number][] = [['sparkly', 150], ['super', 80], ['grown', 40], ['young', 10], ['baby', 0]]
 
+const STAGE_ORDER: PetStage[] = ['egg', 'baby', 'young', 'grown', 'super', 'sparkly']
+export const petStageRank = (s: PetStage) => STAGE_ORDER.indexOf(s)
+
 export function petStage(secureTotal: number, placementDone: boolean): PetStage {
   if (!placementDone) return 'egg'
   return STAGES.find(([, n]) => secureTotal >= n)![0]

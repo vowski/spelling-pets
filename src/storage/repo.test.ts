@@ -73,6 +73,10 @@ describe('Repo', () => {
     expect(await repo.getSchoolLists()).toHaveLength(0)
   })
 
+  it('counts words ever made Secure, whatever their box now', async () => {
+    await repo.putProgress([prog('w-said', { box: 3, secureOn: '2026-10-01' }), prog('w-was', { box: 5, secureOn: T }), prog('w-the', { box: 4 }), prog('w-a', { box: 2 })])
+    expect(await repo.everSecureCount()).toBe(2)
+  })
   it('keeps inventory counts', async () => {
     await repo.addItem('apple')
     await repo.addItem('apple')

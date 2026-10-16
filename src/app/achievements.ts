@@ -16,7 +16,7 @@ export async function buildSnapshot(repo: Repo, bank: Bank): Promise<Achievement
   const stats = computeStats(bank, new Map(progress.map(p => [p.wordId, p])), new Map(units.map(u => [u.unitId, u])), [])
   return {
     placementDone: isPlacementDone(placement) ? 1 : 0,
-    secureTotal: stats.secureTotal,
+    secureTotal: progress.filter(p => p.secureOn).length, // ever Secure: drives the pet and stickers, never goes down
     secureBySet: stats.secureBySet,
     sizeBySet: stats.sizeBySet,
     unitsDone: stats.unitsDone.size,
