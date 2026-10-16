@@ -111,8 +111,9 @@ export async function finishSession(svc: Svc, row: SessionRow, today: DateStr, n
   void writeAutoBackup(repo, today, nowMs) // last, so the backup includes the awards
   return {
     coins, weeklyGoalJustMet, awards, earnedRewards,
-    stageBefore: petStage(start.secureTotal, start.placementDone === 1),
-    stageAfter: petStage(after.secureTotal, after.placementDone === 1),
-    hatched: start.placementDone === 0 && after.placementDone === 1,
+    // Once hatched, a re-run Treasure Hunt never turns the pet back into an egg or hatches it again.
+    stageBefore: petStage(start.secureTotal, settings.hatched || start.placementDone === 1),
+    stageAfter: petStage(after.secureTotal, settings.hatched || after.placementDone === 1),
+    hatched: !settings.hatched && start.placementDone === 0 && after.placementDone === 1,
   }
 }

@@ -20,7 +20,7 @@ export function PetHome() {
   const placement = useLiveQuery(() => repo.getPlacement(), [repo])
   const secure = useLiveQuery(() => repo.db.progress.where('box').aboveOrEqual(4).count(), [repo])
   if (!settings || !inventory || !placement || secure === undefined) return <main className="screen"><p>Loading…</p></main>
-  const stage = petStage(secure, isPlacementDone(placement))
+  const stage = petStage(secure, settings.hatched || isPlacementDone(placement)) // a re-run Treasure Hunt never turns her pet back into an egg
   const items = (cat: string) => inventory.map(i => ({ ...i, item: SHOP_ITEMS.find(s => s.id === i.itemId)! })).filter(x => x.item?.category === cat)
 
   const feed = async (id: string, name: string) => {

@@ -38,7 +38,7 @@ export function Home() {
           </span>
         </div>
       </header>
-      <PetSpot settings={settings} placementDone={isPlacementDone(placement)} secureTotal={secure} missedYou={missedYou} />
+      <PetSpot settings={settings} placementDone={settings.hatched || isPlacementDone(placement)} secureTotal={secure} missedYou={missedYou} />
       {!done ? (
         <Button size="big" onClick={() => navigate('/session')}>{main ? 'Carry on with today’s adventure!' : 'Start today’s adventure!'}</Button>
       ) : (

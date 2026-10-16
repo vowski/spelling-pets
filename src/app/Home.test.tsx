@@ -24,4 +24,11 @@ describe('Home', () => {
     expect(screen.getByText(/You finished today/)).toBeInTheDocument()
     expect(screen.getByLabelText('1 of 5 practice days this week')).toBeInTheDocument()
   })
+  it('keeps a hatched pet hatched while a re-run Treasure Hunt is under way', async () => {
+    const services = makeTestServices()
+    await services.repo.updateSettings({ firstRunDone: true, petName: 'Clover', petSpecies: 'bunny', hatched: true })
+    renderWithServices(<MemoryRouter><Home /></MemoryRouter>, services)
+    expect(await screen.findByRole('img', { name: 'Clover the bunny' })).toBeInTheDocument()
+    expect(screen.queryByText(/still in the egg/)).not.toBeInTheDocument()
+  })
 })

@@ -4,6 +4,8 @@ import { Repo } from '../storage/repo'
 import { startOrResumeSession, nextActivity, recordGameAttempt, completeActivity, finishSession, attemptRoles } from './sessionLogic'
 import { prog } from '../engine/testing'
 import type { SessionRow } from '../storage/db'
+import { buildSnapshot } from './achievements'
+import { buildPlacementPlan } from '../engine/placement'
 
 const T = '2026-10-15'
 const fresh = () => ({ repo: Repo.open(`s-${Math.random()}`), bank })
@@ -89,5 +91,14 @@ describe('session logic', () => {
     await svc.repo.saveSession(extra)
     expect(await finishSession(svc, extra, T, 10)).toMatchObject({ coins: 20, weeklyGoalJustMet: false })
     expect((await svc.repo.getSession('s1'))?.complete).toBe(true)
+  })
+  it('does not hatch the pet a second time when a re-run Treasure Hunt finishes', async () => {
+    const svc = fresh()
+    await svc.repo.updateSettings({ hatched: true })
+    const startSnapshot = await buildSnapshot(svc.repo, bank) // placement cleared by the re-run
+    await svc.repo.savePlacement(buildPlacementPlan(bank, 1).map(l => ({ ...l, status: 'done' as const })))
+    const row: SessionRow = { id: 's1', date: T, kind: 'main', startedAt: 1, endedAt: null, doneActivityIds: [], complete: false, coins: 0, startSnapshot, plan: { kind: 'placement', newMaterial: { kind: 'none' }, activities: [] } }
+    await svc.repo.saveSession(row)
+    expect(await finishSession(svc, row, T, 9)).toMatchObject({ hatched: false, stageBefore: 'baby', stageAfter: 'baby' })
   })
 })
