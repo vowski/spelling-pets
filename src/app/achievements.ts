@@ -1,9 +1,11 @@
 import type { Bank } from '../content'
+import type { SetId } from '../content/types'
 import type { DateStr } from '../engine/dates'
 import { isPlacementDone } from '../engine/placement'
-import { evaluateAchievements, rewardProgress, type AchievementSnapshot, type Award, type RealReward } from '../engine/rewards'
+import { evaluateAchievements, rewardProgress, type AchievementSnapshot, type Award, type RealReward, type RewardStats } from '../engine/rewards'
 import type { Rng } from '../engine/rng'
 import { computeStats } from '../engine/stats'
+import type { WordProgress } from '../engine/types'
 import { weeksGoalMet } from '../engine/weekly'
 import type { Repo } from '../storage/repo'
 
@@ -29,15 +31,16 @@ export async function settleAchievements(repo: Repo, before: AchievementSnapshot
   return awards
 }
 
+export function rewardStatsFrom(bank: Bank, progress: WordProgress[], dates: DateStr[], weeklyGoalDays: number): RewardStats {
+  const stats = computeStats(bank, new Map(progress.map(p => [p.wordId, p])), new Map(), [])
+  const levelComplete: Partial<Record<SetId, boolean>> = {}
+  for (const k of Object.keys(stats.secureBySet) as SetId[]) levelComplete[k] = stats.sizeBySet[k] > 0 && stats.secureBySet[k] >= stats.sizeBySet[k]
+  return { completeSessionDates: dates, secureOnDates: progress.filter(p => p.box >= 4 && p.secureOn).map(p => p.secureOn!), weeklyGoalDays, levelComplete }
+}
+
 export async function settleRealRewards(repo: Repo, bank: Bank, today: DateStr): Promise<RealReward[]> {
   const [rewards, dates, progress, settings] = await Promise.all([repo.getRealRewards(), repo.completeSessionDates(), repo.getAllProgress(), repo.getSettings()])
-  const stats = computeStats(bank, new Map(progress.map(p => [p.wordId, p])), new Map(), [])
-  const rewardStats = {
-    completeSessionDates: dates,
-    secureOnDates: progress.filter(p => p.box >= 4 && p.secureOn).map(p => p.secureOn!),
-    weeklyGoalDays: settings.weeklyGoalDays,
-    levelComplete: Object.fromEntries(Object.entries(stats.secureBySet).map(([k, v]) => [k, stats.sizeBySet[k as keyof typeof stats.sizeBySet] > 0 && v >= stats.sizeBySet[k as keyof typeof stats.sizeBySet]])),
-  }
+  const rewardStats = rewardStatsFrom(bank, progress, dates, settings.weeklyGoalDays)
   const earned: RealReward[] = []
   for (const r of rewards.filter(x => x.status === 'active')) {
     if (rewardProgress(r, rewardStats).done) {
