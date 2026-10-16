@@ -3,8 +3,8 @@ import { WHEEL_ANCHORS } from '../content/wheel'
 import type { DateStr } from '../engine/dates'
 import { finaliseLevels, recordPlacementAnswer } from '../engine/placement'
 import { GAME_META, planSession, type Activity } from '../engine/planner'
-import { COINS, type Award } from '../engine/rewards'
-import { hashString } from '../engine/rng'
+import { COINS, petStage, type Award, type PetStage, type RealReward } from '../engine/rewards'
+import { hashString, makeRng } from '../engine/rng'
 import type { Role } from '../engine/types'
 import { afterUnitCheck, finishUnitDay, recordUnitTaught, startUnit } from '../engine/units'
 import { weekProgress } from '../engine/weekly'
@@ -12,6 +12,7 @@ import type { GameAttempt, GameSummary } from '../games/types'
 import { writeAutoBackup } from '../storage/autoBackup'
 import type { SessionRow } from '../storage/db'
 import type { Repo } from '../storage/repo'
+import { buildSnapshot, settleAchievements, settleRealRewards } from './achievements'
 
 type Svc = { repo: Repo; bank: Bank }
 const UNIT_GAMES = new Set(['sortPen', 'builder', 'hedgehog', 'bunnyHop'])
@@ -19,13 +20,14 @@ const UNIT_GAMES = new Set(['sortPen', 'builder', 'hedgehog', 'bunnyHop'])
 export async function startOrResumeSession(svc: Svc, kind: 'main' | 'extra', today: DateStr, nowMs: number): Promise<SessionRow> {
   const existing = await svc.repo.getSessionForDay(today, kind)
   if (existing && (kind === 'main' || !existing.complete)) return existing
+  const startSnapshot = await buildSnapshot(svc.repo, svc.bank) // before any planning side effects
   const state = await svc.repo.loadLearnerState(today)
   const plan = planSession(svc.bank, state, { seed: hashString(`${today}:${kind}:${nowMs}`), wheelAnchors: WHEEL_ANCHORS, extra: kind === 'extra' })
   if (plan.placementInit) await svc.repo.savePlacement(plan.placementInit)
   const nm = plan.newMaterial
   if (nm.kind === 'unit' && nm.day === 1) await svc.repo.saveUnit(startUnit(nm.unitId, today))
   if (kind === 'main' && nm.kind !== 'none') await svc.repo.updateSettings({ lastNewKind: nm.kind === 'unit' ? 'unit' : 'words' })
-  const row: SessionRow = { id: `${today}-${kind}-${nowMs}`, date: today, kind, startedAt: nowMs, endedAt: null, plan, doneActivityIds: [], complete: false, coins: 0 }
+  const row: SessionRow = { id: `${today}-${kind}-${nowMs}`, date: today, kind, startedAt: nowMs, endedAt: null, plan, doneActivityIds: [], complete: false, coins: 0, startSnapshot }
   await svc.repo.saveSession(row)
   return row
 }
@@ -88,10 +90,11 @@ export async function completeActivity(svc: Svc, row: SessionRow, activity: Acti
   return repo.markActivityDone(row.id, activity.id)
 }
 
-export interface SessionOutcome { coins: number; weeklyGoalJustMet: boolean; awards: Award[] }
+export interface SessionOutcome { coins: number; weeklyGoalJustMet: boolean; awards: Award[]; earnedRewards: RealReward[]; stageBefore: PetStage; stageAfter: PetStage; hatched: boolean }
 
 export async function finishSession(svc: Svc, row: SessionRow, today: DateStr, nowMs: number): Promise<SessionOutcome> {
-  const { repo } = svc
+  const { repo, bank } = svc
+  const start = row.startSnapshot ?? (await buildSnapshot(repo, bank))
   const settings = await repo.getSettings()
   const wasMet = weekProgress(await repo.completeSessionDates(), today, settings.weeklyGoalDays).met
   await repo.completeSession(row.id, nowMs)
@@ -102,6 +105,14 @@ export async function finishSession(svc: Svc, row: SessionRow, today: DateStr, n
     await repo.addCoins(COINS.weeklyGoal, 'Weekly goal', nowMs)
     coins += COINS.weeklyGoal
   }
-  void writeAutoBackup(repo, today, nowMs)
-  return { coins, weeklyGoalJustMet, awards: [] }
+  const after = await buildSnapshot(repo, bank)
+  const awards = await settleAchievements(repo, start, after, nowMs, makeRng(hashString(row.id)))
+  const earnedRewards = await settleRealRewards(repo, bank, today)
+  void writeAutoBackup(repo, today, nowMs) // last, so the backup includes the awards
+  return {
+    coins, weeklyGoalJustMet, awards, earnedRewards,
+    stageBefore: petStage(start.secureTotal, start.placementDone === 1),
+    stageAfter: petStage(after.secureTotal, after.placementDone === 1),
+    hatched: start.placementDone === 0 && after.placementDone === 1,
+  }
 }

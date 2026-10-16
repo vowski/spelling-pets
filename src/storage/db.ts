@@ -3,7 +3,7 @@ import type { AccessorySlot } from '../content/rewards'
 import type { CustomWord } from '../content/types'
 import type { DateStr } from '../engine/dates'
 import type { SessionPlan } from '../engine/planner'
-import type { RealReward } from '../engine/rewards'
+import type { AchievementSnapshot, RealReward } from '../engine/rewards'
 import type { GameType, PlacementLevelState, Role, SchoolList, UnitState, WordProgress } from '../engine/types'
 
 export type PetSpecies = 'puppy' | 'kitten' | 'bunny' | 'fox' | 'panda'
@@ -40,7 +40,7 @@ export const DEFAULT_SETTINGS: SettingsRow = {
 
 export interface AttemptRow { id?: number; wordId: string; sessionId: string; game: GameType; role: Role; at: number; typed: string; correct: boolean; firstTry: boolean; hint: boolean }
 export type SessionKind = 'main' | 'extra' | 'free'
-export interface SessionRow { id: string; date: DateStr; kind: SessionKind; startedAt: number; endedAt: number | null; plan: SessionPlan; doneActivityIds: string[]; complete: boolean; coins: number }
+export interface SessionRow { id: string; date: DateStr; kind: SessionKind; startedAt: number; endedAt: number | null; plan: SessionPlan; doneActivityIds: string[]; complete: boolean; coins: number; startSnapshot?: AchievementSnapshot }
 export interface WalletRow { id?: number; at: number; delta: number; reason: string }
 export interface InventoryRow { itemId: string; count: number }
 export interface EarnedRow { id: string; earnedAt: number }

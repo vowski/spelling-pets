@@ -7,6 +7,7 @@ import type { SessionRow } from '../storage/db'
 import { Button } from '../ui/Button'
 import { ProgressDots } from '../ui/ProgressDots'
 import { SpeakButton } from '../ui/SpeakButton'
+import { Celebration } from './Celebration'
 import { ErrorBoundary } from './ErrorBoundary'
 import { useServices, useToday } from './services'
 import { completeActivity, finishSession, nextActivity, recordGameAttempt, startOrResumeSession, type SessionOutcome } from './sessionLogic'
@@ -45,7 +46,6 @@ export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
       const o = await finishSession(svc, current, today, now())
       setEarned(e => e + o.coins)
       setOutcome(o)
-      sfx.fanfare()
       setPhase('finished')
       return
     }
@@ -81,18 +81,7 @@ export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
 
   if (phase === 'loading' || !row) return <main className="screen"><p>Getting your adventure ready…</p></main>
 
-  if (phase === 'finished') {
-    return (
-      <main className="screen">
-        <section className="card">
-          <h1>Adventure complete! 🎉</h1>
-          <p className="praise">You earned 🐾 {earned}</p>
-          {outcome?.weeklyGoalJustMet && <p>🌟 You reached your weekly goal!</p>}
-          <Button size="big" onClick={() => navigate('/')}>Back home</Button>
-        </section>
-      </main>
-    )
-  }
+  if (phase === 'finished') return <main className="screen"><Celebration outcome={outcome!} earned={earned} onHome={() => navigate('/')} /></main>
 
   const visible = row.plan.activities.filter(a => GAME_COMPONENTS[a.gameType])
   const doneCount = visible.filter(a => row.doneActivityIds.includes(a.id)).length
