@@ -14,12 +14,12 @@ export function ParentArea() {
   return (
     <main className="screen" style={{ alignItems: 'stretch' }}>
       <div className="parent" style={{ margin: '0 auto' }}>
-        <header className="row" style={{ justifyContent: 'space-between' }}>
+        <header className="row no-print" style={{ justifyContent: 'space-between' }}>
           <h1>Grown-ups' dashboard</h1>
           <Button variant="ghost" onClick={() => { set(false); navigate('/') }}>Back to child mode</Button>
         </header>
         <nav className="tabs no-print">
-          {tabs.map(t => <NavLink key={t.path} to={`/parent/${t.path}`} className={({ isActive }) => (isActive ? 'active' : '')}>{t.label}</NavLink>)}
+          {tabs.filter(t => !t.hidden).map(t => <NavLink key={t.path} to={`/parent/${t.path}`} className={({ isActive }) => (isActive ? 'active' : '')}>{t.label}</NavLink>)}
         </nav>
         <Routes>
           <Route index element={<Navigate to={`/parent/${tabs[0].path}`} replace />} />
