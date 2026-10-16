@@ -4,6 +4,7 @@ import { PupPost } from './pupPost/PupPost'
 import { StoryTime } from './storyTime/StoryTime'
 import { TreasureHunt } from './treasureHunt/TreasureHunt'
 import type { GameProps } from './types'
+import { Hedgehog } from './hedgehog/Hedgehog'
 import { WordBuilder } from './builder/WordBuilder'
 import { SortPen } from './sortPen/SortPen'
 import { Burrow } from './burrow/Burrow'
@@ -24,4 +25,5 @@ export const GAME_COMPONENTS: Partial<Record<GameType, ComponentType<GameProps>>
   burrow: Burrow,
   sortPen: SortPen,
   builder: WordBuilder,
+  hedgehog: Hedgehog,
 }
