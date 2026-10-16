@@ -43,6 +43,20 @@ describe('streams', () => {
     expect(chooseNewMaterial(bank, makeState({ units: new Map([[u.unitId, u]]) }), 4)).toEqual({ kind: 'unit', unitId: unit.id, day: 2, wordIds: unit.wordIds.slice(3, 6) })
   })
 
+  it('offers again a unit abandoned before its Quick Check on an earlier day', () => {
+    const u: UnitState = { unitId: 'y3-revise-suffixes', status: 'checking', startedOn: '2026-10-14', completedOn: null, taughtWordIds: [] }
+    const s = makeState({ units: new Map([[u.unitId, u]]) })
+    expect(unitStream(bank, s)[0]).toBe('y3-revise-suffixes')
+    expect(chooseNewMaterial(bank, s, 4)).toMatchObject({ kind: 'unit', unitId: 'y3-revise-suffixes', day: 1 })
+  })
+
+  it('teaches untaught unit words on day 2 even after the day-1 game moved them out of box 0', () => {
+    const unit = bank.unitById.get('y3-un-dis-mis')!
+    const u: UnitState = { unitId: unit.id, status: 'learning', startedOn: '2026-10-14', completedOn: null, taughtWordIds: unit.wordIds.slice(0, 3) }
+    const progressList = unit.wordIds.map(id => prog(id, { box: 1, due: T }))
+    expect(chooseNewMaterial(bank, makeState({ units: new Map([[u.unitId, u]]), progressList }), 4)).toEqual({ kind: 'unit', unitId: unit.id, day: 2, wordIds: unit.wordIds.slice(3, 6) })
+  })
+
   it('puts new school words first, up to 6', () => {
     const items = ['w-because', 'w-friend', 'w-people', 'w-water', 'w-again', 'w-money', 'w-half'].map(id => ({ text: id.slice(2), wordId: id }))
     const s = makeState({ schoolLists: [{ id: 'l1', createdAt: T, testDate: '2026-10-17', items }] })

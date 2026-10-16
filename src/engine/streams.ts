@@ -29,13 +29,20 @@ export function y3WordStream(bank: Bank, state: LearnerState): string[] {
   return [...followOns, ...heads]
 }
 
+/** A unit left in 'checking' on an earlier day was abandoned before its Quick Check, so it counts as not started. */
+const abandoned = (state: LearnerState, unitId: string) => {
+  const u = state.units.get(unitId)
+  return u?.status === 'checking' && u.startedOn < state.today
+}
+
 export function unitStream(bank: Bank, state: LearnerState): string[] {
-  const fresh = bank.units.filter(u => !state.units.has(u.id))
+  const begun = (id: string) => state.units.has(id) && !abandoned(state, id)
+  const fresh = bank.units.filter(u => !begun(u.id))
   const gap = fresh.filter(u => u.year <= 2)
   const y3 = fresh.filter(u => u.year === 3).sort((a, b) => (a.schoolPriority ?? 0) - (b.schoolPriority ?? 0))
   const y4 = fresh.filter(u => u.year === 4)
   // Keep the two kinds balanced: whichever kind has had fewer units started goes first (Year 3 on a tie).
-  const started = (pred: (year: number) => boolean) => bank.units.filter(u => pred(u.year) && state.units.has(u.id)).length
+  const started = (pred: (year: number) => boolean) => bank.units.filter(u => pred(u.year) && begun(u.id)).length
   const y3First = started(y => y === 3) <= started(y => y <= 2)
   const [first, second] = y3First ? [y3, gap] : [gap, y3]
   const out: string[] = []
@@ -51,7 +58,8 @@ export function chooseNewMaterial(bank: Bank, state: LearnerState, n: number): N
   if (cont) {
     const unit = bank.unitById.get(cont.unitId)
     if (unit) {
-      const wordIds = unit.wordIds.filter(id => !cont.taughtWordIds.includes(id) && isNew(state, id)).slice(0, WORDS_PER_UNIT_DAY)
+      // Untaught rather than box 0: the day-1 unit game and Quick Check move words out of box 0 without teaching them.
+      const wordIds = unit.wordIds.filter(id => !cont.taughtWordIds.includes(id) && getProgress(state, id).box < 3).slice(0, WORDS_PER_UNIT_DAY)
       return { kind: 'unit', unitId: unit.id, day: 2, wordIds }
     }
   }
