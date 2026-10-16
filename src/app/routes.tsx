@@ -1,4 +1,6 @@
 import type { ReactElement } from 'react'
+import { PetHome } from '../pet/PetHome'
+import { Shop } from '../pet/Shop'
 import { FreePlay, FreePlayGame } from './FreePlay'
 import { Home } from './Home'
 import { SessionRunner } from './SessionRunner'
@@ -12,4 +14,6 @@ export const CHILD_ROUTES: AppRoute[] = [
   { path: '/extra', element: <SessionRunner kind="extra" /> },
   { path: '/play', element: <FreePlay /> },
   { path: '/play/:game', element: <FreePlayGame /> },
+  { path: '/shop', element: <Shop /> },
+  { path: '/pet', element: <PetHome /> },
 ]
