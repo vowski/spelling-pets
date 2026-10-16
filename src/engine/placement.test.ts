@@ -71,6 +71,19 @@ describe('placement', () => {
     expect(updates.find(u => u.wordId === other)).toBeUndefined()
   })
 
+  it('a re-run never demotes a word she already knows: a miss only makes it due for review', () => {
+    let plan = buildPlacementPlan(bank, 7)
+    plan = answerAll(plan, 'y2cew', 0)
+    const [secure, learning] = plan.find(l => l.level === 'y2cew')!.sampledIds
+    const existing = new Map<string, WordProgress>([
+      [secure, prog(secure, { box: 4, due: '2026-10-29', secureOn: '2026-10-01' })],
+      [learning, prog(learning, { box: 2, due: '2026-10-17' })],
+    ])
+    const { updates } = finaliseLevels(plan, bank, existing, T)
+    expect(updates.find(u => u.wordId === secure)).toMatchObject({ box: 4, due: T, secureOn: '2026-10-01' })
+    expect(updates.find(u => u.wordId === learning)).toMatchObject({ box: 2, due: T })
+  })
+
   it('leaves partly answered levels pending and reports completion', () => {
     let plan = buildPlacementPlan(bank, 7)
     plan = recordPlacementAnswer(plan, plan[0].sampledIds[0], true)

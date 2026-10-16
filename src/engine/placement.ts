@@ -59,6 +59,9 @@ export function finaliseLevels(
       const p = current(id)
       if (l.answers[id]) {
         updates.set(id, { ...p, box: Math.max(p.box, 3) as Box, due: p.box > 3 ? p.due : spreadDue(today, k++), introducedOn: p.introducedOn ?? today })
+      } else if (p.box >= 1) {
+        // Placement is neutral: nothing is demoted on a re-run, a miss just brings the word up for review.
+        updates.set(id, { ...p, due: p.due !== null && p.due < today ? p.due : today })
       } else {
         updates.set(id, { ...p, box: 1, due: addDays(today, 1), introducedOn: p.introducedOn ?? today })
       }
