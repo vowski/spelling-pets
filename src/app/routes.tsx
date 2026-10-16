@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react'
+import { ParentArea } from '../parent/ParentArea'
 import { PetHome } from '../pet/PetHome'
 import { PetPark } from '../pet/PetPark'
 import { RewardPath } from '../pet/RewardPath'
@@ -24,4 +25,5 @@ export const CHILD_ROUTES: AppRoute[] = [
   { path: '/park', element: <PetPark /> },
   { path: '/trophies', element: <Trophies /> },
   { path: '/rewards', element: <RewardPath /> },
+  { path: '/parent/*', element: <ParentArea /> },
 ]

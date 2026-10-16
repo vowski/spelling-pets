@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { diffDays } from '../engine/dates'
 import { isPlacementDone } from '../engine/placement'
@@ -9,7 +10,7 @@ import { HOME_LINKS } from './homeLinks'
 import { useServices, useToday } from './services'
 
 export function Home() {
-  const { repo } = useServices()
+  const { repo, sfx } = useServices()
   const today = useToday()
   const navigate = useNavigate()
   const settings = useLiveQuery(() => repo.getSettings(), [repo])
@@ -17,6 +18,9 @@ export function Home() {
   const dates = useLiveQuery(() => repo.completeSessionDates(), [repo])
   const placement = useLiveQuery(() => repo.getPlacement(), [repo])
   const secure = useLiveQuery(() => repo.db.progress.where('box').aboveOrEqual(4).count(), [repo])
+  useEffect(() => {
+    if (settings?.musicOn) { sfx.startMusic(); return () => sfx.stopMusic() }
+  }, [settings?.musicOn, sfx])
   if (!settings || !dates || !placement || secure === undefined) return <main className="screen"><p>Loading…</p></main>
 
   const week = weekProgress(dates, today, settings.weeklyGoalDays)

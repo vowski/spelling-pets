@@ -1,4 +1,4 @@
-export interface Sfx { correct(): void; gentle(): void; pop(): void; coin(): void; fanfare(): void; setEnabled(on: boolean): void }
+export interface Sfx { correct(): void; gentle(): void; pop(): void; coin(): void; fanfare(): void; setEnabled(on: boolean): void; startMusic(): void; stopMusic(): void }
 
 export function createSfx(enabled = true): Sfx {
   let on = enabled
@@ -21,6 +21,8 @@ export function createSfx(enabled = true): Sfx {
     osc.start(c.currentTime + start)
     osc.stop(c.currentTime + start + dur)
   }
+  let music: ReturnType<typeof setInterval> | undefined
+  const NOTES = [523, 587, 659, 784, 880]
   return {
     correct: () => { tone(660, 0, 0.12); tone(880, 0.1, 0.2) },
     gentle: () => tone(440, 0, 0.25, 'triangle', 0.08),
@@ -28,5 +30,10 @@ export function createSfx(enabled = true): Sfx {
     coin: () => { tone(988, 0, 0.08); tone(1319, 0.07, 0.16) },
     fanfare: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.12, 0.28, 'triangle', 0.12)),
     setEnabled: v => { on = v },
+    startMusic: () => {
+      if (music) return
+      music = setInterval(() => tone(NOTES[Math.floor(Math.random() * NOTES.length)], 0, 1.2, 'sine', 0.03), 2400)
+    },
+    stopMusic: () => { clearInterval(music); music = undefined },
   }
 }
