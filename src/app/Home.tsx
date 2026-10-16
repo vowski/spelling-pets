@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link, useNavigate } from 'react-router'
+import { diffDays } from '../engine/dates'
 import { isPlacementDone } from '../engine/placement'
 import { weekProgress } from '../engine/weekly'
 import { PetSpot } from '../pet/PetSpot'
@@ -15,10 +16,13 @@ export function Home() {
   const main = useLiveQuery(() => repo.getSessionForDay(today, 'main'), [repo, today])
   const dates = useLiveQuery(() => repo.completeSessionDates(), [repo])
   const placement = useLiveQuery(() => repo.getPlacement(), [repo])
-  if (!settings || !dates || !placement) return <main className="screen"><p>Loading…</p></main>
+  const secure = useLiveQuery(() => repo.db.progress.where('box').aboveOrEqual(4).count(), [repo])
+  if (!settings || !dates || !placement || secure === undefined) return <main className="screen"><p>Loading…</p></main>
 
   const week = weekProgress(dates, today, settings.weeklyGoalDays)
   const done = main?.complete === true
+  const lastDay = dates.at(-1)
+  const missedYou = lastDay !== undefined && diffDays(lastDay, today) >= 3
   return (
     <main className="screen">
       <header className="row" style={{ width: '100%', justifyContent: 'space-between' }}>
@@ -30,7 +34,7 @@ export function Home() {
           </span>
         </div>
       </header>
-      <PetSpot settings={settings} placementDone={isPlacementDone(placement)} />
+      <PetSpot settings={settings} placementDone={isPlacementDone(placement)} secureTotal={secure} missedYou={missedYou} />
       {!done ? (
         <Button size="big" onClick={() => navigate('/session')}>{main ? 'Carry on with today’s adventure!' : 'Start today’s adventure!'}</Button>
       ) : (
