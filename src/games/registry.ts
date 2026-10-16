@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import type { GameType } from '../engine/types'
 import { PupPost } from './pupPost/PupPost'
+import { StoryTime } from './storyTime/StoryTime'
 import { TreasureHunt } from './treasureHunt/TreasureHunt'
 import type { GameProps } from './types'
 import { UnitCheck } from './unitCheck/UnitCheck'
@@ -12,4 +13,5 @@ export const GAME_COMPONENTS: Partial<Record<GameType, ComponentType<GameProps>>
   workshop: Workshop,
   treasureHunt: TreasureHunt,
   unitCheck: UnitCheck,
+  storyTime: StoryTime,
 }
