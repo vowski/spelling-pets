@@ -7,7 +7,10 @@ import { Button } from '../ui/Button'
 
 const when = (ms: number) => new Date(ms).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 
-export function DataTab({ reload = () => window.location.reload() }: { reload?: () => void }) {
+// Reload without the #/parent/... hash, so after a reset or restore the app opens at Home, not the PIN gate.
+const reloadHome = () => window.location.replace(window.location.pathname + window.location.search)
+
+export function DataTab({ reload = reloadHome }: { reload?: () => void }) {
   const { repo, clock } = useServices()
   const today = useToday()
   const settings = useLiveQuery(() => repo.getSettings(), [repo])
