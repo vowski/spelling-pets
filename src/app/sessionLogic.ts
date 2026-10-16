@@ -108,6 +108,8 @@ export async function finishSession(svc: Svc, row: SessionRow, today: DateStr, n
   const after = await buildSnapshot(repo, bank)
   const awards = await settleAchievements(repo, start, after, nowMs, makeRng(hashString(row.id)))
   const earnedRewards = await settleRealRewards(repo, bank, today)
+  // Record the hatch here, not only on the hatch screen, so a closed window can't leave it unset.
+  if (!settings.hatched && after.placementDone === 1) await repo.updateSettings({ hatched: true })
   void writeAutoBackup(repo, today, nowMs) // last, so the backup includes the awards
   return {
     coins, weeklyGoalJustMet, awards, earnedRewards,

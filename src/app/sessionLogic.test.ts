@@ -101,4 +101,13 @@ describe('session logic', () => {
     await svc.repo.saveSession(row)
     expect(await finishSession(svc, row, T, 9)).toMatchObject({ hatched: false, stageBefore: 'baby', stageAfter: 'baby' })
   })
+  it('records the pet as hatched when the Treasure Hunt finishes, even if the hatch screen is never tapped', async () => {
+    const svc = fresh()
+    const startSnapshot = await buildSnapshot(svc.repo, bank)
+    await svc.repo.savePlacement(buildPlacementPlan(bank, 1).map(l => ({ ...l, status: 'done' as const })))
+    const row: SessionRow = { id: 's1', date: T, kind: 'main', startedAt: 1, endedAt: null, doneActivityIds: [], complete: false, coins: 0, startSnapshot, plan: { kind: 'placement', newMaterial: { kind: 'none' }, activities: [] } }
+    await svc.repo.saveSession(row)
+    expect(await finishSession(svc, row, T, 9)).toMatchObject({ hatched: true, stageAfter: 'baby' })
+    expect((await svc.repo.getSettings()).hatched).toBe(true)
+  })
 })
