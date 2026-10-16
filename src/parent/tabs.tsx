@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react'
 import { Overview } from './Overview'
 import { PrintSheet } from './PrintSheet'
+import { RewardsTab } from './RewardsTab'
 import { SchoolWordsTab } from './SchoolWordsTab'
 import { SettingsTab } from './SettingsTab'
 import { StandardsTab } from './StandardsTab'
@@ -14,6 +15,7 @@ export const PARENT_TABS: ParentTab[] = [
   { path: 'standards', label: 'School Standards', order: 2, element: <StandardsTab /> },
   { path: 'words', label: 'Words', order: 3, element: <WordsTab /> },
   { path: 'school', label: 'School Words', order: 4, element: <SchoolWordsTab /> },
+  { path: 'rewards', label: 'Rewards', order: 5, element: <RewardsTab /> },
   { path: 'settings', label: 'Settings', order: 6, element: <SettingsTab /> },
   { path: 'print', label: 'Print', order: 99, hidden: true, element: <PrintSheet /> },
 ]
