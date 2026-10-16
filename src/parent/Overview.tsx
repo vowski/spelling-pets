@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router'
 import { useServices, useToday } from '../app/services'
 import { computeStats } from '../engine/stats'
+import { usePersisted } from '../app/usePersisted'
 import { useSpeechAvailable } from '../speech/useSpeech'
 import { BarChart } from './charts/BarChart'
 import { LineChart } from './charts/LineChart'
@@ -13,6 +14,7 @@ export function Overview() {
   const { repo, bank, clock } = useServices()
   const today = useToday()
   const canSpeak = useSpeechAvailable()
+  const persisted = usePersisted()
   const data = useLiveQuery(async () => {
     const [settings, progress, units, sessions, attempts] = await Promise.all([repo.getSettings(), repo.getAllProgress(), repo.getUnits(), repo.allSessions(), repo.db.attempts.toArray()])
     return { settings, progress, units, sessions, attempts }
@@ -26,6 +28,7 @@ export function Overview() {
   return (
     <section>
       {canSpeak === false && <p className="panel chip warn" style={{ display: 'block' }}>No British voice was found on this laptop, so spelling games show each word briefly instead of saying it. Check Settings → Voice.</p>}
+      {persisted === false && <p className="panel">This browser may clear saved progress if the laptop runs low on space. Turn on automatic backup in the Data tab.</p>}
       {stale && <p className="panel chip warn" style={{ display: 'block' }}>Your progress hasn't been backed up recently. <Link to="/parent/data">Set up auto-backup in the Data tab.</Link></p>}
       <div className="panel">
         <h2>This week</h2>

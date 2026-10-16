@@ -6,6 +6,7 @@ import { Egg } from '../pet/Egg'
 import { SPECIES, SPECIES_ORDER } from '../pet/species'
 import type { PetSpecies } from '../storage/db'
 import { hashPin, isValidPin, newSalt } from './pin'
+import { requestPersistence } from './storageCheck'
 
 export function FirstRun() {
   const { repo } = useServices()
@@ -25,6 +26,7 @@ export function FirstRun() {
   }
   const finish = async () => {
     if (!species) return
+    void requestPersistence()
     const pinSalt = newSalt()
     await repo.updateSettings({
       childName: childName.trim(), pinSalt, pinHash: await hashPin(pin, pinSalt),

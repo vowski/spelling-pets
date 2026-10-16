@@ -1,7 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import App from './App'
 import { makeTestServices } from '../test/render'
+
+// App imports UpdatePrompt, whose service-worker module only exists in a Vite build.
+vi.mock('./pwaRegister', () => ({ useRegisterSW: () => ({ needRefresh: [false, () => {}], offlineReady: [false, () => {}], updateServiceWorker: () => {} }) }))
 
 describe('App', () => {
   it('starts with first-run setup', async () => {

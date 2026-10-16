@@ -6,12 +6,14 @@ import { createAppServices } from './bootstrap'
 import { FirstRun } from './FirstRun'
 import { CHILD_ROUTES } from './routes'
 import { ServicesProvider, useServices, type Services } from './services'
+import { UpdatePrompt } from './UpdatePrompt'
 
 export default function App({ services }: { services?: Services }) {
   const [base] = useState(() => services ?? createAppServices())
   return (
     <ServicesProvider value={base}>
       <WithLiveBank />
+      {!services && <UpdatePrompt />}
     </ServicesProvider>
   )
 }

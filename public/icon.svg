@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#5fb88f"/>
+  <circle cx="256" cy="300" r="92" fill="#fff8ec"/>
+  <ellipse cx="144" cy="204" rx="40" ry="52" fill="#fff8ec"/>
+  <ellipse cx="212" cy="140" rx="40" ry="54" fill="#fff8ec"/>
+  <ellipse cx="300" cy="140" rx="40" ry="54" fill="#fff8ec"/>
+  <ellipse cx="368" cy="204" rx="40" ry="52" fill="#fff8ec"/>
+  <text x="256" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="96" fill="#3f8f6b">Aa</text>
+</svg>
