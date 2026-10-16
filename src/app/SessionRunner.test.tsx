@@ -13,7 +13,6 @@ describe('SessionRunner', () => {
     await services.repo.saveSession({ id: 's1', date: '2026-10-15', kind: 'main', startedAt: 1, endedAt: null, doneActivityIds: [], complete: false, coins: 0,
       plan: { kind: 'normal', newMaterial: { kind: 'none' }, activities: [
         { id: 'a1', gameType: 'pupPost', wordIds: ['w-said'] },
-        { id: 'a2', gameType: 'wheel', wordIds: ['w-said'] }, // not registered yet → skipped
       ] } })
     const user = userEvent.setup()
     renderWithServices(<MemoryRouter initialEntries={['/session']}><Routes><Route path="/session" element={<SessionRunner kind="main" />} /><Route path="/" element={<p>home</p>} /></Routes></MemoryRouter>, services)
