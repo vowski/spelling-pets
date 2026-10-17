@@ -4,6 +4,7 @@ import { HashRouter, Route, Routes } from 'react-router'
 import { buildBank } from '../content'
 import { createAppServices } from './bootstrap'
 import { FirstRun } from './FirstRun'
+import { ParentRelock } from '../parent/ParentArea'
 import { CHILD_ROUTES } from './routes'
 import { ServicesProvider, useServices, type Services } from './services'
 import { UpdatePrompt } from './UpdatePrompt'
@@ -37,6 +38,7 @@ function WithLiveBank() {
       <div data-font={settings.dyslexiaFont ? 'dyslexic' : undefined} style={{ minHeight: '100%' }}>
         {!settings.firstRunDone ? <FirstRun /> : (
           <HashRouter>
+            <ParentRelock />
             <Routes>
               {CHILD_ROUTES.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
             </Routes>

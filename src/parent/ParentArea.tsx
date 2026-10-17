@@ -1,10 +1,19 @@
-import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router'
+import { useEffect } from 'react'
+import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { create } from 'zustand'
 import { Button } from '../ui/Button'
 import { PinGate } from './PinGate'
 import { PARENT_TABS } from './tabs'
 
 export const useParentLock = create<{ unlocked: boolean; set: (v: boolean) => void }>(set => ({ unlocked: false, set: v => set({ unlocked: v }) }))
+
+/** Locks the dashboard whenever the app is anywhere outside it, however it was left (back button, Alt+←). */
+export function ParentRelock() {
+  const { pathname } = useLocation()
+  const set = useParentLock(s => s.set)
+  useEffect(() => { if (!pathname.startsWith('/parent')) set(false) }, [pathname, set])
+  return null
+}
 
 export function ParentArea() {
   const { unlocked, set } = useParentLock()
