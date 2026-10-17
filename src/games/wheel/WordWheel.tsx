@@ -9,10 +9,11 @@ import type { GameProps } from '../types'
 import { useLater } from '../useAdvance'
 import { WheelLetters } from './WheelLetters'
 
-export const HINT_COST = 5
+/** Free hints per puzzle; the button counts them down. Using hints still lowers the puzzle's stars. */
+export const HINTS_PER_PUZZLE = 3
 
 export function WordWheel({ activity, onAttempt, onDone }: GameProps) {
-  const { bank, repo, speaker, sfx, clock } = useServices()
+  const { bank, speaker, sfx } = useServices()
   const later = useLater()
   const puzzle = useMemo(() => puzzlesForAnchor(activity.wordIds[0] ?? '')[0], [activity.wordIds])
   const anchor = puzzle ? bank.words.get(puzzle.anchorWordId)?.text ?? '' : ''
@@ -22,6 +23,7 @@ export function WordWheel({ activity, onAttempt, onDone }: GameProps) {
   const [bonus, setBonus] = useState<string[]>([])
   const [revealed, setRevealed] = useState<string[]>([])
   const [message, setMessage] = useState('')
+  const [hintsLeft, setHintsLeft] = useState(HINTS_PER_PUZZLE)
   const hints = useRef(0)
   const hinted = useRef(new Set<string>())
   const pending = useRef<number | null>(null)
@@ -83,8 +85,8 @@ export function WordWheel({ activity, onAttempt, onDone }: GameProps) {
     const idx = letters.findIndex((ch, i) => ch === e.key.toLowerCase() && !path.includes(i))
     if (idx >= 0) add(idx)
   }
-  const hint = async () => {
-    if (!(await repo.spendCoins(HINT_COST, 'Wheel hint', clock.now().getTime()))) { setMessage(`You need ${HINT_COST} 🐾 for a hint.`); return }
+  const hint = () => {
+    if (hintsLeft <= 0) return
     const unfound = puzzle.grid.filter(p => !found.includes(p.word)).sort((a, b) => Number(a.word === anchor) - Number(b.word === anchor))
     const target = unfound[0]
     if (!target) return
@@ -92,6 +94,7 @@ export function WordWheel({ activity, onAttempt, onDone }: GameProps) {
     if (k) setRevealed(r => [...r, k])
     hinted.current.add(target.word)
     hints.current++
+    setHintsLeft(n => n - 1)
     setMessage('💡 A letter has been revealed.')
   }
   const shown = (k: string) => revealed.includes(k) || cells.get(k)!.words.some(w => found.includes(w))
@@ -120,7 +123,7 @@ export function WordWheel({ activity, onAttempt, onDone }: GameProps) {
       <div className="row">
         <Button variant="ghost" onClick={() => { setLetters(shuffle(letters, makeRng(hashString(letters.join('') + found.length)))); setPath([]) }}>🔀 Shuffle</Button>
         <Button onClick={() => submit()}>✔ Enter</Button>
-        <Button variant="secondary" onClick={() => void hint()}>💡 Hint ({HINT_COST} 🐾)</Button>
+        <Button variant="secondary" disabled={hintsLeft <= 0} onClick={hint}>💡 Hint ({hintsLeft} left)</Button>
       </div>
       <p className="muted">Bonus words: {bonus.length} 🫙</p>
     </GameFrame>

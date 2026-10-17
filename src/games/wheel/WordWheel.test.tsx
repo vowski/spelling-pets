@@ -35,16 +35,18 @@ describe('WordWheel', () => {
     expect(onDone).toHaveBeenCalledWith({ wheel: { puzzles: 1, threeStars: 1, bonusWords: 1 } })
   })
 
-  it('spends coins on a hint and marks the word as hinted', async () => {
+  it('gives 3 free hints per puzzle, counting down on the button', async () => {
     const services = makeTestServices()
-    await services.repo.addCoins(5, 'test', 1)
-    const onAttempt = vi.fn()
+    await services.repo.addCoins(20, 'test', 1)
     const user = userEvent.setup()
-    renderWithServices(<WordWheel activity={activity} words={[]} onAttempt={onAttempt} onDone={() => {}} />, services)
+    renderWithServices(<WordWheel activity={activity} words={[]} onAttempt={() => {}} onDone={() => {}} />, services)
+    expect(screen.getByRole('button', { name: '💡 Hint (3 left)' })).toBeEnabled()
     await user.click(screen.getByRole('button', { name: /Hint/ }))
-    expect(await services.repo.balance()).toBe(0)
+    expect(await screen.findByRole('button', { name: '💡 Hint (2 left)' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /Hint/ }))
-    expect(await screen.findByText('You need 5 🐾 for a hint.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Hint/ }))
+    expect(await screen.findByRole('button', { name: '💡 Hint (0 left)' })).toBeDisabled()
+    expect(await services.repo.balance()).toBe(20) // hints are free
   })
 
   it('selects letters by clicking', async () => {
