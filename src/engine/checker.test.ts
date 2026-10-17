@@ -23,8 +23,15 @@ describe('checkWord', () => {
     ["don't", 'DON’T'],
     ['Monday', 'MONDAY'],
     ['Monday', ' Monday '],
+    ['because', 'because.'],
+    ['because', 'because!'],
+    ['Monday', 'Monday.'],
   ])('accepts %s typed as %j', (target, typed) => {
     expect(checkWord(w(target), typed).correct).toBe(true)
+  })
+  it('still marks a misspelling with a full stop as wrong', () => {
+    expect(checkWord(w('because'), 'becuase.').correct).toBe(false)
+    expect(checkWord(w('because'), '.').correct).toBe(false)
   })
   it('flags a missing capital on a case-sensitive word', () => {
     expect(checkWord(w('Monday'), 'monday')).toMatchObject({ correct: false, capitalOnly: true })

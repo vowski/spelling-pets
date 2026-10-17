@@ -12,8 +12,9 @@ export interface WordCheck {
 }
 
 export function checkWord(word: { text: string; caseSensitive: boolean }, rawTyped: string): WordCheck {
-  const typed = normalise(rawTyped)
   const target = normalise(word.text)
+  // A habit from Story Time: one full stop, ! or ? after a single word isn't a spelling mistake.
+  const typed = /[.!?]$/.test(target) ? normalise(rawTyped) : normalise(rawTyped).replace(/(?<=\S)[.!?]$/, '')
   const sameIgnoringCase = typed.toLowerCase() === target.toLowerCase() && typed.length > 0
   const capsLock = typed === target.toUpperCase() && typed.length > 0
   const correct = typed === target || (sameIgnoringCase && (!word.caseSensitive || capsLock))
