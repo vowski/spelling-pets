@@ -36,6 +36,12 @@ export interface Speaker {
   configure(o: { voiceURI?: string | null; rate?: number }): void
 }
 
+// Every speak() or cancel() starts a new turn on its speaker, so a running sayWord can tell that something else
+// was said (e.g. "Hear it again" or a 🔊 button) and stop instead of carrying on over it.
+const turns = new WeakMap<Speaker, number>()
+const nextTurn = (s: Speaker) => { turns.set(s, (turns.get(s) ?? 0) + 1) }
+const turnOf = (s: Speaker) => turns.get(s) ?? 0
+
 export interface SpeakerOptions {
   voiceURI: string | null
   rate: number
@@ -75,13 +81,14 @@ export function createSpeaker(synth: SpeechSynthesis | undefined, opts: SpeakerO
       clearTimeout(timer)
       resolve(ok)
     }
-    const timer = setTimeout(() => finish(true), 1500 + 120 * text.length)
+    // Slower speech takes longer, so the safety timeout must not cut a long sentence short at a slow rate.
+    const timer = setTimeout(() => finish(true), 1500 + (120 * text.length) / rate)
     u.onend = () => finish(true)
     u.onerror = e => finish(e.error === 'interrupted' || e.error === 'canceled')
     synth!.speak(u)
   })
 
-  return {
+  const speaker: Speaker = {
     ready: () => readyPromise,
     available: () => !!synth && current() !== null,
     voices: () => rankVoices(list()),
@@ -90,8 +97,9 @@ export function createSpeaker(synth: SpeechSynthesis | undefined, opts: SpeakerO
       if (o.voiceURI !== undefined) voiceURI = o.voiceURI
       if (o.rate !== undefined) rate = o.rate
     },
-    cancel: () => synth?.cancel(),
+    cancel: () => { nextTurn(speaker); synth?.cancel() },
     speak: async text => {
+      nextTurn(speaker)
       await readyPromise
       for (let voice = current(); synth && voice; voice = current()) {
         synth.cancel()
@@ -100,30 +108,39 @@ export function createSpeaker(synth: SpeechSynthesis | undefined, opts: SpeakerO
       }
     },
   }
+  return speaker
 }
 
 export function createStubSpeaker(log: string[] = [], available = true): Speaker {
-  return {
+  const speaker: Speaker = {
     ready: async () => {},
     available: () => available,
     voices: () => [],
     currentVoice: () => null,
     configure: () => {},
-    cancel: () => {},
+    cancel: () => nextTurn(speaker),
     speak: async text => {
+      nextTurn(speaker)
       if (available) log.push(text)
     },
   }
+  return speaker
 }
 
 export const pause = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
 
+/** Word, sentence, word. Stops early if anything else is spoken (or speech is cancelled) part-way through. */
 export async function sayWord(speaker: Speaker, word: { text: string; sentence: string }, gapMs = 450): Promise<void> {
-  await speaker.speak(word.text)
-  await pause(gapMs)
-  if (word.sentence) {
-    await speaker.speak(word.sentence)
-    await pause(gapMs)
+  const steps = word.sentence ? [word.text, word.sentence, word.text] : [word.text, word.text]
+  let mine = 0
+  for (const [k, text] of steps.entries()) {
+    if (k > 0) {
+      await pause(gapMs)
+      if (turnOf(speaker) !== mine) return
+    }
+    const spoken = speaker.speak(text)
+    mine = turnOf(speaker)
+    await spoken
+    if (turnOf(speaker) !== mine) return
   }
-  await speaker.speak(word.text)
 }

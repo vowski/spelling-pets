@@ -83,6 +83,27 @@ describe('createSpeaker', () => {
     await p
     expect(done).toBe(true)
   })
+  it('waits longer at slow speech rates before deciding a long sentence has finished', async () => {
+    vi.useFakeTimers()
+    const synth = fakeSynth(VOICES, false)
+    const sp = createSpeaker(synth as unknown as SpeechSynthesis, { voiceURI: null, rate: 0.5, makeUtterance: make })
+    let done = false
+    const p = sp.speak('hello').then(() => { done = true })
+    await vi.advanceTimersByTimeAsync(1500 + 120 * 5 + 10)
+    expect(done).toBe(false)
+    await vi.advanceTimersByTimeAsync(120 * 5)
+    await p
+    expect(done).toBe(true)
+  })
+  it('stops a running word, sentence, word sequence when something else is spoken', async () => {
+    const synth = fakeSynth(VOICES)
+    const sp = createSpeaker(synth as unknown as SpeechSynthesis, { voiceURI: null, rate: 1, makeUtterance: make })
+    const sequence = sayWord(sp, { text: 'said', sentence: 'Mum said hello.' }, 0)
+    await sp.speak('Have a go first!')
+    await sequence
+    await new Promise(r => setTimeout(r, 10))
+    expect(synth.spoken.map(u => u.text)).toEqual(['said', 'Have a go first!'])
+  })
   it('waits for voices that arrive late, and gives up after the timeout', async () => {
     vi.useFakeTimers()
     const voices: VoiceLike[] = []
@@ -118,5 +139,21 @@ describe('stub speaker and sayWord', () => {
     expect(log).toEqual(['said', 'Mum said hello.', 'said'])
     await sayWord(sp, { text: 'crocodile', sentence: '' }, 0)
     expect(log.slice(3)).toEqual(['crocodile', 'crocodile'])
+  })
+  it('a new sayWord ("Hear it again") stops the one still running instead of mixing them', async () => {
+    const log: string[] = []
+    const sp = createStubSpeaker(log)
+    const first = sayWord(sp, { text: 'said', sentence: 'Mum said hello.' }, 0)
+    const again = sayWord(sp, { text: 'said', sentence: 'Mum said hello.' }, 0)
+    await Promise.all([first, again])
+    expect(log).toEqual(['said', 'said', 'Mum said hello.', 'said'])
+  })
+  it('cancel stops a running sayWord', async () => {
+    const log: string[] = []
+    const sp = createStubSpeaker(log)
+    const sequence = sayWord(sp, { text: 'said', sentence: 'Mum said hello.' }, 0)
+    sp.cancel()
+    await sequence
+    expect(log).toEqual(['said'])
   })
 })
