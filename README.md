@@ -30,8 +30,12 @@ A backup is then saved after every session. You can also **Download backup** at 
 A folder on the laptop keeps everything local. A OneDrive folder also protects against losing the laptop, but it copies her progress to Microsoft's cloud.
 
 ## Voices
-Edge's "Natural" British voices (e.g. Libby, Sonia) sound best; they send the spoken words to Microsoft's speech service.
-Offline voices (Hazel, George, Susan) send nothing. Choose in **Settings → Voice**.
+The online British voices sound best, and the app picks one automatically:
+- In **Google Chrome**: *Google UK English Female* (the default) or *Google UK English Male*. They send the spoken words to Google's speech service.
+- In **Microsoft Edge**: the *Natural* voices (e.g. Libby, Sonia, Ryan). They send the spoken words to Microsoft's speech service.
+
+The offline Windows voices (Hazel, George, Susan) send nothing but sound more robotic; the app falls back to them when the laptop is offline.
+To choose a particular voice, use **Grown-ups → Settings → Voice** and press **Test voice**.
 
 ## For developers
 `npm install` · `npm run dev` · `npm test` · `npm run build` · `npm run e2e` · `npm run content:dict` · `npm run content:wheel` · `npm run icons`

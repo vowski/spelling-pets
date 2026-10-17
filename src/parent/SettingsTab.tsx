@@ -48,7 +48,7 @@ export function SettingsTab() {
         </label>{' '}
         <Button variant="secondary" onClick={() => { speaker.configure({ voiceURI: form.voiceURI, rate: form.speechRate }); void speaker.speak("Hello! Let's practise our spellings.") }}>Test voice</Button>
         <p><label>Speaking speed <input aria-label="Speaking speed" type="range" min={0.6} max={1.1} step={0.05} value={form.speechRate} onChange={e => set('speechRate', Number(e.target.value))} /> {form.speechRate.toFixed(2)}</label></p>
-        <p className="muted">Voices whose names include "Natural" are online voices: Edge sends the words being spoken to Microsoft to create the audio. Other voices work offline.</p>
+        <p className="muted">Voices whose names include "Natural" (Edge) or start with "Google" (Chrome) are online voices: the browser sends the words being spoken to Microsoft or Google to create the audio. Other voices work offline.</p>
       </div>
       <div className="panel">
         <h2>Practice</h2>

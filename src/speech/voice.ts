@@ -7,7 +7,8 @@ export interface VoiceLike {
 
 function score(v: VoiceLike): number {
   const gb = /^en[-_]GB$/i.test(v.lang)
-  if (gb && /natural/i.test(v.name)) return 0
+  // Best: Edge's online Natural voices and Chrome's Google UK English voices; the local Windows ones sound robotic.
+  if (gb && (/natural/i.test(v.name) || /^google/i.test(v.name))) return 0
   if (gb && v.localService) return 1
   if (gb) return 2
   if (/^en/i.test(v.lang)) return 3

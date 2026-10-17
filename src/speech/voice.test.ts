@@ -31,6 +31,15 @@ describe('voices', () => {
       'Microsoft Libby Online (Natural) - English (United Kingdom)', 'Microsoft Hazel - English (United Kingdom)',
       'Some GB voice', 'Microsoft David - English (United States)'])
   })
+  // In Chrome on Windows the robotic desktop voices are local and the Google ones are online: prefer Google's.
+  it('prefers Google UK English voices (Chrome) over the Windows desktop voices, Female by default', () => {
+    const chrome = [v('Microsoft George - English (United Kingdom)', 'en-GB'), v('Microsoft Hazel - English (United Kingdom)', 'en-GB'),
+      v('Google UK English Male', 'en-GB', false), v('Google UK English Female', 'en-GB', false), v('Google US English', 'en-US', false)]
+    expect(rankVoices(chrome).map(x => x.name)).toEqual(['Google UK English Female', 'Google UK English Male',
+      'Microsoft George - English (United Kingdom)', 'Microsoft Hazel - English (United Kingdom)', 'Google US English'])
+    expect(chooseVoice(chrome, null)?.name).toBe('Google UK English Female')
+    expect(chooseVoice(chrome, 'Google UK English Male')?.name).toBe('Google UK English Male')
+  })
   it('honours a preferred voice and falls back sensibly', () => {
     expect(chooseVoice(VOICES, 'Some GB voice')?.name).toBe('Some GB voice')
     expect(chooseVoice(VOICES, 'missing')?.name).toContain('Libby')
