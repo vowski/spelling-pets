@@ -2,24 +2,34 @@ import type { Bank } from '../content'
 import { wordId } from '../content/parse'
 import { addDays, type DateStr } from './dates'
 
-export function parseSchoolWords(raw: string): string[] {
+/**
+ * Reads a pasted or typed school list. Each line (or comma-separated piece) may start with a number or a bullet,
+ * and words typed on one line with spaces become separate words. Pieces that are not a plain word come back in
+ * `skipped` so the grown-up can see what was left out.
+ */
+export function parseSchoolWords(raw: string): { words: string[]; skipped: string[] } {
   const seen = new Set<string>()
-  const out: string[] = []
+  const words: string[] = []
+  const skipped: string[] = []
   for (const part of raw.split(/[\n,;\t]+/)) {
-    const piece = part
+    const line = part
       .replace(/[‘’]/g, "'")
       .replace(/[“”]/g, '"')
       .trim()
-      .replace(/^(?:\d+\s*[.)]|[-*•·])\s*/, '')
-      .replace(/^"+|["!?:.]+$/g, '')
-      .trim()
-    if (!/^[A-Za-z][A-Za-z' -]*$/.test(piece)) continue
-    const k = piece.toLowerCase()
-    if (seen.has(k)) continue
-    seen.add(k)
-    out.push(piece)
+      .replace(/^(?:\d+\s*[.)]\s*|\d+\s+|[-–—*•·]\s*)/, '')
+    for (const token of line.split(/\s+/)) {
+      const piece = token.replace(/^"+|["!?:.]+$/g, '')
+      if (!/^[A-Za-z][A-Za-z'-]*$/.test(piece)) {
+        if (/[\p{L}\p{N}]/u.test(piece)) skipped.push(piece)
+        continue
+      }
+      const k = piece.toLowerCase()
+      if (seen.has(k)) continue
+      seen.add(k)
+      words.push(piece)
+    }
   }
-  return out
+  return { words, skipped }
 }
 
 export function resolveSchoolWords(texts: readonly string[], bank: Bank) {

@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useServices, useToday } from '../app/services'
+import { isValidDateStr } from '../engine/dates'
 import { nextFriday, parseSchoolWords, resolveSchoolWords } from '../engine/schoolWords'
 import { newProgress, type SchoolList } from '../engine/types'
 import { Button } from '../ui/Button'
@@ -15,18 +16,39 @@ export function SchoolWordsTab() {
   const [raw, setRaw] = useState('')
   const [testDate, setTestDate] = useState(() => nextFriday(today))
   const [preview, setPreview] = useState<ReturnType<typeof resolveSchoolWords> | null>(null)
+  const [skipped, setSkipped] = useState<string[]>([])
+  const [problem, setProblem] = useState('')
+  const [scoreProblems, setScoreProblems] = useState<Record<string, string>>({})
   const [sentences, setSentences] = useState<Record<string, string>>({})
   const [capitals, setCapitals] = useState<Record<string, boolean>>({})
   const [scores, setScores] = useState<Record<string, { score: string; outOf: string }>>({})
   if (!lists || !progress) return <p>Loading…</p>
 
+  const check = () => {
+    const parsed = parseSchoolWords(raw)
+    setPreview(resolveSchoolWords(parsed.words, bank))
+    setSkipped(parsed.skipped)
+    setProblem('')
+  }
   const save = async () => {
     if (!preview?.length) return
+    if (!isValidDateStr(testDate)) { setProblem('Choose the test date first.'); return }
     const textOf = (p: { text: string; wordId: string }) => (capitals[p.wordId] ? p.text[0].toUpperCase() + p.text.slice(1) : p.text)
     const list: SchoolList = { id: `list-${clock.now().getTime()}`, createdAt: today, testDate, items: preview.map(p => ({ text: textOf(p), wordId: p.wordId, ...(sentences[p.wordId] ? { sentence: sentences[p.wordId] } : {}) })) }
     const custom = preview.filter(p => !p.inBank).map(p => ({ wordId: p.wordId, text: textOf(p), ...(sentences[p.wordId]?.trim() ? { sentence: sentences[p.wordId].trim() } : {}) }))
     await repo.saveSchoolList(list, custom)
-    setRaw(''); setPreview(null); setSentences({}); setCapitals({})
+    setRaw(''); setPreview(null); setSkipped([]); setProblem(''); setSentences({}); setCapitals({})
+  }
+  const saveScore = (l: SchoolList) => {
+    const scoreText = (scores[l.id]?.score ?? (l.score === undefined ? '' : String(l.score))).trim()
+    const outOfText = (scores[l.id]?.outOf ?? String(l.outOf ?? l.items.length)).trim()
+    const score = Number(scoreText)
+    const outOf = Number(outOfText)
+    const scoreProblem = !outOfText || !Number.isInteger(outOf) || outOf < 1 ? 'Type how many words were in the test.'
+      : !scoreText || !Number.isInteger(score) || score < 0 || score > outOf ? `Type a score from 0 to ${outOf}.`
+      : ''
+    setScoreProblems({ ...scoreProblems, [l.id]: scoreProblem })
+    if (!scoreProblem) void repo.saveSchoolList({ ...l, score, outOf }, [])
   }
   const status = (id: string) => BOX_NAMES[(progress.get(id) ?? newProgress(id)).box]
   const upcoming = lists.filter(l => l.testDate >= today)
@@ -42,11 +64,12 @@ export function SchoolWordsTab() {
           <>
             <label>Score <input aria-label={`Score for ${l.testDate}`} style={{ width: 60 }} value={scores[l.id]?.score ?? l.score ?? ''} onChange={e => setScores({ ...scores, [l.id]: { score: e.target.value, outOf: scores[l.id]?.outOf ?? String(l.outOf ?? l.items.length) } })} /></label>
             <label>out of <input aria-label={`Out of for ${l.testDate}`} style={{ width: 60 }} value={scores[l.id]?.outOf ?? l.outOf ?? l.items.length} onChange={e => setScores({ ...scores, [l.id]: { score: scores[l.id]?.score ?? String(l.score ?? ''), outOf: e.target.value } })} /></label>
-            <Button variant="secondary" onClick={() => void repo.saveSchoolList({ ...l, score: Number(scores[l.id]?.score), outOf: Number(scores[l.id]?.outOf ?? l.items.length) }, [])}>Save score</Button>
+            <Button variant="secondary" onClick={() => saveScore(l)}>Save score</Button>
           </>
         )}
         <Button variant="ghost" onClick={() => { if (window.confirm('Delete this list?')) void repo.deleteSchoolList(l.id) }}>Delete list</Button>
       </div>
+      {scoreProblems[l.id] && <p role="status">{scoreProblems[l.id]}</p>}
     </div>
   )
 
@@ -55,10 +78,10 @@ export function SchoolWordsTab() {
       <div className="panel">
         <h2>Add this week's spelling list</h2>
         <label>Paste or type this week's words<br />
-          <textarea aria-label="Paste or type this week's words" rows={6} cols={40} value={raw} onChange={e => { setRaw(e.target.value); setPreview(null) }} />
+          <textarea aria-label="Paste or type this week's words" rows={6} cols={40} value={raw} onChange={e => { setRaw(e.target.value); setPreview(null); setSkipped([]) }} />
         </label>
         <p><label>Test date <input type="date" aria-label="Test date" value={testDate} onChange={e => setTestDate(e.target.value)} /></label></p>
-        <Button onClick={() => setPreview(resolveSchoolWords(parseSchoolWords(raw), bank))}>Check words</Button>
+        <Button onClick={check}>Check words</Button>
         {preview && (
           <div>
             {preview.length === 0 ? <p>No words found. Put one word per line.</p> : (
@@ -69,7 +92,9 @@ export function SchoolWordsTab() {
                 )}</li>
               ))}</ul>
             )}
+            {skipped.length > 0 && <p className="muted">Left out: {skipped.join(', ')}. Use letters only, one word per line.</p>}
             {preview.length > 0 && <Button onClick={() => void save()}>Save list</Button>}
+            {problem && <p role="status">{problem}</p>}
           </div>
         )}
       </div>

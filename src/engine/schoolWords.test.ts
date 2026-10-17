@@ -5,9 +5,18 @@ import { parseSchoolWords, resolveSchoolWords, nextFriday } from './schoolWords'
 describe('school words', () => {
   // Review Focus #3: messy pasted lists
   it('cleans a messy pasted list', () => {
-    expect(parseSchoolWords('1. because\n2) Monday;  February.\n• because')).toEqual(['because', 'Monday', 'February'])
-    expect(parseSchoolWords('“friend”, - people\t* it’s\n\n42\n  ')).toEqual(['friend', 'people', "it's"])
-    expect(parseSchoolWords('Brother, brother, BROTHER')).toEqual(['Brother'])
+    expect(parseSchoolWords('1. because\n2) Monday;  February.\n• because').words).toEqual(['because', 'Monday', 'February'])
+    expect(parseSchoolWords('“friend”, - people\t* it’s\n\n42\n  ').words).toEqual(['friend', 'people', "it's"])
+    expect(parseSchoolWords('Brother, brother, BROTHER').words).toEqual(['Brother'])
+  })
+  it('reads dash bullets and numbers with no full stop', () => {
+    expect(parseSchoolWords('– because\n— friend\n1 people\n12  Monday').words).toEqual(['because', 'friend', 'people', 'Monday'])
+  })
+  it('splits words typed on one line with spaces', () => {
+    expect(parseSchoolWords('because friend  people\n3. Monday February').words).toEqual(['because', 'friend', 'people', 'Monday', 'February'])
+  })
+  it('reports pieces it could not use instead of dropping them silently', () => {
+    expect(parseSchoolWords('because\nnaïve, 42\n2nd\n-\n\n').skipped).toEqual(['naïve', '42', '2nd'])
   })
   it('matches bank words and keeps new ones', () => {
     expect(resolveSchoolWords(['monday', 'crocodile', 'because'], bank)).toEqual([
