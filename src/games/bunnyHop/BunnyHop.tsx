@@ -2,6 +2,7 @@ import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { useServices } from '../../app/services'
 import { hashString, makeRng } from '../../engine/rng'
 import { Button } from '../../ui/Button'
+import { SpeakButton } from '../../ui/SpeakButton'
 import { WordDisplay } from '../../ui/WordDisplay'
 import { GameFrame } from '../GameFrame'
 import type { GameProps } from '../types'
@@ -63,6 +64,7 @@ export function BunnyHop({ activity, words, onAttempt, onDone }: GameProps) {
       {phase === 'fix' && (
         <div data-testid="model">
           <p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p>
+          <SpeakButton text="Almost! Let's look. Hop the letters into the right order." />
           <WordDisplay word={word} />
         </div>
       )}

@@ -35,6 +35,14 @@ describe('Workshop', () => {
     expect(onDone).toHaveBeenCalledOnce()
   })
 
+  it('reads the "Have a go first!" instruction aloud', async () => {
+    const user = userEvent.setup()
+    const { services } = renderWithServices(<Workshop activity={activity} words={words} onAttempt={() => {}} onDone={() => {}} />)
+    await screen.findByText(/Have a go first/)
+    await user.click(screen.getByRole('button', { name: 'Read it to me' }))
+    expect(services.speechLog.at(-1)).toBe('Have a go first! Can you spell it already?')
+  })
+
   it('a wrong write resets the streak', async () => {
     const onAttempt = vi.fn()
     const user = userEvent.setup()

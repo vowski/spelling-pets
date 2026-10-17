@@ -16,6 +16,15 @@ function setup(feedback?: 'full' | 'neutral' | 'pretest', word = said) {
 }
 
 describe('TypeAndCheck', () => {
+  it('reads the correction instruction aloud and keeps the answer box focused', async () => {
+    const user = userEvent.setup()
+    const { services } = renderWithServices(<TypeAndCheck word={said} onFirstResult={() => {}} onFinished={() => {}} />)
+    await user.type(screen.getByLabelText('Your spelling'), 'siad{Enter}')
+    await user.click(screen.getByRole('button', { name: 'Read it to me' }))
+    expect(services.speechLog.at(-1)).toBe("Almost! Let's look. Type it the right way.")
+    expect(screen.getByLabelText('Type it the right way')).toHaveFocus()
+  })
+
   it('reports a correct first answer once and finishes', async () => {
     const { onFirstResult, onFinished, user } = setup()
     await user.type(screen.getByLabelText('Your spelling'), 'said{Enter}')

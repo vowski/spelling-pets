@@ -4,6 +4,7 @@ import { useServices } from '../app/services'
 import type { Word } from '../content/types'
 import { checkWord, type WordCheck } from '../engine/checker'
 import { Button } from './Button'
+import { SpeakButton } from './SpeakButton'
 import { LetterDiff } from './LetterDiff'
 
 export type Feedback = 'full' | 'neutral' | 'pretest'
@@ -79,6 +80,7 @@ export function TypeAndCheck({ word, feedback = 'full', onFirstResult, onFinishe
           {check.capitalOnly && <p>Remember the capital letter at the start!</p>}
           <LetterDiff ops={check.ops} />
           <p>Type it the right way:</p>
+          <SpeakButton text="Almost! Let's look. Type it the right way." />
         </>
       )}
       <input

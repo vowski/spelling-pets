@@ -30,6 +30,16 @@ describe('Wombat', () => {
     expect(onAttempt).toHaveBeenCalledOnce()
     expect(onDone).toHaveBeenCalledOnce()
   })
+  it('reads the correction instruction aloud', async () => {
+    const services = makeTestServices()
+    await services.repo.putProgress([prog('w-because', { box: 1, misspellings: { becuz: 3 } })])
+    const user = userEvent.setup()
+    renderWithServices(<Wombat activity={activity} words={[because]} onAttempt={() => {}} onDone={() => {}} />, services)
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(4))
+    await user.click(screen.getByRole('button', { name: 'Choose becuz' }))
+    await user.click(screen.getByRole('button', { name: 'Read it to me' }))
+    expect(services.speechLog.at(-1)).toBe("Almost! Let's look. Choose the one with the arrow.")
+  })
   it('accepts number keys', async () => {
     const onAttempt = vi.fn()
     const user = userEvent.setup()

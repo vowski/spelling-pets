@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useServices } from '../app/services'
+import { SpeakButton } from '../ui/SpeakButton'
 import { useLater } from './useAdvance'
 
 export function ChoiceCards({ options, answer, onFirstChoice, onSolved }: {
@@ -40,7 +41,7 @@ export function ChoiceCards({ options, answer, onFirstChoice, onSolved }: {
 
   return (
     <>
-      {phase === 'fix' && <p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p>}
+      {phase === 'fix' && <><p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p><SpeakButton text="Almost! Let's look. Choose the one with the arrow." /></>}
       {phase === 'right' && <p className="praise">✨ That's right!</p>}
       <div className="row">
         {options.map((opt, k) => (

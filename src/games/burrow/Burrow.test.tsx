@@ -32,6 +32,13 @@ describe('Burrow', () => {
     expect(onAttempt).toHaveBeenCalledOnce()
     expect(onDone).toHaveBeenCalledOnce()
   })
+  it('reads the correction instruction aloud', async () => {
+    const user = userEvent.setup()
+    const { services } = renderWithServices(<Burrow activity={{ id: 'a', gameType: 'burrow', wordIds: [feb.id] }} words={[feb]} onAttempt={() => {}} onDone={() => {}} />)
+    await user.type(screen.getByLabelText('Missing letters 1'), 'u{Enter}')
+    await user.click(screen.getByRole('button', { name: 'Read it to me' }))
+    expect(services.speechLog.at(-1)).toBe("Almost! Let's look. Fill in the missing letters.")
+  })
   // Review Focus #2 class: an accidental Enter on empty gaps is not an attempt
   it('nudges instead of recording an attempt when the gaps are empty', async () => {
     const onAttempt = vi.fn()

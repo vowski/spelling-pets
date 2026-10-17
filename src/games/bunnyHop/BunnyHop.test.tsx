@@ -49,6 +49,15 @@ describe('BunnyHop', () => {
     expect(onDone).toHaveBeenCalledOnce()
   })
 
+  it('reads the correction instruction aloud', async () => {
+    const user = userEvent.setup()
+    const { services } = renderWithServices(<BunnyHop activity={activity} words={[said]} onAttempt={() => {}} onDone={() => {}} />)
+    screen.getByLabelText('Letter tiles').focus()
+    await user.keyboard('siad')
+    await user.click(screen.getByRole('button', { name: 'Read it to me' }))
+    expect(services.speechLog.at(-1)).toBe("Almost! Let's look. Hop the letters into the right order.")
+  })
+
   it('shows the word first when there is no voice', async () => {
     renderWithServices(<BunnyHop activity={activity} words={[said]} onAttempt={() => {}} onDone={() => {}} />, { speaker: createStubSpeaker([], false) })
     expect(await screen.findByText('Look carefully…')).toBeInTheDocument()

@@ -4,6 +4,7 @@ import { useServices } from '../../app/services'
 import { useSpeechAvailable } from '../../speech/useSpeech'
 import { sayWord } from '../../speech/voice'
 import { Button } from '../../ui/Button'
+import { SpeakButton } from '../../ui/SpeakButton'
 import { TypeAndCheck } from '../../ui/TypeAndCheck'
 import { WordDisplay } from '../../ui/WordDisplay'
 import { GameFrame } from '../GameFrame'
@@ -45,6 +46,7 @@ export function Workshop({ words, onAttempt, onDone }: GameProps) {
       {shown === 'pretest' && (
         <>
           <p>Have a go first! Can you spell it already?</p>
+          <SpeakButton text="Have a go first! Can you spell it already?" />
           {hear}
           <TypeAndCheck key={`pre-${word.id}-${round}`} word={word} feedback="pretest"
             onFirstResult={r => { pretestRight.current = r.correct; onAttempt({ wordId: word.id, correct: r.correct, firstTry: true, hint: false, typed: r.typed, role: 'pretest' }) }}

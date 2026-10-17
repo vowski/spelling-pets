@@ -4,6 +4,7 @@ import { wordId } from '../../content/parse'
 import { checkSentence, type SentenceCheck } from '../../engine/checker'
 import { useSpeechAvailable } from '../../speech/useSpeech'
 import { Button } from '../../ui/Button'
+import { SpeakButton } from '../../ui/SpeakButton'
 import { GameFrame } from '../GameFrame'
 import type { GameProps, StoryOutcome } from '../types'
 import { splitPhrases } from './phrases'
@@ -85,6 +86,7 @@ export function StoryTime({ activity, onAttempt, onDone }: GameProps) {
           {check && (
             <>
               <p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p>
+              <SpeakButton text="Almost! Let's look. Type it the right way." />
               <ul>
                 {check.words.filter(w => !w.correct).map((w, k) => <li key={k}>{w.typed === null ? `(missing) → ${w.expected}` : `${w.typed} → ${w.expected}`}</li>)}
                 <li>Capital letter at the start: {check.startsWithCapital ? '✓' : 'Remember it!'}</li>

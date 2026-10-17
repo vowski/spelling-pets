@@ -3,6 +3,7 @@ import { useServices } from '../../app/services'
 import { checkWord } from '../../engine/checker'
 import { sayWord } from '../../speech/voice'
 import { Button } from '../../ui/Button'
+import { SpeakButton } from '../../ui/SpeakButton'
 import { WordDisplay } from '../../ui/WordDisplay'
 import { GameFrame } from '../GameFrame'
 import type { GameProps } from '../types'
@@ -60,7 +61,7 @@ export function Burrow({ words, onAttempt, onDone }: GameProps) {
     <GameFrame title="Fill the Burrow" emoji="🕳️" done={i} total={words.length}>
       <p>Fill in the missing letters.</p>
       <Button variant="secondary" onClick={() => void sayWord(speaker, word, delays.gap)}>🔊 Hear it</Button>
-      {phase === 'fix' && <><p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p><WordDisplay word={word} /></>}
+      {phase === 'fix' && <><p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p><SpeakButton text="Almost! Let's look. Fill in the missing letters." /><WordDisplay word={word} /></>}
       {nudge && <p className="nudge">{nudge}</p>}
       {phase === 'right' ? <p className="praise">✨ Burrow filled!</p> : (
         <form onSubmit={onSubmit} className="row">

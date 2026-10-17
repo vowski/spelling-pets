@@ -46,6 +46,17 @@ describe('StoryTime', () => {
     expect(onDone).toHaveBeenCalled()
   })
 
+  it('reads the correction instruction aloud', async () => {
+    const bank = buildBank()
+    const sentence = bank.sentences.find(s => s.text === 'My friend came to our house.')!
+    const user = userEvent.setup()
+    const { services } = renderWithServices(
+      <StoryTime activity={{ id: 'a', gameType: 'storyTime', wordIds: sentence.wordIds, sentenceIds: [sentence.id] }} words={[]} onAttempt={() => {}} onDone={() => {}} />, { bank })
+    await user.type(await screen.findByLabelText('Type the sentence'), 'my frend came to our house{Enter}')
+    await user.click(screen.getByRole('button', { name: 'Read it to me' }))
+    expect(services.speechLog.at(-1)).toBe("Almost! Let's look. Type it the right way.")
+  })
+
   it('with no voice, lets the child look at the sentence again', async () => {
     const bank = buildBank()
     const sentence = bank.sentences.find(s => s.text === 'My friend came to our house.')!
