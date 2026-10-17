@@ -13,4 +13,16 @@ describe('UpdatePrompt', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Update now' }))
     expect(update).toHaveBeenCalledWith(true)
   })
+
+  it('waits until the child is back on Home before offering it', async () => {
+    window.location.hash = '#/session'
+    try {
+      render(<UpdatePrompt />)
+      expect(screen.queryByText('New things to discover! 🐾')).toBeNull()
+      window.location.hash = '#/'
+      expect(await screen.findByText('New things to discover! 🐾')).toBeInTheDocument()
+    } finally {
+      window.location.hash = ''
+    }
+  })
 })

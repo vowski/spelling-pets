@@ -44,6 +44,33 @@ describe('session logic', () => {
     expect((await svc.repo.getAllProgress()).find(p => p.wordId === fun.wordIds[0])?.box).toBe(0)
   })
 
+  describe('after a pause, the activity starts again', () => {
+    const row: SessionRow = { id: 's1', date: T, kind: 'main', startedAt: 1, endedAt: null, doneActivityIds: [], complete: false, coins: 0,
+      plan: { kind: 'normal', newMaterial: { kind: 'none' }, activities: [{ id: 'a1', gameType: 'pupPost', wordIds: ['w-said', 'w-was'] }] } }
+    const a1 = row.plan.activities[0]
+    const right = (wordId: string) => ({ wordId, correct: true, firstTry: true, hint: false, typed: 'x' })
+
+    it('pays nothing for answers replayed, but pays for ones not reached before', async () => {
+      const svc = fresh()
+      await svc.repo.saveSession(row)
+      expect(await recordGameAttempt(svc, row, a1, right('w-said'), T, 2, 'run1')).toBe(3)
+      expect(await recordGameAttempt(svc, row, a1, right('w-said'), T, 3, 'run2')).toBe(0)
+      expect(await recordGameAttempt(svc, row, a1, right('w-was'), T, 4, 'run2')).toBe(3)
+      expect(await recordGameAttempt(svc, row, a1, right('w-said'), T, 5, 'run3')).toBe(0)
+      expect(await recordGameAttempt(svc, row, a1, right('w-was'), T, 6, 'run3')).toBe(0)
+      expect(await svc.repo.balance()).toBe(6)
+      expect(await svc.repo.attemptsForWord('w-said')).toHaveLength(3)
+    })
+
+    it('still pays for a second sighting of a word that the first go never reached', async () => {
+      const svc = fresh()
+      await svc.repo.saveSession(row)
+      expect(await recordGameAttempt(svc, row, a1, right('w-said'), T, 2, 'run1')).toBe(3)
+      expect(await recordGameAttempt(svc, row, a1, right('w-said'), T, 3, 'run2')).toBe(0)
+      expect(await recordGameAttempt(svc, row, a1, right('w-said'), T, 4, 'run2')).toBe(3)
+    })
+  })
+
   it('a perfect unit check marks the unit known and skips the conditional teaching', async () => {
     const svc = fresh()
     await svc.repo.savePlacement((await import('../engine/placement')).buildPlacementPlan(bank, 1).map(l => ({ ...l, status: 'done' as const })))

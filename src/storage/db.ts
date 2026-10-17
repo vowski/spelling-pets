@@ -40,7 +40,11 @@ export const DEFAULT_SETTINGS: SettingsRow = {
   lastNewKind: null, coins: 0, equipped: {}, hatched: false,
 }
 
-export interface AttemptRow { id?: number; wordId: string; sessionId: string; game: GameType; role: Role; at: number; typed: string; correct: boolean; firstTry: boolean; hint: boolean }
+export interface AttemptRow {
+  id?: number; wordId: string; sessionId: string; game: GameType; role: Role; at: number; typed: string; correct: boolean; firstTry: boolean; hint: boolean
+  /** The activity and the go at it (a resumed activity starts again as a new run), so replayed answers can be told apart. */
+  activityId?: string; run?: string
+}
 export type SessionKind = 'main' | 'extra' | 'free'
 export interface SessionRow { id: string; date: DateStr; kind: SessionKind; startedAt: number; endedAt: number | null; plan: SessionPlan; doneActivityIds: string[]; complete: boolean; coins: number; startSnapshot?: AchievementSnapshot }
 export interface WalletRow { id?: number; at: number; delta: number; reason: string }

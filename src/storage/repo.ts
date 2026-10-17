@@ -71,7 +71,7 @@ export class Repo {
     if (rows.length) await this.db.progress.bulkPut([...rows])
   }
 
-  async recordAttempt(a: { sessionId: string; game: GameType; attempt: Attempt; coinRole: Role; today: DateStr; nowMs: number }): Promise<{ progress: WordProgress; coins: number }> {
+  async recordAttempt(a: { sessionId: string; activityId?: string; run?: string; game: GameType; attempt: Attempt; coinRole: Role; noCoins?: boolean; today: DateStr; nowMs: number }): Promise<{ progress: WordProgress; coins: number }> {
     const { attempt } = a
     return this.db.transaction('rw', [this.db.progress, this.db.attempts, this.db.wallet, this.db.settings], async () => {
       const prev = (await this.db.progress.get(attempt.wordId)) ?? newProgress(attempt.wordId)
@@ -80,11 +80,20 @@ export class Repo {
       await this.db.attempts.add({
         wordId: attempt.wordId, sessionId: a.sessionId, game: a.game, role: attempt.role, at: a.nowMs,
         typed: attempt.typed ?? '', correct: attempt.correct, firstTry: attempt.firstTry, hint: attempt.hint,
+        ...(a.activityId ? { activityId: a.activityId } : {}), ...(a.run ? { run: a.run } : {}),
       })
-      const coins = coinsForAttempt(a.coinRole, attempt.correct, attempt.firstTry, attempt.hint)
+      const coins = a.noCoins ? 0 : coinsForAttempt(a.coinRole, attempt.correct, attempt.firstTry, attempt.hint)
       if (coins) await this.addCoins(coins, a.game, a.nowMs)
       return { progress, coins }
     })
+  }
+
+  /** How many first tries at this word each go (run) at this activity recorded. */
+  async firstTriesByRun(sessionId: string, activityId: string, wordId: string): Promise<Map<string, number>> {
+    const rows = await this.db.attempts.where('sessionId').equals(sessionId).filter(r => r.activityId === activityId && r.wordId === wordId && r.firstTry).toArray()
+    const out = new Map<string, number>()
+    for (const r of rows) out.set(r.run ?? '', (out.get(r.run ?? '') ?? 0) + 1)
+    return out
   }
 
   async attemptsForWord(wordId: string): Promise<AttemptRow[]> {

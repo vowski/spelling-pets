@@ -44,13 +44,23 @@ export function attemptRoles(activity: Activity, a: GameAttempt): { role: Role; 
   return { role: activity.practiceOnly ? 'placement' : base, coinRole: base }
 }
 
-export async function recordGameAttempt(svc: Svc, row: SessionRow, activity: Activity, a: GameAttempt, today: DateStr, nowMs: number): Promise<number> {
+/**
+ * `run` names this go at the activity. A paused or reloaded activity starts again from its first item, so an
+ * answer is a replay when an earlier go already reached this word as many times; replays earn no coins.
+ */
+export async function recordGameAttempt(svc: Svc, row: SessionRow, activity: Activity, a: GameAttempt, today: DateStr, nowMs: number, run?: string): Promise<number> {
   const { role, coinRole } = attemptRoles(activity, a)
   if (activity.gameType === 'treasureHunt') {
     await svc.repo.savePlacement(recordPlacementAnswer(await svc.repo.getPlacement(), a.wordId, a.correct))
   }
+  let replay = false
+  if (run && a.firstTry) {
+    const byRun = await svc.repo.firstTriesByRun(row.id, activity.id, a.wordId)
+    const thisRun = byRun.get(run) ?? 0
+    replay = [...byRun].some(([r, n]) => r !== run && n > thisRun)
+  }
   const { coins } = await svc.repo.recordAttempt({
-    sessionId: row.id, game: activity.gameType, coinRole, today, nowMs,
+    sessionId: row.id, activityId: activity.id, run, game: activity.gameType, coinRole, noCoins: replay, today, nowMs,
     attempt: { wordId: a.wordId, role, correct: a.correct, firstTry: a.firstTry, hint: a.hint, typed: a.typed },
   })
   return coins

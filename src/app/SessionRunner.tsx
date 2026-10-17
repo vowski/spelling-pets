@@ -13,6 +13,7 @@ import { useServices, useToday } from './services'
 import { completeActivity, finishSession, nextActivity, recordGameAttempt, startOrResumeSession, type SessionOutcome } from './sessionLogic'
 
 type Phase = 'loading' | 'intro' | 'playing' | 'finished'
+let runs = 0
 
 export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
   const svc = useServices()
@@ -27,6 +28,8 @@ export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
   const chain = useRef<Promise<unknown>>(Promise.resolve())
   const completing = useRef<string | null>(null)
   const now = () => clock.now().getTime()
+  // Each time the runner opens is a new go at the current activity, so answers replayed after a pause earn no coins.
+  const [run] = useState(() => `${now()}-${++runs}`)
 
   const enqueue = <T,>(fn: () => Promise<T>): Promise<T> => {
     const p = chain.current.then(fn)
@@ -68,7 +71,7 @@ export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
 
   const onAttempt = (a: GameAttempt) => {
     if (!row || !activity) return
-    void enqueue(() => recordGameAttempt(svc, row, activity, a, today, now())).then(c => {
+    void enqueue(() => recordGameAttempt(svc, row, activity, a, today, now(), run)).then(c => {
       if (c) { setEarned(e => e + c); sfx.coin() }
     })
   }
