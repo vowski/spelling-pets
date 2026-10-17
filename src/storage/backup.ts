@@ -24,9 +24,37 @@ const fileSchema = z.object({
   exportedAt: z.string(),
   tables: z.record(z.string(), z.array(z.unknown())),
 })
-const progressRow = z.looseObject({ wordId: z.string().min(3), box: z.number().int().min(0).max(5) })
-const sessionRow = z.looseObject({ id: z.string(), date: z.string(), complete: z.boolean() })
-const settingsRow = z.looseObject({ id: z.literal('singleton') })
+// Each table's rows must have their key and the fields the app reads without checking, so a damaged file is
+// turned away here rather than breaking the app after it has replaced everything.
+const ids = z.array(z.string())
+const autoId = z.number().optional()
+const earnedRow = z.looseObject({ id: z.string(), earnedAt: z.number() })
+const rowSchemas: Record<BackupTable, { key: string; row: z.ZodType }> = {
+  settings: { key: 'id', row: z.looseObject({ id: z.literal('singleton'), childName: z.string(), coins: z.number(), sessionMinutes: z.number(), newWordsPerDay: z.number(), equipped: z.record(z.string(), z.string()) }) },
+  progress: { key: 'wordId', row: z.looseObject({ wordId: z.string().min(3), box: z.number().int().min(0).max(5), due: z.string().nullable(), recallCorrectDays: ids, misspellings: z.record(z.string(), z.number()), seen: z.number(), correct: z.number() }) },
+  attempts: { key: 'id', row: z.looseObject({ id: autoId, wordId: z.string(), sessionId: z.string(), at: z.number(), correct: z.boolean() }) },
+  sessions: { key: 'id', row: z.looseObject({ id: z.string(), date: z.string(), startedAt: z.number(), complete: z.boolean(), doneActivityIds: ids, plan: z.looseObject({ activities: z.array(z.looseObject({ id: z.string(), gameType: z.string(), wordIds: ids })) }) }) },
+  placement: { key: 'level', row: z.looseObject({ level: z.string(), sampledIds: ids, answers: z.record(z.string(), z.boolean()), status: z.string() }) },
+  units: { key: 'unitId', row: z.looseObject({ unitId: z.string(), status: z.string(), taughtWordIds: ids }) },
+  schoolLists: { key: 'id', row: z.looseObject({ id: z.string(), testDate: z.string(), items: z.array(z.looseObject({ text: z.string(), wordId: z.string() })) }) },
+  customWords: { key: 'wordId', row: z.looseObject({ wordId: z.string(), text: z.string() }) },
+  wallet: { key: 'id', row: z.looseObject({ id: autoId, at: z.number(), delta: z.number() }) },
+  inventory: { key: 'itemId', row: z.looseObject({ itemId: z.string(), count: z.number() }) },
+  stickers: { key: 'id', row: earnedRow },
+  badges: { key: 'id', row: earnedRow },
+  friends: { key: 'id', row: earnedRow },
+  realRewards: { key: 'id', row: z.looseObject({ id: z.string(), title: z.string(), status: z.string(), goal: z.looseObject({ type: z.string(), target: z.number() }) }) },
+  counters: { key: 'id', row: z.looseObject({ id: z.string(), value: z.number() }) },
+  storyResults: { key: 'id', row: z.looseObject({ id: autoId, at: z.number() }) },
+  errors: { key: 'id', row: z.looseObject({ id: autoId, at: z.number(), where: z.string(), message: z.string() }) },
+}
+
+function tableLooksRight(name: BackupTable, rows: unknown[]): boolean {
+  const { key, row } = rowSchemas[name]
+  if (!z.array(row).safeParse(rows).success) return false
+  const keys = rows.map(r => (r as Record<string, unknown>)[key]).filter(k => k !== undefined)
+  return new Set(keys).size === keys.length
+}
 
 export function backupFileName(today: DateStr): string {
   return `spelling-pets-backup-${today}.json`
@@ -50,11 +78,7 @@ export function parseBackup(text: string): ParseResult {
   if (file.data.schemaVersion > BACKUP_SCHEMA_VERSION) return { ok: false, reason: TOO_NEW }
   const tables: Partial<Record<BackupTable, unknown[]>> = {}
   for (const name of BACKUP_TABLES) if (file.data.tables[name]) tables[name] = file.data.tables[name]
-  const ok =
-    z.array(progressRow).safeParse(tables.progress ?? []).success &&
-    z.array(sessionRow).safeParse(tables.sessions ?? []).success &&
-    z.array(settingsRow).safeParse(tables.settings ?? []).success
-  if (!ok) return { ok: false, reason: DAMAGED }
+  if (!BACKUP_TABLES.every(name => tableLooksRight(name, tables[name] ?? []))) return { ok: false, reason: DAMAGED }
   const progress = (tables.progress ?? []) as { box: number }[]
   const sessions = (tables.sessions ?? []) as { complete: boolean }[]
   const settings = (tables.settings ?? [])[0] as { childName?: string } | undefined

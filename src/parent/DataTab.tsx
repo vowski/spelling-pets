@@ -35,7 +35,13 @@ export function DataTab({ reload = reloadHome }: { reload?: () => void }) {
   const onFile = async (f: File | undefined) => { if (f) setParsed(parseBackup(await f.text())) }
   const restore = async () => {
     if (!parsed?.ok) return
-    await importBackup(repo.db, parsed.backup)
+    try {
+      await importBackup(repo.db, parsed.backup)
+    } catch {
+      // importBackup runs in one transaction, so a failure leaves the old data in place.
+      setParsed({ ok: false, reason: "Restoring didn't work, so nothing was changed. Please try again." })
+      return
+    }
     reload()
   }
   const backupNow = async () => {

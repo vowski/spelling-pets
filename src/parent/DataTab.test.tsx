@@ -40,6 +40,22 @@ describe('DataTab', () => {
     expect((await services.repo.getSettings()).childName).toBe('Amy')
   })
 
+  it('says so when restoring fails, instead of failing silently', async () => {
+    const source = Repo.open(`d-${Math.random()}`)
+    await source.updateSettings({ childName: 'Amy' })
+    const file = new File([JSON.stringify(await exportBackup(source.db, '2026-10-10T10:00:00.000Z'))], 'b.json', { type: 'application/json' })
+    const services = makeTestServices()
+    const reload = vi.fn()
+    const user = userEvent.setup()
+    renderWithServices(<DataTab reload={reload} />, services)
+    await user.upload(await screen.findByLabelText('Backup file'), file)
+    await screen.findByText(/for Amy/)
+    services.repo.db.close({ disableAutoOpen: true })
+    await user.click(screen.getByRole('button', { name: 'Replace with this backup' }))
+    expect(await screen.findByText("Restoring didn't work, so nothing was changed. Please try again.")).toBeInTheDocument()
+    expect(reload).not.toHaveBeenCalled()
+  })
+
   it('needs RESET typed before wiping everything', async () => {
     const reload = vi.fn()
     const user = userEvent.setup()
