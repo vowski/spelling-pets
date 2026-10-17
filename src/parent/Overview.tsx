@@ -23,12 +23,14 @@ export function Overview() {
   const { settings, progress, units, sessions, attempts } = data
   const stats = computeStats(bank, new Map(progress.map(p => [p.wordId, p])), new Map(units.map(u => [u.unitId, u])), [])
   const week = weekSummary(sessions, attempts, today, settings.weeklyGoalDays)
-  const stale = !settings.lastBackupAt || clock.now().getTime() - settings.lastBackupAt > 7 * 86_400_000
+  const autoStopped = settings.lastAutoBackup === 'needs-permission' || settings.lastAutoBackup === 'error'
+  const stale = !autoStopped && (!settings.lastBackupAt || clock.now().getTime() - settings.lastBackupAt > 7 * 86_400_000)
 
   return (
     <section>
       {canSpeak === false && <p className="panel chip warn" style={{ display: 'block' }}>No British voice was found on this laptop, so spelling games show each word briefly instead of saying it. Check Settings → Voice.</p>}
       {persisted === false && <p className="panel">This browser may clear saved progress if the laptop runs low on space. Turn on automatic backup in the Data tab.</p>}
+      {autoStopped && <p className="panel chip warn" style={{ display: 'block' }}>Automatic backup has stopped{settings.lastAutoBackup === 'needs-permission' ? ': this browser needs permission for the backup folder again' : ': the last one failed'}. <Link to="/parent/data">Open the Data tab and choose Reconnect backup folder.</Link></p>}
       {stale && <p className="panel chip warn" style={{ display: 'block' }}>Your progress hasn't been backed up recently. <Link to="/parent/data">Set up auto-backup in the Data tab.</Link></p>}
       <div className="panel">
         <h2>This week</h2>

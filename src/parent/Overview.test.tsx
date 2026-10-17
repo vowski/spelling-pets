@@ -22,4 +22,11 @@ describe('Overview', () => {
     renderWithServices(<MemoryRouter><Overview /></MemoryRouter>, { speaker: createStubSpeaker([], false) })
     expect(await screen.findByText(/No British voice was found/)).toBeInTheDocument()
   })
+  it('says straight away when automatic backup has stopped', async () => {
+    const services = makeTestServices()
+    await services.repo.updateSettings({ lastBackupAt: services.clock.now().getTime(), lastAutoBackup: 'needs-permission' })
+    renderWithServices(<MemoryRouter><Overview /></MemoryRouter>, services)
+    expect(await screen.findByText(/Automatic backup has stopped/)).toBeInTheDocument()
+    expect(screen.queryByText(/hasn't been backed up recently/)).not.toBeInTheDocument()
+  })
 })

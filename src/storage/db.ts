@@ -24,6 +24,8 @@ export interface SettingsRow {
   musicOn: boolean
   dyslexiaFont: boolean
   lastBackupAt: number | null
+  /** Outcome of the last automatic backup, so the dashboard can say at once when it stops working. */
+  lastAutoBackup?: 'written' | 'needs-permission' | 'error'
   firstRunDone: boolean
   lastNewKind: 'words' | 'unit' | null
   coins: number

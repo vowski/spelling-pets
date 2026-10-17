@@ -52,7 +52,7 @@ export function DataTab({ reload = reloadHome }: { reload?: () => void }) {
         {supportsFolderBackup() ? (
           <p className="row" style={{ justifyContent: 'flex-start' }}>
             {!folder ? <Button variant="secondary" onClick={() => void chooseBackupFolder(repo).then(ok => setMsg(ok ? 'Folder chosen ✓ A backup will be saved after every session.' : ''))}>Choose a backup folder</Button>
-              : <Button variant="secondary" onClick={() => void reconnectBackupFolder(repo).then(ok => setMsg(ok ? 'Reconnected ✓' : 'Permission not given.'))}>Reconnect backup folder</Button>}
+              : <Button variant="secondary" onClick={() => void reconnectBackupFolder(repo).then(ok => (ok ? backupNow() : setMsg('Permission not given.')))}>Reconnect backup folder</Button>}
             <Button variant="ghost" onClick={() => void backupNow()}>Back up now</Button>
           </p>
         ) : <p className="muted">This browser can't save backups to a folder automatically. Download a backup each week instead.</p>}

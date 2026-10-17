@@ -22,6 +22,7 @@ describe('auto-backup', () => {
     const dir = fakeDir('prompt')
     vi.spyOn(repo.db.handles, 'get').mockResolvedValue({ id: 'backupDir', handle: dir.handle })
     expect(await writeAutoBackup(repo, T, 1)).toBe('needs-permission')
+    expect((await repo.getSettings()).lastAutoBackup).toBe('needs-permission') // so the dashboard can say so
   })
   it('writes the dated file and records the time', async () => {
     const repo = Repo.open(`a-${Math.random()}`)
@@ -30,7 +31,7 @@ describe('auto-backup', () => {
     expect(await writeAutoBackup(repo, T, 1234)).toBe('written')
     expect(dir.raw.getFileHandle).toHaveBeenCalledWith('spelling-pets-backup-2026-10-15.json', { create: true })
     expect(JSON.parse(dir.written[0]).app).toBe('spelling-pets')
-    expect((await repo.getSettings()).lastBackupAt).toBe(1234)
+    expect((await repo.getSettings())).toMatchObject({ lastBackupAt: 1234, lastAutoBackup: 'written' })
   })
   it('logs and reports errors', async () => {
     const repo = Repo.open(`a-${Math.random()}`)

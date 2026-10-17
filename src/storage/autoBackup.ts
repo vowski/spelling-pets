@@ -28,15 +28,19 @@ export async function writeAutoBackup(repo: Repo, today: DateStr, nowMs: number)
   const row = await repo.db.handles.get('backupDir')
   if (!row) return 'no-folder'
   try {
-    if ((await row.handle.queryPermission({ mode: 'readwrite' })) !== 'granted') return 'needs-permission'
+    if ((await row.handle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
+      await repo.updateSettings({ lastAutoBackup: 'needs-permission' })
+      return 'needs-permission'
+    }
     const file = await row.handle.getFileHandle(backupFileName(today), { create: true })
     const writable = await file.createWritable()
     await writable.write(JSON.stringify(await exportBackup(repo.db, new Date(nowMs).toISOString())))
     await writable.close()
-    await repo.updateSettings({ lastBackupAt: nowMs })
+    await repo.updateSettings({ lastBackupAt: nowMs, lastAutoBackup: 'written' })
     return 'written'
   } catch (e) {
     await repo.logError('autoBackup', e instanceof Error ? e.message : String(e), nowMs)
+    await repo.updateSettings({ lastAutoBackup: 'error' })
     return 'error'
   }
 }
