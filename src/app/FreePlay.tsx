@@ -8,6 +8,7 @@ import { GAME_COMPONENTS } from '../games/registry'
 import type { GameAttempt, GameSummary } from '../games/types'
 import type { SessionRow } from '../storage/db'
 import { Button } from '../ui/Button'
+import { ErrorBoundary } from './ErrorBoundary'
 import { useServices, useToday } from './services'
 import { completeActivity, recordGameAttempt } from './sessionLogic'
 
@@ -50,6 +51,7 @@ export function FreePlayGame() {
   const [done, setDone] = useState(false)
   const [round, setRound] = useState(0)
   const chain = useRef<Promise<unknown>>(Promise.resolve())
+  const finished = useRef<string | null>(null)
   const now = () => clock.now().getTime()
 
   useEffect(() => {
@@ -76,6 +78,9 @@ export function FreePlayGame() {
     chain.current = p.then(c => setEarned(e => e + c))
   }
   const onDone = (s?: GameSummary) => {
+    const key = `${activity.id}-${round}`
+    if (finished.current === key) return // a game may call onDone twice; finish each round once
+    finished.current = key
     chain.current = chain.current.then(async () => {
       await completeActivity(svc, row, activity, s, today, now())
       await repo.completeSession(row.id, now())
@@ -97,7 +102,12 @@ export function FreePlayGame() {
             <Button variant="secondary" onClick={() => navigate('/play')}>Back to games</Button>
           </div>
         </section>
-      ) : <Game key={`${activity.id}-${round}`} activity={activity} words={words} onAttempt={onAttempt} onDone={onDone} />}
+      ) : (
+        <ErrorBoundary key={`${activity.id}-${round}`} onError={e => void repo.logError(activity.gameType, e.message, now())}
+          fallback={<section className="card"><p>Oops, that game tripped over! Let's try another.</p><Button onClick={() => navigate('/play')}>Back to games</Button></section>}>
+          <Game activity={activity} words={words} onAttempt={onAttempt} onDone={onDone} />
+        </ErrorBoundary>
+      )}
     </main>
   )
 }
