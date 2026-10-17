@@ -15,6 +15,7 @@ export function Burrow({ words, onAttempt, onDone }: GameProps) {
   const [i, setI] = useState(0)
   const [typed, setTyped] = useState<string[]>([])
   const [phase, setPhase] = useState<'fill' | 'fix' | 'right'>('fill')
+  const [nudge, setNudge] = useState('')
   const reported = useRef(false)
   const word = words[i]
   useEffect(() => { if (word) void sayWord(speaker, word, delays.gap) }, [word, speaker, delays.gap])
@@ -30,6 +31,8 @@ export function Burrow({ words, onAttempt, onDone }: GameProps) {
   }
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
+    if (!typed.some(t => t?.trim())) { setNudge('Have a go! Fill in the missing letters.'); return } // an accidental Enter isn't an attempt
+    setNudge('')
     const assembled = fillGaps(word.text, gaps, typed)
     const r = checkWord(word, assembled)
     if (!reported.current) {
@@ -58,6 +61,7 @@ export function Burrow({ words, onAttempt, onDone }: GameProps) {
       <p>Fill in the missing letters.</p>
       <Button variant="secondary" onClick={() => void sayWord(speaker, word, delays.gap)}>🔊 Hear it</Button>
       {phase === 'fix' && <><p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p><WordDisplay word={word} /></>}
+      {nudge && <p className="nudge">{nudge}</p>}
       {phase === 'right' ? <p className="praise">✨ Burrow filled!</p> : (
         <form onSubmit={onSubmit} className="row">
           <span className="big-word" style={{ display: 'inline-flex', alignItems: 'center' }}>{parts}<span>{word.text.slice(pos)}</span></span>
