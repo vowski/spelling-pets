@@ -22,6 +22,18 @@ describe('Overview', () => {
     renderWithServices(<MemoryRouter><Overview /></MemoryRouter>, { speaker: createStubSpeaker([], false) })
     expect(await screen.findByText(/No British voice was found/)).toBeInTheDocument()
   })
+  it('warns when the voice it has to use is not British English', async () => {
+    const speaker = { ...createStubSpeaker([]), currentVoice: () => ({ name: 'Microsoft David - English (United States)', lang: 'en-US', voiceURI: 'david', localService: true }) }
+    renderWithServices(<MemoryRouter><Overview /></MemoryRouter>, { speaker })
+    expect(await screen.findByText(/isn't British English/)).toBeInTheDocument()
+    expect(screen.queryByText(/No British voice was found/)).not.toBeInTheDocument()
+  })
+  it('does not warn about a British voice', async () => {
+    const speaker = { ...createStubSpeaker([]), currentVoice: () => ({ name: 'Microsoft Hazel - English (United Kingdom)', lang: 'en-GB', voiceURI: 'hazel', localService: true }) }
+    renderWithServices(<MemoryRouter><Overview /></MemoryRouter>, { speaker })
+    expect(await screen.findByText('This week')).toBeInTheDocument()
+    expect(screen.queryByText(/isn't British English/)).not.toBeInTheDocument()
+  })
   it('says straight away when automatic backup has stopped', async () => {
     const services = makeTestServices()
     await services.repo.updateSettings({ lastBackupAt: services.clock.now().getTime(), lastAutoBackup: 'needs-permission' })

@@ -11,7 +11,7 @@ import { levelBars, secureTimeline, troubleSpots, weekSummary, weeklyAccuracy } 
 const short = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 
 export function Overview() {
-  const { repo, bank, clock } = useServices()
+  const { repo, bank, clock, speaker } = useServices()
   const today = useToday()
   const canSpeak = useSpeechAvailable()
   const persisted = usePersisted()
@@ -25,10 +25,13 @@ export function Overview() {
   const week = weekSummary(sessions, attempts, today, settings.weeklyGoalDays)
   const autoStopped = settings.lastAutoBackup === 'needs-permission' || settings.lastAutoBackup === 'error'
   const stale = !autoStopped && (!settings.lastBackupAt || clock.now().getTime() - settings.lastBackupAt > 7 * 86_400_000)
+  const voice = canSpeak ? speaker.currentVoice() : null
+  const notBritish = !!voice && !/^en[-_]GB$/i.test(voice.lang)
 
   return (
     <section>
       {canSpeak === false && <p className="panel chip warn" style={{ display: 'block' }}>No British voice was found on this laptop, so spelling games show each word briefly instead of saying it. Check Settings → Voice.</p>}
+      {notBritish && <p className="panel chip warn" style={{ display: 'block' }}>The voice being used ({voice.name}) isn't British English, so some words may sound American. Add a British English voice in Windows Settings → Time &amp; language → Speech, then choose it in Settings → Voice.</p>}
       {persisted === false && <p className="panel">This browser may clear saved progress if the laptop runs low on space. Turn on automatic backup in the Data tab.</p>}
       {autoStopped && <p className="panel chip warn" style={{ display: 'block' }}>Automatic backup has stopped{settings.lastAutoBackup === 'needs-permission' ? ': this browser needs permission for the backup folder again' : ': the last one failed'}. <Link to="/parent/data">Open the Data tab and choose Reconnect backup folder.</Link></p>}
       {stale && <p className="panel chip warn" style={{ display: 'block' }}>Your progress hasn't been backed up recently. <Link to="/parent/data">Set up auto-backup in the Data tab.</Link></p>}
