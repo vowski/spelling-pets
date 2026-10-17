@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { useReducedMotion } from 'motion/react'
 import { useMemo, useRef, useState } from 'react'
 import { useServices } from '../../app/services'
 import { hashString, makeRng, shuffle } from '../../engine/rng'
@@ -9,8 +9,26 @@ import type { GameProps } from '../types'
 import { useLater } from '../useAdvance'
 import { useDictation } from '../useDictation'
 
-interface Bubble { id: number; ch: string; x: number; duration: number; delay: number }
+interface Bubble { id: number; ch: string; left: number; delay: number }
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
+/** Every bubble rises at the same speed, so neighbours keep their distance. */
+export const RISE_SECONDS = 11
+
+/**
+ * One lane per bubble (letters shuffled across lanes). Lanes alternate between the first and second half
+ * of the rise cycle (0, ⌈n/2⌉, 1, ⌈n/2⌉+1, …), so side-by-side bubbles are always far apart vertically.
+ * A negative delay starts each bubble part-way up, so the screen is never empty at the start.
+ */
+export function layoutBubbles(chars: readonly string[], rng: () => number): Bubble[] {
+  const n = chars.length
+  const lanes = shuffle([...chars.keys()], rng)
+  const half = Math.ceil(n / 2)
+  return chars.map((ch, id) => {
+    const lane = lanes[id]
+    const phase = lane % 2 === 0 ? lane / 2 : half + (lane - 1) / 2
+    return { id, ch, left: ((lane + 0.5) / n) * 100, delay: -(phase / n) * RISE_SECONDS }
+  })
+}
 
 export function BubblePop({ activity, words, onAttempt, onDone }: GameProps) {
   const { sfx } = useServices()
@@ -31,7 +49,7 @@ export function BubblePop({ activity, words, onAttempt, onDone }: GameProps) {
     if (!word) return []
     const rng = makeRng(hashString(`${activity.id}:${word.id}`))
     const decoys = shuffle([...ALPHABET].filter(c => !word.text.toLowerCase().includes(c)), rng).slice(0, 3)
-    return shuffle([...word.text, ...decoys], rng).map((ch, id) => ({ id, ch, x: 5 + rng() * 85, duration: 9 + rng() * 4, delay: rng() * 4 }))
+    return layoutBubbles(shuffle([...word.text, ...decoys], rng), rng)
   }, [word, activity.id])
   const { canSpeak, peeking, replay } = useDictation(word)
 
@@ -82,15 +100,16 @@ export function BubblePop({ activity, words, onAttempt, onDone }: GameProps) {
       <div style={{ position: 'relative', width: '100%', height: reduce ? 'auto' : 380, overflow: 'hidden', borderRadius: 20, background: 'linear-gradient(#e8f6ff, #fff8ec)' }}
         className={reduce ? 'row' : undefined}>
         {bubbles.filter(b => !popped.has(b.id)).map(b => (
-          <motion.button key={b.id} type="button" aria-label={`bubble ${b.ch}`} data-glow={glowId === b.id ? 'true' : 'false'}
-            onClick={() => pop(b)} className="btn ghost"
-            style={{ position: reduce ? 'static' : 'absolute', left: `${b.x}%`, width: 72, height: 72, borderRadius: '50%', fontSize: 32, background: '#ffffffcc', boxShadow: glowId === b.id ? '0 0 0 6px var(--sun)' : undefined }}
-            initial={reduce ? false : { y: 400 }}
-            animate={reduce ? (wobble === b.id ? { x: [0, -6, 6, 0] } : {}) : { y: -90, x: wobble === b.id ? [0, -6, 6, 0] : 0 }}
-            transition={reduce ? { duration: 0.3 } : { y: { duration: b.duration, delay: b.delay, repeat: Infinity, ease: 'linear' }, x: { duration: 0.3 } }}
-            onAnimationComplete={() => setWobble(w => (w === b.id ? null : w))}>
-            {b.ch}
-          </motion.button>
+          // A plain CSS rise: the animation library's infinite repeat left some bubbles frozen.
+          <div key={`${word.id}-${b.id}`} className={reduce ? undefined : 'bubble-lane'}
+            style={reduce ? undefined : { left: `${b.left}%`, animationName: 'bubble-rise', animationDuration: `${RISE_SECONDS}s`, animationDelay: `${b.delay.toFixed(2)}s` }}>
+            <button type="button" aria-label={`bubble ${b.ch}`} data-glow={glowId === b.id ? 'true' : 'false'}
+              onClick={() => pop(b)} className={`btn ghost${wobble === b.id ? ' bubble-wobble' : ''}`}
+              onAnimationEnd={() => setWobble(w => (w === b.id ? null : w))}
+              style={{ width: 72, height: 72, borderRadius: '50%', fontSize: 32, background: '#fffffff2', boxShadow: glowId === b.id ? '0 0 0 6px var(--sun)' : undefined }}>
+              {b.ch}
+            </button>
+          </div>
         ))}
       </div>
     </GameFrame>

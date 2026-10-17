@@ -41,4 +41,20 @@ describe('BubblePop', () => {
     expect(screen.queryAllByRole('button', { name: /^bubble / })).toHaveLength(0)
     expect((await screen.findAllByRole('button', { name: /^bubble / })).length).toBeGreaterThan(3)
   })
+  // Bubbles froze at the top or stacked on each other: each needs its own lane, a CSS rise and a height apart from its neighbours.
+  it('gives every bubble its own lane, rising steadily, with neighbours at different heights', async () => {
+    const word = getWord(BUILTIN_BANK, 'w-accidentally')
+    renderWithServices(<BubblePop activity={{ id: 'a', gameType: 'bubblePop', wordIds: [word.id] }} words={[word]} onAttempt={() => {}} onDone={() => {}} />)
+    const lanes = (await screen.findAllByRole('button', { name: /^bubble / })).map(b => b.parentElement as HTMLElement)
+    expect(new Set(lanes).size).toBe(lanes.length)
+    for (const l of lanes) expect(l.style.animationName).toBe('bubble-rise')
+    const info = lanes.map(l => ({ left: parseFloat(l.style.left), delay: parseFloat(l.style.animationDelay), dur: parseFloat(l.style.animationDuration) }))
+    expect(new Set(info.map(x => x.left)).size).toBe(info.length)
+    expect(new Set(info.map(x => x.dur)).size).toBe(1) // one speed, so neighbours never drift together
+    info.sort((a, b) => a.left - b.left)
+    for (let n = 1; n < info.length; n++) {
+      const d = Math.abs(info[n].delay - info[n - 1].delay) / info[n].dur % 1
+      expect(Math.min(d, 1 - d), `lanes ${n - 1} and ${n}`).toBeGreaterThanOrEqual(0.2)
+    }
+  })
 })

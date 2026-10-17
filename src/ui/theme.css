@@ -59,3 +59,8 @@ button { cursor: pointer; }
 .bar > span { display: block; height: 100%; background: var(--meadow); border-radius: 7px; }
 .bar .marker { position: absolute; top: -4px; width: 2px; height: 22px; background: #555; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* Bubble Pop: each bubble rises in its own lane (CSS, so no bubble can freeze) */
+@keyframes bubble-rise { from { transform: translateY(380px); } to { transform: translateY(-90px); } }
+@keyframes bubble-wobble { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.bubble-lane { position: absolute; top: 0; margin-left: -36px; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; }
+.bubble-wobble { animation: bubble-wobble .3s ease-in-out; }
