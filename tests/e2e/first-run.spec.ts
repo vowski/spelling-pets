@@ -1,30 +1,18 @@
 import { test, expect } from '@playwright/test'
-import { boot, firstRun, nextDictated } from './helpers'
+import { boot, coins, firstRun, playFirstSession } from './helpers'
 
-test('first run → Treasure Hunt chunk → fun game → celebration → Home shows progress', async ({ page }) => {
+test('first run → Treasure Hunt chunk → fun game → celebration → Home shows progress → coins buy food', async ({ page }) => {
   await boot(page)
   await firstRun(page)
-  await page.getByRole('button', { name: 'Start today’s adventure!' }).click()
-  await page.getByRole('button', { name: "Let's go!" }).click()
+  await playFirstSession(page)
 
-  let seen = 0
-  for (let i = 0; i < 12; i++) {
-    const { word, count } = await nextDictated(page, seen)
-    seen = count
-    await page.getByLabel('Your spelling').fill(word)
-    await page.getByLabel('Your spelling').press('Enter')
-  }
-
-  await page.getByRole('button', { name: "Let's go!" }).click()
-  // Fun game on 2026-10-15 is Bubble Pop (odd day); with reduced motion the bubbles are static.
-  for (let i = 0; i < 5; i++) {
-    const { word, count } = await nextDictated(page, seen)
-    seen = count
-    for (const ch of word) await page.getByRole('button', { name: `bubble ${ch}` }).first().click()
-  }
-
-  await expect(page.getByText('Adventure complete! 🎉')).toBeVisible()
-  await page.getByRole('button', { name: 'Back home' }).click()
   await expect(page.getByLabel('1 of 5 practice days this week')).toBeVisible()
   await expect(page.getByText('You finished today')).toBeVisible()
+
+  const earned = await coins(page)
+  expect(earned).toBeGreaterThanOrEqual(5)
+  await page.getByRole('link', { name: /Pet Shop/ }).click()
+  await expect(page.getByRole('heading', { name: /Pet Shop/ })).toBeVisible()
+  await page.getByRole('button', { name: 'Buy Apple for 5' }).click()
+  await expect(page.getByLabel(`${earned - 5} paw coins`)).toBeVisible()
 })

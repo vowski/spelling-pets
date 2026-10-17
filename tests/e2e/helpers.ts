@@ -29,6 +29,37 @@ export async function firstRun(page: Page, name = 'Amy', pin = '1234') {
   await expect(page.getByText(`${name}'s Spelling Pets`)).toBeVisible()
 }
 
+/** From Home after first run: the Treasure Hunt chunk, then the fun game, to the celebration and back Home. */
+export async function playFirstSession(page: Page) {
+  await page.getByRole('button', { name: 'Start today’s adventure!' }).click()
+  await page.getByRole('button', { name: "Let's go!" }).click()
+
+  let seen = 0
+  for (let i = 0; i < 12; i++) {
+    const { word, count } = await nextDictated(page, seen)
+    seen = count
+    await page.getByLabel('Your spelling').fill(word)
+    await page.getByLabel('Your spelling').press('Enter')
+  }
+
+  await page.getByRole('button', { name: "Let's go!" }).click()
+  // Fun game on 2026-10-15 is Bubble Pop (odd day); with reduced motion the bubbles are static.
+  for (let i = 0; i < 5; i++) {
+    const { word, count } = await nextDictated(page, seen)
+    seen = count
+    for (const ch of word) await page.getByRole('button', { name: `bubble ${ch}` }).first().click()
+  }
+
+  await expect(page.getByText('Adventure complete! 🎉')).toBeVisible()
+  await page.getByRole('button', { name: 'Back home' }).click()
+}
+
+/** The paw-coin balance shown on Home or in the shop. */
+export async function coins(page: Page): Promise<number> {
+  const label = await page.getByLabel(/^\d+ paw coins$/).getAttribute('aria-label')
+  return Number(label!.split(' ')[0])
+}
+
 export async function openParent(page: Page, pin = '1234') {
   await page.getByRole('link', { name: 'Grown-ups' }).click()
   await page.getByLabel('Grown-up PIN').fill(pin)
