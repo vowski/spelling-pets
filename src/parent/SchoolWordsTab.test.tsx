@@ -24,4 +24,16 @@ describe('SchoolWordsTab', () => {
     expect(await services.repo.getCustomWords()).toEqual([{ wordId: 'w-crocodile', text: 'crocodile', sentence: 'The crocodile swam away.' }])
     expect(await screen.findByText('Upcoming tests')).toBeInTheDocument()
   })
+
+  it('saves pasted capitals as lowercase unless the grown-up ticks that the word needs one', async () => {
+    const services = makeTestServices()
+    const user = userEvent.setup()
+    renderWithServices(<MemoryRouter><SchoolWordsTab /></MemoryRouter>, services)
+    await user.type(await screen.findByLabelText("Paste or type this week's words"), 'Crocodile{enter}London')
+    await user.click(screen.getByRole('button', { name: 'Check words' }))
+    await user.click(screen.getByLabelText('london needs a capital letter (a name)'))
+    await user.click(screen.getByRole('button', { name: 'Save list' }))
+    await waitFor(async () => expect(await services.repo.getSchoolLists()).toHaveLength(1))
+    expect((await services.repo.getCustomWords()).map(c => c.text)).toEqual(['crocodile', 'London'])
+  })
 })

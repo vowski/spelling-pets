@@ -16,15 +16,17 @@ export function SchoolWordsTab() {
   const [testDate, setTestDate] = useState(() => nextFriday(today))
   const [preview, setPreview] = useState<ReturnType<typeof resolveSchoolWords> | null>(null)
   const [sentences, setSentences] = useState<Record<string, string>>({})
+  const [capitals, setCapitals] = useState<Record<string, boolean>>({})
   const [scores, setScores] = useState<Record<string, { score: string; outOf: string }>>({})
   if (!lists || !progress) return <p>Loading…</p>
 
   const save = async () => {
     if (!preview?.length) return
-    const list: SchoolList = { id: `list-${clock.now().getTime()}`, createdAt: today, testDate, items: preview.map(p => ({ text: p.text, wordId: p.wordId, ...(sentences[p.wordId] ? { sentence: sentences[p.wordId] } : {}) })) }
-    const custom = preview.filter(p => !p.inBank).map(p => ({ wordId: p.wordId, text: p.text, ...(sentences[p.wordId]?.trim() ? { sentence: sentences[p.wordId].trim() } : {}) }))
+    const textOf = (p: { text: string; wordId: string }) => (capitals[p.wordId] ? p.text[0].toUpperCase() + p.text.slice(1) : p.text)
+    const list: SchoolList = { id: `list-${clock.now().getTime()}`, createdAt: today, testDate, items: preview.map(p => ({ text: textOf(p), wordId: p.wordId, ...(sentences[p.wordId] ? { sentence: sentences[p.wordId] } : {}) })) }
+    const custom = preview.filter(p => !p.inBank).map(p => ({ wordId: p.wordId, text: textOf(p), ...(sentences[p.wordId]?.trim() ? { sentence: sentences[p.wordId].trim() } : {}) }))
     await repo.saveSchoolList(list, custom)
-    setRaw(''); setPreview(null); setSentences({})
+    setRaw(''); setPreview(null); setSentences({}); setCapitals({})
   }
   const status = (id: string) => BOX_NAMES[(progress.get(id) ?? newProgress(id)).box]
   const upcoming = lists.filter(l => l.testDate >= today)
@@ -62,7 +64,8 @@ export function SchoolWordsTab() {
             {preview.length === 0 ? <p>No words found. Put one word per line.</p> : (
               <ul>{preview.map(p => (
                 <li key={p.wordId}><strong>{p.text}</strong> {p.inBank ? <span className="chip good">✓ in our word bank</span> : (
-                  <><span className="chip warn">New word</span> <input aria-label={`Example sentence for ${p.text}`} placeholder="Example sentence (optional)" value={sentences[p.wordId] ?? ''} onChange={e => setSentences({ ...sentences, [p.wordId]: e.target.value })} size={40} /></>
+                  <><span className="chip warn">New word</span> <input aria-label={`Example sentence for ${p.text}`} placeholder="Example sentence (optional)" value={sentences[p.wordId] ?? ''} onChange={e => setSentences({ ...sentences, [p.wordId]: e.target.value })} size={40} />{' '}
+                    <label><input type="checkbox" aria-label={`${p.text} needs a capital letter (a name)`} checked={!!capitals[p.wordId]} onChange={e => setCapitals({ ...capitals, [p.wordId]: e.target.checked })} /> Needs a capital letter (a name)</label></>
                 )}</li>
               ))}</ul>
             )}

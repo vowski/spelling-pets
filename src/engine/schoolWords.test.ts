@@ -21,4 +21,12 @@ describe('school words', () => {
     expect(nextFriday('2026-10-16')).toBe('2026-10-23')
     expect(nextFriday('2026-10-18')).toBe('2026-10-23')
   })
+
+  it('lowercases new words whose capital only comes from how the list was typed', () => {
+    expect(resolveSchoolWords(['Crocodile', 'VOLCANO', 'McDonald'], bank)).toEqual([
+      { text: 'crocodile', wordId: 'w-crocodile', inBank: false },
+      { text: 'volcano', wordId: 'w-volcano', inBank: false },
+      { text: 'McDonald', wordId: 'w-mcdonald', inBank: false },
+    ])
+  })
 })

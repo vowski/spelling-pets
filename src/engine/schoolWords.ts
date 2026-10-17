@@ -26,7 +26,10 @@ export function resolveSchoolWords(texts: readonly string[], bank: Bank) {
   return texts.map(text => {
     const id = wordId(text)
     const w = bank.words.get(id)
-    return w ? { text: w.text, wordId: id, inBank: true } : { text, wordId: id, inBank: false }
+    // A capital that only comes from how the list was typed ("Crocodile", "VOLCANO") would make the word
+    // case-sensitive, so it is dropped; mixed case such as "McDonald" is kept.
+    const casual = text === text.toUpperCase() || text.slice(1) === text.slice(1).toLowerCase()
+    return w ? { text: w.text, wordId: id, inBank: true } : { text: casual ? text.toLowerCase() : text, wordId: id, inBank: false }
   })
 }
 
