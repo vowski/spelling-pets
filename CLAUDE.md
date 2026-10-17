@@ -1,6 +1,6 @@
 # Spelling Pets
 
-Offline spelling PWA for one Year 3 child (England). Spec: docs/superpowers/specs/2026-10-15-spelling-pets-design.md. Plan: docs/superpowers/plans/2026-10-15-spelling-pets.md.
+Offline spelling PWA for one Year 3 child (England). Spec and plan are kept private (they describe the child) in private/superpowers/ — not in git.
 
 - Engine logic lives in src/engine (pure TS, no React/Dexie/window/Date.now). Test it with Vitest.
 - Content (curriculum data) lives in src/content. Word ids `w-<slug>` are permanent: never rename one.

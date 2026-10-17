@@ -25,8 +25,9 @@ After the adventure, **Free Play** unlocks all the games.
 - **Data**: backups, restore and reset.
 
 ## Please set up backups
-Progress lives in this browser on this laptop. In **Data → Choose a backup folder**, pick a folder in OneDrive.
+Progress lives in this browser on this laptop. In **Data → Choose a backup folder**, pick a folder for the backups.
 A backup is then saved after every session. You can also **Download backup** at any time.
+A folder on the laptop keeps everything local. A OneDrive folder also protects against losing the laptop, but it copies her progress to Microsoft's cloud.
 
 ## Voices
 Edge's "Natural" British voices (e.g. Libby, Sonia) sound best; they send the spoken words to Microsoft's speech service.
