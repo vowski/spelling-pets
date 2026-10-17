@@ -23,4 +23,17 @@ describe('Shop', () => {
     expect(screen.getByText('Owned ✓')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Buy Crown for 150' })).toBeDisabled()
   })
+  // Review Focus #2 class: a quick double-click must buy once
+  it('charges once for a double-clicked purchase', async () => {
+    const services = makeTestServices()
+    await services.repo.updateSettings({ petName: 'Biscuit', firstRunDone: true })
+    await services.repo.addCoins(120, 'test', 1)
+    const user = userEvent.setup()
+    renderWithServices(<MemoryRouter><Shop /></MemoryRouter>, services)
+    await user.click(await screen.findByRole('tab', { name: /Dress-up/ }))
+    await user.dblClick(screen.getByRole('button', { name: 'Buy Party hat for 50' }))
+    expect(await screen.findByText('Biscuit is wearing the Party hat!')).toBeInTheDocument()
+    expect(await services.repo.balance()).toBe(70)
+    expect(await services.repo.getInventory()).toEqual([{ itemId: 'party-hat', count: 1 }])
+  })
 })

@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useServices } from '../app/services'
 import { SHOP_ITEMS, type ShopCategory, type ShopItem } from '../content/rewards'
@@ -14,6 +14,7 @@ export function Shop() {
   const navigate = useNavigate()
   const [tab, setTab] = useState<ShopCategory>('food')
   const [message, setMessage] = useState('')
+  const buying = useRef(false) // a quick double-click must not pay twice
   const settings = useLiveQuery(() => repo.getSettings(), [repo])
   const inventory = useLiveQuery(() => repo.getInventory(), [repo])
   if (!settings || !inventory) return <main className="screen"><p>Loading…</p></main>
@@ -21,6 +22,16 @@ export function Shop() {
   const shortOfCoins = SHOP_ITEMS.some(i => i.category === tab && settings.coins < i.price && (i.category === 'food' || !owned(i.id)))
 
   const buy = async (item: ShopItem) => {
+    if (buying.current) return
+    buying.current = true
+    try {
+      await purchase(item)
+    } finally {
+      buying.current = false
+    }
+  }
+  const purchase = async (item: ShopItem) => {
+    if (item.category !== 'food' && (await repo.getInventory()).some(i => i.itemId === item.id)) return
     if (!(await repo.spendCoins(item.price, `Bought ${item.name}`, clock.now().getTime()))) { setMessage('Keep practising to earn more 🐾'); return }
     await repo.addItem(item.id)
     sfx.coin()
