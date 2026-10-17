@@ -45,4 +45,11 @@ describe('PupPost', () => {
     await user.type(input, 'said{Enter}')
     expect(onAttempt).toHaveBeenCalledOnce()
   })
+  it('switches to Look-and-Cover when the voice fails part-way', async () => {
+    const speaker = { ...createStubSpeaker([]), available: () => !spokeOnce, speak: async () => { await new Promise(r => setTimeout(r, 20)); spokeOnce = true } }
+    let spokeOnce = false
+    renderWithServices(<PupPost activity={activity} words={words} onAttempt={() => {}} onDone={() => {}} />, { speaker })
+    expect(await screen.findByText('Look carefully…')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'said' })).toBeInTheDocument()
+  })
 })

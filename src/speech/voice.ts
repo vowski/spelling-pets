@@ -58,7 +58,28 @@ export function createSpeaker(synth: SpeechSynthesis | undefined, opts: SpeakerO
     const timer = setTimeout(done, opts.voicesTimeoutMs ?? 2000)
     synth.addEventListener('voiceschanged', done)
   })
-  const current = (): SpeechSynthesisVoice | null => chooseVoice(list(), voiceURI)
+  // Voices that errored (e.g. an online voice while offline) are skipped from then on.
+  const failed = new Set<string>()
+  const current = (): SpeechSynthesisVoice | null => chooseVoice(list().filter(v => !failed.has(v.voiceURI)), voiceURI)
+
+  /** Resolves true when the voice spoke (or timed out), false when it reported a real failure. */
+  const sayWith = (text: string, voice: SpeechSynthesisVoice) => new Promise<boolean>(resolve => {
+    const u = make(text)
+    u.voice = voice
+    u.lang = voice.lang || 'en-GB'
+    u.rate = rate
+    let finished = false
+    const finish = (ok: boolean) => {
+      if (finished) return
+      finished = true
+      clearTimeout(timer)
+      resolve(ok)
+    }
+    const timer = setTimeout(() => finish(true), 1500 + 120 * text.length)
+    u.onend = () => finish(true)
+    u.onerror = e => finish(e.error === 'interrupted' || e.error === 'canceled')
+    synth!.speak(u)
+  })
 
   return {
     ready: () => readyPromise,
@@ -72,26 +93,11 @@ export function createSpeaker(synth: SpeechSynthesis | undefined, opts: SpeakerO
     cancel: () => synth?.cancel(),
     speak: async text => {
       await readyPromise
-      const voice = current()
-      if (!synth || !voice) return
-      synth.cancel()
-      const u = make(text)
-      u.voice = voice
-      u.lang = voice.lang || 'en-GB'
-      u.rate = rate
-      await new Promise<void>(resolve => {
-        let finished = false
-        const finish = () => {
-          if (finished) return
-          finished = true
-          clearTimeout(timer)
-          resolve()
-        }
-        const timer = setTimeout(finish, 1500 + 120 * text.length)
-        u.onend = finish
-        u.onerror = finish
-        synth.speak(u)
-      })
+      for (let voice = current(); synth && voice; voice = current()) {
+        synth.cancel()
+        if (await sayWith(text, voice)) return
+        failed.add(voice.voiceURI) // try the next best voice; with none left, available() turns false
+      }
     },
   }
 }

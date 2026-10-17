@@ -7,7 +7,7 @@ const VOICES = [v('Microsoft David - English (United States)', 'en-US'), v('Micr
 
 class FakeUtterance {
   text: string; voice: unknown = null; lang = ''; rate = 1
-  onend: (() => void) | null = null; onerror: (() => void) | null = null
+  onend: (() => void) | null = null; onerror: ((e: { error: string }) => void) | null = null
   constructor(t: string) { this.text = t }
 }
 function fakeSynth(voices: VoiceLike[], autoEnd = true) {
@@ -47,6 +47,31 @@ describe('createSpeaker', () => {
     expect((synth.spoken[0].voice as VoiceLike).name).toContain('Libby')
     expect(synth.cancel).toHaveBeenCalled()
     expect(sp.available()).toBe(true)
+  })
+  // Review Focus #5: e.g. Edge's online "Natural" voice while the laptop is offline
+  it('falls back to the next British voice when the chosen one fails', async () => {
+    const synth = fakeSynth(VOICES)
+    synth.speak = (u: FakeUtterance) => { synth.spoken.push(u); setTimeout(() => (/Natural/.test((u.voice as VoiceLike).name) ? u.onerror?.({ error: 'synthesis-failed' }) : u.onend?.()), 0) }
+    const sp = createSpeaker(synth as unknown as SpeechSynthesis, { voiceURI: null, rate: 1, makeUtterance: make })
+    await sp.speak('because')
+    expect(synth.spoken.map(u => (u.voice as VoiceLike).name)).toEqual([VOICES[2].name, VOICES[1].name])
+    expect(sp.currentVoice()?.name).toContain('Hazel')
+    expect(sp.available()).toBe(true)
+  })
+  it('reports no voice once every voice has failed, so games switch to Look-and-Cover', async () => {
+    const synth = fakeSynth([VOICES[2]])
+    synth.speak = (u: FakeUtterance) => { synth.spoken.push(u); setTimeout(() => u.onerror?.({ error: 'network' }), 0) }
+    const sp = createSpeaker(synth as unknown as SpeechSynthesis, { voiceURI: null, rate: 1, makeUtterance: make })
+    await sp.speak('because')
+    expect(sp.available()).toBe(false)
+  })
+  it('treats an interrupted utterance as finished, not as a broken voice', async () => {
+    const synth = fakeSynth(VOICES)
+    synth.speak = (u: FakeUtterance) => { synth.spoken.push(u); setTimeout(() => u.onerror?.({ error: 'interrupted' }), 0) }
+    const sp = createSpeaker(synth as unknown as SpeechSynthesis, { voiceURI: null, rate: 1, makeUtterance: make })
+    await sp.speak('because')
+    expect(synth.spoken).toHaveLength(1)
+    expect(sp.currentVoice()?.name).toContain('Libby')
   })
   it('still resolves when onend never fires (timeout)', async () => {
     vi.useFakeTimers()
