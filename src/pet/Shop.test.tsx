@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { Shop } from './Shop'
@@ -13,8 +13,10 @@ describe('Shop', () => {
     const user = userEvent.setup()
     renderWithServices(<MemoryRouter><Shop /></MemoryRouter>, services)
     await user.click(await screen.findByRole('button', { name: 'Buy Apple for 5' }))
+    // A click while a purchase is still saving is ignored (double-click guard), so let the first one land.
+    await waitFor(async () => expect(await services.repo.balance()).toBe(65))
     await user.click(screen.getByRole('button', { name: 'Buy Apple for 5' }))
-    expect(await services.repo.balance()).toBe(60)
+    await waitFor(async () => expect(await services.repo.balance()).toBe(60))
     expect(await services.repo.getInventory()).toEqual([{ itemId: 'apple', count: 2 }])
     await user.click(screen.getByRole('tab', { name: /Dress-up/ }))
     await user.click(screen.getByRole('button', { name: 'Buy Party hat for 50' }))
