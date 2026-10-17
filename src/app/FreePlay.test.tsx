@@ -23,7 +23,7 @@ describe('FreePlay', () => {
     const user = userEvent.setup()
     renderWithServices(<MemoryRouter initialEntries={['/play']}><Routes><Route path="/play" element={<FreePlay />} /><Route path="/play/:game" element={<FreePlayGame />} /></Routes></MemoryRouter>, services)
     expect(await screen.findByRole('button', { name: /Pup Post/ })).toBeEnabled()
-    expect(screen.getByRole('button', { name: /Sort the Pen/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Sort the Pen/ })).toBeEnabled() // starter pattern until she finishes one
     await user.click(screen.getByRole('button', { name: /Pup Post/ }))
     await user.type(await screen.findByLabelText('Your spelling'), 'said{Enter}')
     expect(await screen.findByText(/Great playing!/)).toBeInTheDocument()
@@ -51,5 +51,12 @@ describe('FreePlay', () => {
     await playPupPost(services)
     expect(await screen.findByText(/Great playing!/)).toBeInTheDocument()
     expect(markDone).toHaveBeenCalledOnce()
+  })
+  it('has every game ready on a brand-new profile', async () => {
+    renderWithServices(<MemoryRouter initialEntries={['/play']}><Routes><Route path="/play" element={<FreePlay />} /></Routes></MemoryRouter>, makeTestServices())
+    await screen.findByRole('heading', { name: /Free Play/ })
+    const games = screen.getAllByRole('button').filter(b => b.className.includes('secondary'))
+    expect(games.length).toBeGreaterThanOrEqual(10)
+    for (const g of games) expect(g, g.textContent ?? '').toBeEnabled()
   })
 })
