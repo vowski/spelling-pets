@@ -54,7 +54,7 @@ export function BubblePop({ activity, words, onAttempt, onDone }: GameProps) {
       const nk = k + 1
       setK(nk)
       if (nk === letters.length) {
-        onAttempt({ wordId: word.id, correct: wrongTotal.current === 0, firstTry: true, hint: hinted.current, typed: word.text })
+        onAttempt({ wordId: word.id, correct: wrongTotal.current === 0, firstTry: true, hint: hinted.current })
         sfx.correct()
         later(next)
       }

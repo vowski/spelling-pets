@@ -16,7 +16,7 @@ describe('BubblePop', () => {
     const user = userEvent.setup()
     renderWithServices(<BubblePop activity={{ id: 'a', gameType: 'bubblePop', wordIds: ['w-all'] }} words={[all]} onAttempt={onAttempt} onDone={onDone} />)
     for (const ch of 'all') await user.click(bubble(ch))
-    expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-all', correct: true, firstTry: true, hint: false, typed: 'all' })
+    expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-all', correct: true, firstTry: true, hint: false })
     expect(onDone).toHaveBeenCalledOnce()
   })
   it('counts a wrong pop, and glows the right bubble after three slips', async () => {
@@ -29,6 +29,6 @@ describe('BubblePop', () => {
     await user.click(decoy)
     expect(bubble('w')).toHaveAttribute('data-glow', 'true')
     for (const ch of 'was') await user.click(bubble(ch))
-    expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-was', correct: false, firstTry: true, hint: true, typed: 'was' })
+    expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-was', correct: false, firstTry: true, hint: true })
   })
 })

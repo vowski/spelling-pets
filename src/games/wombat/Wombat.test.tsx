@@ -23,7 +23,7 @@ describe('Wombat', () => {
     expect(labels).toContain('becuz')
     expect(new Set(labels).size).toBe(4)
     await user.click(screen.getByRole('button', { name: 'Choose becuz' }))
-    expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-because', correct: false, firstTry: true, hint: false, typed: 'becuz' })
+    expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-because', correct: false, firstTry: true, hint: false })
     expect(screen.getByText("Almost! Let's look.")).toBeInTheDocument()
     expect(onDone).not.toHaveBeenCalled()
     await user.click(screen.getByRole('button', { name: 'Choose because' }))

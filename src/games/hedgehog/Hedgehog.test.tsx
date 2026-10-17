@@ -24,6 +24,7 @@ describe('Hedgehog', () => {
     }
     expect(onAttempt).toHaveBeenCalledTimes(8)
     expect(onAttempt.mock.calls[0][0].correct).toBe(false)
+    expect(onAttempt.mock.calls[0][0]).not.toHaveProperty('typed') // a picked option is not her spelling
     expect(onDone).toHaveBeenCalledOnce()
   })
 })

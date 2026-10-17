@@ -42,7 +42,7 @@ export function Wombat({ activity, words, onAttempt, onDone }: GameProps) {
       <p>Which one is spelt the right way?</p>
       <Button variant="secondary" onClick={() => void sayWord(speaker, word, delays.gap)}>🔊 Hear it again</Button>
       <ChoiceCards key={word.id} options={options} answer={word.text}
-        onFirstChoice={(choice, correct) => onAttempt({ wordId: word.id, correct, firstTry: true, hint: false, typed: choice })}
+        onFirstChoice={(_choice, correct) => onAttempt({ wordId: word.id, correct, firstTry: true, hint: false })}
         onSolved={next} />
     </GameFrame>
   )

@@ -61,7 +61,7 @@ export function SortPen({ activity, onAttempt, onDone }: GameProps) {
     if (!reported.current.has(text)) {
       reported.current.add(text)
       const id = wordId(text)
-      if (bank.words.has(id)) onAttempt({ wordId: id, correct: ok, firstTry: true, hint: false, typed: buckets.find(b => b.id === bucketId)?.label })
+      if (bank.words.has(id)) onAttempt({ wordId: id, correct: ok, firstTry: true, hint: false }) // a pen choice is not her spelling
     }
     setSelected(null)
     if (ok) { setPlaced(p => ({ ...p, [text]: bucketId })); setHint(null); sfx.correct() }

@@ -24,7 +24,7 @@ export function Hedgehog({ activity, onAttempt, onDone }: GameProps) {
       <p className="big-word" style={{ fontSize: 36 }} data-testid="gap-sentence">{item.sentence}</p>
       <Button variant="secondary" onClick={() => void speaker.speak(full)}>🔊 Hear the sentence</Button>
       <ChoiceCards key={`${i}-${item.sentence}`} options={shuffle(item.options, makeRng(hashString(item.sentence)))} answer={item.answer}
-        onFirstChoice={(choice, correct) => onAttempt({ wordId: wordId(item.answer), correct, firstTry: true, hint: false, typed: choice })}
+        onFirstChoice={(_choice, correct) => onAttempt({ wordId: wordId(item.answer), correct, firstTry: true, hint: false })}
         onSolved={() => (i + 1 < items.length ? setI(i + 1) : onDone())} />
     </GameFrame>
   )

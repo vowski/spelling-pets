@@ -16,7 +16,7 @@ describe('SortPen', () => {
     expect(screen.getByText(unit.rule)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'card rich' }))
     await user.click(screen.getByRole('button', { name: 'pen tch' }))
-    expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-rich', correct: false, firstTry: true, hint: false, typed: 'tch' })
+    expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-rich', correct: false, firstTry: true, hint: false })
     expect(screen.getByText(/goes in the/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'card rich' }))
     await user.click(screen.getByRole('button', { name: 'pen ch rule-breakers' }))
