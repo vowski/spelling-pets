@@ -14,7 +14,7 @@ with a pet to look after and rewards to earn. Everything is stored on the laptop
 
 ## Every day (about 10 minutes)
 Press **Start today's adventure!** The app chooses review words, new words, a game and a quick check.
-After the adventure, **Free Play** unlocks all the games.
+**Free Play** has all the games, any time.
 
 ## Grown-ups' dashboard (Grown-ups button, bottom of the home screen)
 - **Overview**: this week, progress towards Year 3 targets (50 and 70 of the Year 3/4 words), trouble spots with tips.

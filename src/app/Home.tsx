@@ -48,12 +48,7 @@ export function Home() {
         </>
       )}
       <nav className="row">
-        {HOME_LINKS.map(l => {
-          const locked = l.needsTodayDone && !done
-          return locked
-            ? <span key={l.to} className="btn ghost" aria-disabled="true" title="Finish today's adventure first">🔒 {l.label}</span>
-            : <Link key={l.to} className="btn secondary" to={l.to}>{l.emoji} {l.label}</Link>
-        })}
+        {HOME_LINKS.map(l => <Link key={l.to} className="btn secondary" to={l.to}>{l.emoji} {l.label}</Link>)}
       </nav>
       <Link className="btn ghost grown-ups no-print" to="/parent">Grown-ups</Link>
     </main>

@@ -31,4 +31,11 @@ describe('Home', () => {
     expect(await screen.findByRole('img', { name: 'Clover the bunny' })).toBeInTheDocument()
     expect(screen.queryByText(/still in the egg/)).not.toBeInTheDocument()
   })
+  it('keeps Free Play open even before today’s adventure', async () => {
+    const services = makeTestServices()
+    await services.repo.updateSettings({ firstRunDone: true })
+    renderWithServices(<MemoryRouter><Home /></MemoryRouter>, services)
+    expect(await screen.findByRole('link', { name: /Free Play/ })).toHaveAttribute('href', '/play')
+    expect(screen.queryByText(/🔒/)).not.toBeInTheDocument()
+  })
 })
