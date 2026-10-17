@@ -17,4 +17,12 @@ describe('App', () => {
     render(<App services={services} />)
     expect(await screen.findByText("Amy's Spelling Pets")).toBeInTheDocument()
   })
+  it('shows a friendly message instead of a blank screen when something breaks', async () => {
+    const services = makeTestServices()
+    await services.repo.updateSettings({ firstRunDone: true })
+    services.repo.getSettings = () => Promise.reject(new Error('storage broke'))
+    render(<App services={services} />)
+    expect(await screen.findByText(/Something went wrong/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start again' })).toBeInTheDocument()
+  })
 })

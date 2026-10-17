@@ -2,7 +2,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useMemo, useState } from 'react'
 import { HashRouter, Route, Routes } from 'react-router'
 import { buildBank } from '../content'
+import { Button } from '../ui/Button'
 import { createAppServices } from './bootstrap'
+import { ErrorBoundary } from './ErrorBoundary'
 import { FirstRun } from './FirstRun'
 import { ParentRelock } from '../parent/ParentArea'
 import { CHILD_ROUTES } from './routes'
@@ -13,9 +15,24 @@ export default function App({ services }: { services?: Services }) {
   const [base] = useState(() => services ?? createAppServices())
   return (
     <ServicesProvider value={base}>
-      <WithLiveBank />
+      {/* Anything that throws outside a game shows a way back instead of a blank screen. */}
+      <ErrorBoundary onError={e => void base.repo.logError('app', e.message, base.clock.now().getTime()).catch(() => {})} fallback={<AppCrash />}>
+        <WithLiveBank />
+      </ErrorBoundary>
       {!services && <UpdatePrompt />}
     </ServicesProvider>
+  )
+}
+
+function AppCrash() {
+  return (
+    <main className="screen">
+      <section className="card">
+        <h1>Something went wrong 🐾</h1>
+        <p>Your progress is saved. Let's start again.</p>
+        <Button size="big" onClick={() => window.location.replace(window.location.pathname + window.location.search)}>Start again</Button>
+      </section>
+    </main>
   )
 }
 
