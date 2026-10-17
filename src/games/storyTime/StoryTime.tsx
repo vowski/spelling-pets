@@ -17,6 +17,9 @@ export function StoryTime({ activity, onAttempt, onDone }: GameProps) {
   const [check, setCheck] = useState<SentenceCheck | null>(null)
   const [peeking, setPeeking] = useState(true)
   const [praise, setPraise] = useState(false)
+  const [nudge, setNudge] = useState('')
+  // Bumped by "Look again" (no voice) to show the sentence once more.
+  const [peekRound, setPeekRound] = useState(0)
   const results = useRef<StoryOutcome[]>([])
   const submitted = useRef(false)
   const sentence = sentences[i]
@@ -28,7 +31,7 @@ export function StoryTime({ activity, onAttempt, onDone }: GameProps) {
     setPeeking(true)
     const t = setTimeout(() => setPeeking(false), delays.peek)
     return () => clearTimeout(t)
-  }, [sentence, canSpeak, speaker, delays.peek])
+  }, [sentence, canSpeak, speaker, delays.peek, peekRound])
 
   useEffect(() => { if (!sentences.length) onDone({ storyResults: [] }) }, [sentences.length, onDone])
   if (!sentence || canSpeak === null) return <p>Getting ready…</p>
@@ -38,6 +41,7 @@ export function StoryTime({ activity, onAttempt, onDone }: GameProps) {
     setCheck(null)
     setValue('')
     setPraise(false)
+    setNudge('')
     if (i + 1 < sentences.length) setI(i + 1)
     else onDone({ storyResults: results.current })
   }
@@ -62,6 +66,7 @@ export function StoryTime({ activity, onAttempt, onDone }: GameProps) {
       return
     }
     if (checkSentence(sentence.text, value, isCs).allCorrect) { setPraise(true); sfx.correct(); later(next) }
+    else { setNudge('Nearly! Copy the sentence carefully, word by word.'); sfx.gentle() }
   }
 
   const phrases = splitPhrases(sentence.text)
@@ -74,6 +79,7 @@ export function StoryTime({ activity, onAttempt, onDone }: GameProps) {
         </div>
       )}
       {!canSpeak && peeking && <><p>Look carefully…</p><p className="big-word" style={{ fontSize: 36 }}>{sentence.text}</p></>}
+      {!canSpeak && !peeking && !check && !praise && <Button variant="secondary" onClick={() => setPeekRound(n => n + 1)}>👀 Look again</Button>}
       {praise ? <p className="praise">✨ Perfect sentence!</p> : !peeking && (
         <form onSubmit={onSubmit} className="card" style={{ boxShadow: 'none', padding: 0 }}>
           {check && (
@@ -88,9 +94,10 @@ export function StoryTime({ activity, onAttempt, onDone }: GameProps) {
             </>
           )}
           <input className="answer-input" style={{ width: 'min(820px, 100%)', fontSize: 30 }}
-            aria-label={check ? 'Type it the right way' : 'Type the sentence'} value={value} onChange={e => setValue(e.target.value)}
+            aria-label={check ? 'Type it the right way' : 'Type the sentence'} value={value} onChange={e => { setValue(e.target.value); setNudge('') }}
             autoFocus autoComplete="off" autoCorrect="off" spellCheck={false} />
           <Button type="submit">Check</Button>
+          <p className="nudge" aria-live="polite">{nudge}</p>
         </form>
       )}
     </GameFrame>
