@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { Workshop } from './Workshop'
 import { renderWithServices } from '../../test/render'
 import { BUILTIN_BANK, getWord } from '../../content'
+import { createStubSpeaker } from '../../speech/voice'
 
 const words = ['w-friend', 'w-because'].map(id => getWord(BUILTIN_BANK, id))
 const activity = { id: 'a', gameType: 'workshop' as const, wordIds: words.map(w => w.id) }
@@ -46,5 +47,14 @@ describe('Workshop', () => {
     await user.type(screen.getByLabelText('Type it the right way'), 'because{Enter}')
     expect(onAttempt).toHaveBeenCalledTimes(1) // only the pretest so far
     expect(screen.queryByText('Great! Once more from memory.')).not.toBeInTheDocument()
+  })
+
+  // Review Focus #5: with no voice she cannot know the word, so there is no pretest to guess at
+  it('skips the pretest when there is no voice and teaches straight away', async () => {
+    const onAttempt = vi.fn()
+    renderWithServices(<Workshop activity={activity} words={words} onAttempt={onAttempt} onDone={() => {}} />, { speaker: createStubSpeaker([], false) })
+    expect(await screen.findByRole('heading', { name: 'Look' })).toBeInTheDocument()
+    expect(screen.queryByText(/Have a go first/)).not.toBeInTheDocument()
+    expect(onAttempt).not.toHaveBeenCalled()
   })
 })

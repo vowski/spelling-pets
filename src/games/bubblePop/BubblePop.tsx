@@ -1,18 +1,19 @@
 import { motion, useReducedMotion } from 'motion/react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useServices } from '../../app/services'
 import { hashString, makeRng, shuffle } from '../../engine/rng'
-import { sayWord } from '../../speech/voice'
 import { Button } from '../../ui/Button'
+import { WordDisplay } from '../../ui/WordDisplay'
 import { GameFrame } from '../GameFrame'
 import type { GameProps } from '../types'
 import { useLater } from '../useAdvance'
+import { useDictation } from '../useDictation'
 
 interface Bubble { id: number; ch: string; x: number; duration: number; delay: number }
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
 export function BubblePop({ activity, words, onAttempt, onDone }: GameProps) {
-  const { speaker, delays, sfx } = useServices()
+  const { sfx } = useServices()
   const later = useLater()
   const reduce = useReducedMotion()
   const [i, setI] = useState(0)
@@ -32,9 +33,13 @@ export function BubblePop({ activity, words, onAttempt, onDone }: GameProps) {
     const decoys = shuffle([...ALPHABET].filter(c => !word.text.toLowerCase().includes(c)), rng).slice(0, 3)
     return shuffle([...word.text, ...decoys], rng).map((ch, id) => ({ id, ch, x: 5 + rng() * 85, duration: 9 + rng() * 4, delay: rng() * 4 }))
   }, [word, activity.id])
-  useEffect(() => { if (word) void sayWord(speaker, word, delays.gap) }, [word, speaker, delays.gap])
+  const { canSpeak, peeking, replay } = useDictation(word)
 
   if (!word) return null
+  if (canSpeak === null) return <p>Getting ready…</p>
+  if (!canSpeak && peeking) {
+    return <GameFrame title="Bubble Pop" emoji="🫧" done={i} total={words.length}><p>Look carefully…</p><WordDisplay word={word} /></GameFrame>
+  }
   const needed = letters[k]?.toLowerCase()
   const glowId = glow ? bubbles.find(b => !popped.has(b.id) && b.ch.toLowerCase() === needed)?.id : undefined
 
@@ -70,7 +75,7 @@ export function BubblePop({ activity, words, onAttempt, onDone }: GameProps) {
   return (
     <GameFrame title="Bubble Pop" emoji="🫧" done={i} total={words.length}>
       <p>Pop the letters in the right order!</p>
-      <Button variant="secondary" onClick={() => void sayWord(speaker, word, delays.gap)}>🔊 Hear it</Button>
+      {canSpeak && <Button variant="secondary" onClick={replay}>🔊 Hear it</Button>}
       <div className="row" aria-label="Letters so far" style={{ fontSize: 40 }}>
         {letters.map((ch, n) => <span key={n} style={{ minWidth: 40, textAlign: 'center', borderBottom: `4px solid ${n === k ? 'var(--meadow)' : 'var(--line)'}` }}>{n < k ? ch : ' '}</span>)}
       </div>

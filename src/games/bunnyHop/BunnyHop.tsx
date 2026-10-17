@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { useServices } from '../../app/services'
 import { hashString, makeRng } from '../../engine/rng'
-import { sayWord } from '../../speech/voice'
 import { Button } from '../../ui/Button'
 import { WordDisplay } from '../../ui/WordDisplay'
 import { GameFrame } from '../GameFrame'
 import type { GameProps } from '../types'
 import { useLater } from '../useAdvance'
+import { useDictation } from '../useDictation'
 import { scramble } from './scramble'
 
 export function BunnyHop({ activity, words, onAttempt, onDone }: GameProps) {
-  const { speaker, delays, sfx } = useServices()
+  const { sfx } = useServices()
   const later = useLater()
   const [i, setI] = useState(0)
   const [chosen, setChosen] = useState<number[]>([])
@@ -18,8 +18,12 @@ export function BunnyHop({ activity, words, onAttempt, onDone }: GameProps) {
   const reported = useRef(false)
   const word = words[i]
   const tiles = useMemo(() => (word ? scramble(word.text, makeRng(hashString(`${activity.id}:${word.id}`))) : []), [word, activity.id])
-  useEffect(() => { if (word) void sayWord(speaker, word, delays.gap) }, [word, speaker, delays.gap])
+  const { canSpeak, peeking, replay } = useDictation(word)
   if (!word) return null
+  if (canSpeak === null) return <p>Getting ready…</p>
+  if (!canSpeak && peeking) {
+    return <GameFrame title="Bunny Hop" emoji="🐰" done={i} total={words.length}><p>Look carefully…</p><WordDisplay word={word} /></GameFrame>
+  }
 
   const next = () => {
     reported.current = false
@@ -55,7 +59,7 @@ export function BunnyHop({ activity, words, onAttempt, onDone }: GameProps) {
   return (
     <GameFrame title="Bunny Hop" emoji="🐰" done={i} total={words.length}>
       <p>Hop the letters into the right order.</p>
-      <Button variant="secondary" onClick={() => void sayWord(speaker, word, delays.gap)}>🔊 Hear it</Button>
+      {canSpeak && <Button variant="secondary" onClick={replay}>🔊 Hear it</Button>}
       {phase === 'fix' && (
         <div data-testid="model">
           <p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p>

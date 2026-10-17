@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { BubblePop } from './BubblePop'
 import { renderWithServices } from '../../test/render'
 import { BUILTIN_BANK, getWord } from '../../content'
+import { createStubSpeaker } from '../../speech/voice'
 
 const was = getWord(BUILTIN_BANK, 'w-was')
 const all = getWord(BUILTIN_BANK, 'w-all')
@@ -30,5 +31,14 @@ describe('BubblePop', () => {
     expect(bubble('w')).toHaveAttribute('data-glow', 'true')
     for (const ch of 'was') await user.click(bubble(ch))
     expect(onAttempt).toHaveBeenCalledWith({ wordId: 'w-was', correct: false, firstTry: true, hint: true })
+  })
+
+  it('shows the word first when there is no voice', async () => {
+    const was = getWord(BUILTIN_BANK, 'w-was')
+    renderWithServices(<BubblePop activity={{ id: 'a', gameType: 'bubblePop', wordIds: ['w-was'] }} words={[was]} onAttempt={() => {}} onDone={() => {}} />, { speaker: createStubSpeaker([], false) })
+    expect(await screen.findByText('Look carefully…')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'was' })).toBeInTheDocument()
+    expect(screen.queryAllByRole('button', { name: /^bubble / })).toHaveLength(0)
+    expect((await screen.findAllByRole('button', { name: /^bubble / })).length).toBeGreaterThan(3)
   })
 })

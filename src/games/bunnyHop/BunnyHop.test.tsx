@@ -6,6 +6,7 @@ import { scramble } from './scramble'
 import { makeRng } from '../../engine/rng'
 import { renderWithServices } from '../../test/render'
 import { BUILTIN_BANK, getWord } from '../../content'
+import { createStubSpeaker } from '../../speech/voice'
 
 const said = getWord(BUILTIN_BANK, 'w-said')
 const activity = { id: 'a', gameType: 'bunnyHop' as const, wordIds: ['w-said'] }
@@ -46,5 +47,14 @@ describe('BunnyHop', () => {
     await user.keyboard('id')
     expect(onAttempt).toHaveBeenCalledOnce()
     expect(onDone).toHaveBeenCalledOnce()
+  })
+
+  it('shows the word first when there is no voice', async () => {
+    renderWithServices(<BunnyHop activity={activity} words={[said]} onAttempt={() => {}} onDone={() => {}} />, { speaker: createStubSpeaker([], false) })
+    expect(await screen.findByText('Look carefully…')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'said' })).toBeInTheDocument()
+    expect(screen.queryAllByRole('button', { name: /^tile / })).toHaveLength(0)
+    expect((await screen.findAllByRole('button', { name: /^tile / })).length).toBe(4)
+    expect(screen.queryByRole('img', { name: 'said' })).not.toBeInTheDocument()
   })
 })
