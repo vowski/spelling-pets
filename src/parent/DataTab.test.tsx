@@ -22,6 +22,26 @@ describe('DataTab', () => {
     expect((await services.repo.getSettings()).lastBackupAt).not.toBeNull()
   })
 
+  it('keeps the download link alive for a while before revoking it', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true })
+    try {
+      const services = makeTestServices()
+      const revoke = vi.fn()
+      Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:y'), revokeObjectURL: revoke })
+      const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+      const user = userEvent.setup()
+      renderWithServices(<DataTab reload={() => {}} />, services)
+      await user.click(await screen.findByRole('button', { name: 'Download backup' }))
+      await waitFor(async () => expect((await services.repo.getSettings()).lastBackupAt).not.toBeNull())
+      expect(click).toHaveBeenCalled()
+      expect(revoke).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(revoke).toHaveBeenCalledWith('blob:y')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('previews and restores a valid backup, and rejects a bad file', async () => {
     const source = Repo.open(`d-${Math.random()}`)
     await source.updateSettings({ childName: 'Amy' })

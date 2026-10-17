@@ -29,7 +29,8 @@ export function DataTab({ reload = reloadHome }: { reload?: () => void }) {
     a.href = url
     a.download = backupFileName(today)
     a.click()
-    URL.revokeObjectURL(url)
+    // Revoking straight after click() can cancel the download in some browsers, so give it time to start.
+    setTimeout(() => URL.revokeObjectURL(url), 40_000)
     await repo.updateSettings({ lastBackupAt: clock.now().getTime() })
   }
   const onFile = async (f: File | undefined) => { if (f) setParsed(parseBackup(await f.text())) }
