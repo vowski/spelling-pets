@@ -22,6 +22,8 @@ export interface Mistake {
   mustMention: string[]
   /** Lowercase strings a tip may put in quotes. */
   quotable: string[]
+  /** Sound-alike tips only: each word's meaning (its key word) must come after that word, not after the other one. */
+  meanings?: { word: string; token: string }[]
 }
 
 type Suffix = { root: string; suffix: string; kind: 'doubling' | 'dropE' | 'yToI' }
@@ -78,7 +80,8 @@ function homophone(word: Word, attempt: string): Mistake | null {
   if (!ga || !gt) return null
   const template = `"${a}" means ${ga}. This word is "${word.text}", meaning ${gt}.`
   return { type: 'homophone', target: word.text, attempt, facts: [`"${a}" means ${ga}`, `"${word.text}" means ${gt}`], template, reword: template,
-    mustMention: [longest(gt).toLowerCase()], quotable: [a, target] }
+    mustMention: [longest(gt).toLowerCase()], quotable: [a, target],
+    meanings: [{ word: a, token: longest(ga).toLowerCase() }, { word: target, token: longest(gt).toLowerCase() }] }
 }
 
 function apostrophe(word: Word, attempt: string): Mistake | null {
@@ -98,14 +101,14 @@ function suffix(word: Word, attempt: string, bank: Bank): Mistake | null {
   if (s.kind === 'doubling') {
     const last = root.at(-1)!
     const template = `"${root}" has a short sound and ends in one consonant, so double the "${last}" before "${sfx}": "${t}".`
-    return { type: 'doubling', target: t, attempt, facts: [template], template, reword: template, mustMention: ['double', `"${root}"`], quotable: [root, last, sfx, t.toLowerCase()] }
+    return { type: 'doubling', target: t, attempt, facts: [template], template, reword: template, mustMention: ['double', 'short', `"${root}"`], quotable: [root, last, sfx, t.toLowerCase()] }
   }
   if (s.kind === 'dropE') {
     const template = `"${root}" ends in "e", so drop the "e" before "${sfx}": "${t}".`
     return { type: 'dropE', target: t, attempt, facts: [template], template, reword: template, mustMention: ['drop', `"${root}"`], quotable: [root, 'e', sfx, t.toLowerCase()] }
   }
   const template = `When "${root}" gets "${sfx}", the "y" changes to "i": "${t}".`
-  return { type: 'yToI', target: t, attempt, facts: [template], template, reword: template, mustMention: ['"i"', `"${root}"`], quotable: [root, sfx, 'y', 'i', t.toLowerCase()] }
+  return { type: 'yToI', target: t, attempt, facts: [template], template, reword: template, mustMention: ['"y" changes to "i"', `"${root}"`], quotable: [root, sfx, 'y', 'i', t.toLowerCase()] }
 }
 
 function ending(word: Word, attempt: string): Mistake | null {
@@ -115,7 +118,7 @@ function ending(word: Word, attempt: string): Mistake | null {
   if (!found || attempt.toLowerCase().endsWith(found[0])) return null
   const [e, sound] = found
   const template = sound ? `The "${sound}" sound at the end of "${t}" is spelt "${e}".` : `The end of "${t}" is spelt "${e}".`
-  return { type: 'ending', target: t, attempt, facts: [template], template, reword: template, mustMention: [e], quotable: [t.toLowerCase(), e, ...(sound ? [sound] : [])] }
+  return { type: 'ending', target: t, attempt, facts: [template], template, reword: template, mustMention: [`"${e}"`], quotable: [t.toLowerCase(), e, ...(sound ? [sound] : [])] }
 }
 
 function tricky(word: Word, attempt: string): Mistake | null {
@@ -137,7 +140,7 @@ function tricky(word: Word, attempt: string): Mistake | null {
   const template = trick ? `${lead} ${trick}` : lead
   return { type: 'tricky', target: t, attempt, facts: [lead, ...(trick ? [trick] : [])], template, reword: lead, ...(trick ? { keep: trick } : {}),
     // The trick is added back word for word after the reworded lead (tipFromReply); this guards that it survived.
-    mustMention: [...bits.map(b => b.toLowerCase()), ...(trick ? [trick.slice(trick.indexOf(':') + 1).trim().replace(/\.$/, '').toLowerCase()] : [])], quotable: [t.toLowerCase(), ...bits.map(b => b.toLowerCase())] }
+    mustMention: [...bits.map(b => `"${b.toLowerCase()}"`), ...(trick ? [trick.slice(trick.indexOf(':') + 1).trim().replace(/\.$/, '').toLowerCase()] : [])], quotable: [t.toLowerCase(), ...bits.map(b => b.toLowerCase())] }
 }
 
 /** Works out what kind of mistake she made, with the facts and an always-correct plain tip; null when it can't tell. */

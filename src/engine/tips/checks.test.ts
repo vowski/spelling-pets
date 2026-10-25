@@ -45,6 +45,23 @@ describe('checkTip', () => {
     expect(checkTip(text, m(t, typed), deps).length).toBeGreaterThan(0)
   })
 
+  it.each([
+    ['here', 'hear', '"hear" means this place. This word is "here", meaning listen with your ears.'],
+    ['says', 'syas', 'In "says", the y comes before the a.'],
+    ['station', 'stashun', 'At the end of "station", the shun sound is spelt sion.'],
+    ['patting', 'pating', '"pat" has a long sound, so you do not double the "t" before "ing": "patting".'],
+    ['hiking', 'hikeing', '"hike" ends in "e", so keep the "e" and do not drop it before "ing": "hiking".'],
+    ['Monday', 'monday', 'Days of the week never need a capital letter: "Monday".'],
+    ['happier', 'happyer', 'When "happy" gets "er", the "i" changes to "y": "happier".'],
+    ['says', 'syas', 'In “says”, the tricky letters are \'ya\'.'],
+  ])('rejects a false rewording the first checks let through (review I5): %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).not.toEqual([])
+  })
+
+  it('accepts a sound-alike tip that explains the correct word first', () => {
+    expect(checkTip('“Here” means this place; “hear” means listen with your ears.', m('here', 'hear'), deps)).toEqual([])
+  })
+
   it('fails a rule tip that names the wrong root word (laptop run 1)', () => {
     const text = '“Dropping” has a short sound and ends in one consonant, so double the “p” before “ing”: “dropping”.'
     expect(checkTip(text, m('dropping', 'droping'), deps)).toContain('drops the key fact: "drop"')

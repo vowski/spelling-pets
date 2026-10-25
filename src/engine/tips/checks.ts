@@ -3,6 +3,8 @@ import type { Mistake } from './classify'
 const AMERICAN = /\b(color|colors|colored|favorite|favorites|realize[sd]?|recognize[sd]?|center|centers|theater|mom|gray|honor|neighbor|neighbors|organize[sd]?|apologize[sd]?)\b|\b\w{3,}iz(e|es|ed|ing)\b|\b(mr|mrs|ms|dr)\./i
 const PRAISE = /\b(great|brilliant|amazing|well done|good job|clever|fantastic)\b/i
 const FIRST_PERSON = /\bI\b|\bI'm\b|\bI'll\b/
+/** Words that can turn a rule round ("do not double", "keep the e"); a reply may only use ones its plain tip uses. */
+const NEGATIONS = /\b(not|never|no|don't|doesn't|isn't|aren't|keep|without)\b/g
 
 const straighten = (s: string) => s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'")
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -27,12 +29,35 @@ export function checkTip(text: string, m: Mistake, deps: { isBlocked: (word: str
   if (AMERICAN.test(t)) problems.push('American spelling')
   if (FIRST_PERSON.test(t) && !/^i($|')/.test(target)) problems.push('says "I"')
   if (PRAISE.test(t.replace(/"[^"]*"/g, ''))) problems.push('praise') // a quoted word can be the spelling word itself ("great")
-  const quoted = [...t.matchAll(/"([^"]+)"/g)].map(q => q[1].toLowerCase())
+  // Single quotes count too ('ei'), but not apostrophes inside words (can't).
+  const quoted = [...t.matchAll(/"([^"]+)"/g), ...t.matchAll(/(?:^|[\s(])'([^']+)'(?=[\s.,!?;:)]|$)/g)].map(q => q[1].toLowerCase())
   const stray = quoted.filter(q => !m.quotable.includes(q))
   if (stray.length) problems.push(`quotes something new: ${stray.join(', ')}`)
   // The tip's own facts are curriculum words ("fat" in fatter); only words the AI adds are screened.
   if (t.split(/[^A-Za-z']+/).filter(Boolean).some(w => deps.isBlocked(w) && !m.quotable.includes(w.toLowerCase()))) problems.push('unsuitable word')
+  const template = straighten(m.template).toLowerCase()
+  const added = [...new Set(lower.replace(/"[^"]*"/g, '').match(NEGATIONS) ?? [])].filter(w => !new RegExp(`\\b${w}\\b`).test(template))
+  if (added.length) problems.push(`adds ${added.join(', ')}`)
+  if (m.meanings && mixesUpMeanings(lower, m.meanings)) problems.push('mixes up the meanings')
   const missing = m.mustMention.filter(token => !lower.includes(token))
   if (missing.length) problems.push(`drops the key fact: ${missing.join(', ')}`)
   return problems
+}
+
+/** Where a word is first named in the tip: quoted if possible, otherwise as a whole word; -1 if it isn't. */
+function findWord(text: string, word: string): number {
+  const q = text.indexOf(`"${word}"`)
+  if (q >= 0) return q
+  const r = new RegExp(`(^|[^a-z'])${escape(word)}($|[^a-z'])`).exec(text)
+  return r ? r.index + r[1].length : -1
+}
+
+/** True when a sound-alike tip gives a word's meaning after the other word instead of after its own. */
+function mixesUpMeanings(text: string, meanings: { word: string; token: string }[]): boolean {
+  const named = meanings.map(x => ({ ...x, at: findWord(text, x.word) })).sort((a, b) => a.at - b.at)
+  if (named.some(x => x.at < 0)) return false // nothing to mix up; the other checks cover a missing correct word
+  const [first, second] = named
+  const before = text.slice(0, second.at)
+  const after = text.slice(second.at)
+  return (!before.includes(first.token) && after.includes(first.token)) || (!after.includes(second.token) && before.includes(second.token))
 }
