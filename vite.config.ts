@@ -3,6 +3,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { readFileSync } from 'node:fs'
+import { ortCacheName } from './src/ai/modelCache'
+
+// The runtime cache is named after the ONNX Runtime version, so an upgrade never pairs old .wasm files with new code.
+const ORT_VERSION: string = JSON.parse(readFileSync('node_modules/onnxruntime-web/package.json', 'utf8')).version
 
 export default defineConfig({
   base: './',
@@ -35,7 +40,7 @@ export default defineConfig({
         // AI tips: the runtime is cached on first use, not precached for everyone. Model files from Hugging Face are
         // cached by Transformers.js itself and are never touched here.
         globIgnores: ['**/ort/**'],
-        runtimeCaching: [{ urlPattern: ({ url }) => url.pathname.includes('/ort/'), handler: 'CacheFirst', options: { cacheName: 'ort-runtime' } }],
+        runtimeCaching: [{ urlPattern: ({ url }) => url.pathname.includes('/ort/'), handler: 'CacheFirst', options: { cacheName: ortCacheName(ORT_VERSION) } }],
       },
     }),
   ],

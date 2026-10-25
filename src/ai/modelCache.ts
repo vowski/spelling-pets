@@ -16,6 +16,16 @@ export async function hasModelFiles(storage: Pick<CacheStorage, 'has' | 'open'>)
   return modelFileUrls().every(u => urls.has(u))
 }
 
+const ORT_CACHE = 'ort-runtime'
+
+/** The service worker's cache for the ONNX Runtime files, named after its version so an upgrade never mixes old and new. */
+export const ortCacheName = (version: string): string => `${ORT_CACHE}-${version}`
+
+/** "Remove the AI model": deletes the model files and the AI runtime files, and leaves every other cache alone. */
+export async function clearAiCaches(storage: Pick<CacheStorage, 'keys' | 'delete'>): Promise<void> {
+  for (const name of await storage.keys()) if (name === MODEL_CACHE || name === ORT_CACHE || name.startsWith(`${ORT_CACHE}-`)) await storage.delete(name)
+}
+
 /** Why the download shouldn't start when the browser says there isn't room for it; null when there is, or it can't tell. */
 export async function notEnoughSpace(storage: Pick<StorageManager, 'estimate'> | undefined, neededMB = TIP_MODEL.approxMB * 1.2): Promise<string | null> {
   const est = await storage?.estimate().catch(() => undefined)

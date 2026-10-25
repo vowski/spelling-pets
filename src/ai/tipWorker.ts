@@ -1,6 +1,6 @@
 // Web Worker: runs Gemma 3 1B with Transformers.js on WebGPU, off the main thread.
 import { env, pipeline } from '@huggingface/transformers'
-import { MODEL_CACHE, hasModelFiles, notEnoughSpace } from './modelCache'
+import { clearAiCaches, hasModelFiles, notEnoughSpace } from './modelCache'
 import { MODEL_MISSING, MODEL_NOT_SAVED, TIP_MODEL } from './tipModel'
 import type { WorkerReply, WorkerRequest } from './workerTipModel'
 
@@ -68,7 +68,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
       reply({ id: req.id, ok: true, value: value.trim() })
     } else if (req.type === 'remove') {
       await unload()
-      await caches.delete(MODEL_CACHE)
+      await clearAiCaches(caches)
       reply({ id: req.id, ok: true })
     }
   } catch (err) {

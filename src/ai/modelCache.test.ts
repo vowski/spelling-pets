@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MODEL_CACHE, hasModelFiles, modelFileUrls, notEnoughSpace } from './modelCache'
+import { MODEL_CACHE, clearAiCaches, hasModelFiles, modelFileUrls, notEnoughSpace, ortCacheName } from './modelCache'
 import { TIP_MODEL } from './tipModel'
 
 /** A stand-in for the browser's CacheStorage holding the given addresses under each cache name. */
@@ -24,6 +24,17 @@ describe('model cache (review I3)', () => {
     expect(await hasModelFiles(fakeCaches({ [MODEL_CACHE]: modelFileUrls().slice(0, 5) }))).toBe(false)
     const otherRevision = modelFileUrls().map(u => u.replace(TIP_MODEL.revision, 'main'))
     expect(await hasModelFiles(fakeCaches({ [MODEL_CACHE]: otherRevision }))).toBe(false)
+  })
+
+  it('names the AI runtime cache after the runtime version, so an upgrade fetches fresh files (review I4)', () => {
+    expect(ortCacheName('1.31.0')).toBe('ort-runtime-1.31.0')
+    expect(ortCacheName('1.31.0')).not.toBe(ortCacheName('1.32.0'))
+  })
+
+  it('removes the model and every AI runtime cache, and nothing else (review I4)', async () => {
+    const names = new Set([MODEL_CACHE, 'ort-runtime', 'ort-runtime-1.31.0', 'workbox-precache-v2-https://example.test/'])
+    await clearAiCaches({ keys: async () => [...names], delete: async (n: string) => names.delete(n) })
+    expect([...names]).toEqual(['workbox-precache-v2-https://example.test/'])
   })
 
   it('stops a download that the browser says there is no room for', async () => {
