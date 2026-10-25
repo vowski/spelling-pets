@@ -6,6 +6,7 @@ import { checkWord, type WordCheck } from '../engine/checker'
 import { Button } from './Button'
 import { SpeakButton } from './SpeakButton'
 import { LetterDiff } from './LetterDiff'
+import { TipBox } from './TipBox'
 
 export type Feedback = 'full' | 'neutral' | 'pretest'
 export interface FirstResult { correct: boolean; typed: string; capitalOnly: boolean }
@@ -20,7 +21,7 @@ export function TypeAndCheck({ word, feedback = 'full', onFirstResult, onFinishe
   onFinished: () => void
   label?: string
 }) {
-  const { sfx, delays } = useServices()
+  const { sfx, delays, tips } = useServices()
   const setMood = usePetMood(s => s.setMood)
   const [value, setValue] = useState('')
   const [phase, setPhase] = useState<Phase>('answering')
@@ -77,8 +78,10 @@ export function TypeAndCheck({ word, feedback = 'full', onFirstResult, onFinishe
       {correcting && check && (
         <>
           <p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p>
-          {check.capitalOnly && <p>Remember the capital letter at the start!</p>}
+          {/* With spelling tips on, the capital-letter tip says this instead. */}
+          {check.capitalOnly && !tips && <p>Remember the capital letter at the start!</p>}
           <LetterDiff ops={check.ops} />
+          <TipBox word={word} typed={check.typed} />
           <p>Type it the right way:</p>
           <SpeakButton text="Almost! Let's look. Type it the right way." />
         </>

@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { fireEvent, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { TypeAndCheck } from './TypeAndCheck'
-import { renderWithServices } from '../test/render'
+import { makeTestServices, renderWithServices } from '../test/render'
+import { servicesWithTips } from '../test/fakeTipModel'
 import { BUILTIN_BANK, getWord } from '../content'
 
 const said = getWord(BUILTIN_BANK, 'w-said')
@@ -93,5 +94,25 @@ describe('TypeAndCheck', () => {
     expect(screen.getByText("Let's learn this one together!")).toBeInTheDocument()
     expect(screen.queryByLabelText('Type it the right way')).not.toBeInTheDocument()
     expect(onFinished).toHaveBeenCalledOnce()
+  })
+
+  it('lets her retype while the tip is still thinking', async () => {
+    const services = await servicesWithTips(makeTestServices(), { delayMs: 500 })
+    const onFinished = vi.fn()
+    const user = userEvent.setup()
+    renderWithServices(<TypeAndCheck word={getWord(BUILTIN_BANK, 'w-here')} onFirstResult={() => {}} onFinished={onFinished} />, services)
+    await user.type(screen.getByLabelText('Your spelling'), 'hear{Enter}')
+    expect(await screen.findByText('💡 Thinking of a tip…')).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Type it the right way'), 'here{Enter}')
+    expect(onFinished).toHaveBeenCalledOnce()
+  })
+
+  it('shows the capital tip instead of the old capital line', async () => {
+    const services = await servicesWithTips(makeTestServices())
+    const user = userEvent.setup()
+    renderWithServices(<TypeAndCheck word={getWord(BUILTIN_BANK, 'w-monday')} onFirstResult={() => {}} onFinished={() => {}} />, services)
+    await user.type(screen.getByLabelText('Your spelling'), 'monday{Enter}')
+    expect(await screen.findAllByText(/Days of the week always start with a capital letter/)).toHaveLength(1)
+    expect(screen.queryByText('Remember the capital letter at the start!')).not.toBeInTheDocument()
   })
 })

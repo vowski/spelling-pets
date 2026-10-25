@@ -1,4 +1,7 @@
 import type { TipModel } from '../ai/tipModel'
+import type { Services } from '../app/services'
+import { createTipService, type TipService } from '../app/tips'
+import { isBlockedWord } from '../content/dictionary'
 import type { ChatMessage } from '../engine/tips/prompt'
 
 export interface FakeTipModelOptions {
@@ -35,4 +38,14 @@ export function fakeTipModel(o: FakeTipModelOptions = {}): TipModel & { calls: n
     async remove() {},
   }
   return model
+}
+
+/** Test services with spelling tips switched on, backed by a fake model (self-test passes, then `o` applies). */
+export async function servicesWithTips<S extends Services>(services: S, o: FakeTipModelOptions = {}, timeoutMs = 1000): Promise<S & { tips: TipService; model: ReturnType<typeof fakeTipModel> }> {
+  const model = fakeTipModel()
+  const tips = createTipService({ repo: services.repo, bank: services.bank, model, clock: services.clock, timeoutMs, isBlocked: isBlockedWord })
+  await tips.enable()
+  Object.assign(model.options, o)
+  model.calls = 0
+  return { ...services, tips, model }
 }
