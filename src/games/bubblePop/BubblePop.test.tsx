@@ -35,7 +35,7 @@ describe('BubblePop', () => {
 
   it('shows the word first when there is no voice', async () => {
     const was = getWord(BUILTIN_BANK, 'w-was')
-    renderWithServices(<BubblePop activity={{ id: 'a', gameType: 'bubblePop', wordIds: ['w-was'] }} words={[was]} onAttempt={() => {}} onDone={() => {}} />, { speaker: createStubSpeaker([], false) })
+    renderWithServices(<BubblePop activity={{ id: 'a', gameType: 'bubblePop', wordIds: ['w-was'] }} words={[was]} onAttempt={() => {}} onDone={() => {}} />, { speaker: createStubSpeaker([], false), delays: { feedback: 0, peek: 400, gap: 0 } }) // 400 ms look: checked while the suite is busy
     expect(await screen.findByText('Look carefully…')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'was' })).toBeInTheDocument()
     expect(screen.queryAllByRole('button', { name: /^bubble / })).toHaveLength(0)

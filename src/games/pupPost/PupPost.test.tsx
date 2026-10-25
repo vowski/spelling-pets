@@ -36,7 +36,7 @@ describe('PupPost', () => {
   it('falls back to Look-and-Cover when there is no voice', async () => {
     const onAttempt = vi.fn()
     const user = userEvent.setup()
-    renderWithServices(<PupPost activity={activity} words={words} onAttempt={onAttempt} onDone={() => {}} />, { speaker: createStubSpeaker([], false) })
+    renderWithServices(<PupPost activity={activity} words={words} onAttempt={onAttempt} onDone={() => {}} />, { speaker: createStubSpeaker([], false), delays: { feedback: 0, peek: 400, gap: 0 } }) // 400 ms look: checked while the suite is busy
     expect(await screen.findByText('Look carefully…')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'said' })).toBeInTheDocument()
     expect(screen.queryByLabelText('Your spelling')).not.toBeInTheDocument()

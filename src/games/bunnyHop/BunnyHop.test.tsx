@@ -61,7 +61,7 @@ describe('BunnyHop', () => {
   })
 
   it('shows the word first when there is no voice', async () => {
-    renderWithServices(<BunnyHop activity={activity} words={[said]} onAttempt={() => {}} onDone={() => {}} />, { speaker: createStubSpeaker([], false) })
+    renderWithServices(<BunnyHop activity={activity} words={[said]} onAttempt={() => {}} onDone={() => {}} />, { speaker: createStubSpeaker([], false), delays: { feedback: 0, peek: 400, gap: 0 } }) // 400 ms look: checked while the suite is busy
     expect(await screen.findByText('Look carefully…')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'said' })).toBeInTheDocument()
     expect(screen.queryAllByRole('button', { name: /^tile / })).toHaveLength(0)
