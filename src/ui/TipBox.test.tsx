@@ -52,4 +52,14 @@ describe('TipBox', () => {
     await wait(150)
     expect(screen.queryByText(/This word is "here"/)).not.toBeInTheDocument()
   })
+
+  it('records a tip as shown when it appears, but not one that arrives after she moved on (review I1)', async () => {
+    const services = await servicesWithTips(makeTestServices(), { delayMs: 80 })
+    const { rerender } = render(<ServicesProvider value={services}><TipBox word={here} typed="hear" /></ServicesProvider>)
+    rerender(<ServicesProvider value={services}><TipBox word={there} typed="their" /></ServicesProvider>)
+    await screen.findByText(/This word is "there"/)
+    await wait(150)
+    expect(await services.repo.lastTipFor('w-here')).toBeUndefined()
+    expect(await services.repo.lastTipFor('w-there')).toMatchObject({ source: 'ai' })
+  })
 })

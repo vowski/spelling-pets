@@ -291,9 +291,9 @@ export class Repo {
     await this.db.tips.put(row)
   }
 
-  /** The newest tip stored for a word. */
+  /** The last tip she was shown for a word (the `|shown` rows; the others are cached AI tips she may never have seen). */
   async lastTipFor(wordId: string): Promise<TipRow | undefined> {
-    const rows = await this.db.tips.where('wordId').equals(wordId).toArray()
+    const rows = (await this.db.tips.where('wordId').equals(wordId).toArray()).filter(r => r.key.endsWith('|shown'))
     return rows.reduce<TipRow | undefined>((best, r) => (!best || r.at > best.at ? r : best), undefined)
   }
 

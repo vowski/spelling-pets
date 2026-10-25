@@ -16,7 +16,11 @@ export function TipBox({ word, typed }: { word: Word; typed: string }) {
     setState(prepared ? { text: null } : null)
     if (!prepared) return
     let live = true
-    void prepared.result.then(r => { if (live) setState({ text: r.text }) })
+    void prepared.result.then(r => {
+      if (!live) return
+      setState({ text: r.text })
+      void tips!.recordShown(word, prepared.mistake, r)
+    })
     return () => { live = false }
   }, [tips, word, typed])
 

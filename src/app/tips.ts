@@ -13,6 +13,8 @@ export interface TipResult { text: string; source: 'ai' | 'plain' }
 export interface TipService {
   /** Null when the mistake can't be classified (no tip box at all). */
   prepare(word: Word, typed: string): { mistake: Mistake; result: Promise<TipResult> } | null
+  /** The screen calls this once the tip is actually on screen, so the Words tab shows only tips she saw. */
+  recordShown(word: Word, mistake: Mistake, result: TipResult): Promise<void>
   status(): ModelStatus
   subscribe(listener: () => void): () => void
   /** Support check → download with progress → self-test → AI tips on. */
@@ -90,11 +92,10 @@ export function createTipService(deps: TipServiceDeps): TipService {
     prepare(word, typed) {
       const mistake = classifyMistake(word, typed, deps.bank)
       if (!mistake) return null
-      const result = resolve(word, mistake).then(res => {
-        void repo.putTip({ key: `${attemptKey(word, mistake.attempt)}|shown`, wordId: word.id, attempt: mistake.attempt, text: res.text, source: res.source, at: now() })
-        return res
-      })
-      return { mistake, result }
+      return { mistake, result: resolve(word, mistake) }
+    },
+    async recordShown(word, mistake, res) {
+      await repo.putTip({ key: `${attemptKey(word, mistake.attempt)}|shown`, wordId: word.id, attempt: mistake.attempt, text: res.text, source: res.source, at: now() })
     },
     status: () => status,
     subscribe(listener) {

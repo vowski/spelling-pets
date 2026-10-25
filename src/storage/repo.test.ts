@@ -105,10 +105,10 @@ describe('Repo', () => {
     expect(await repo.getErrors()).toEqual([expect.objectContaining({ where: 'game', message: 'boom' })])
   })
 
-  it('stores tips and finds the latest tip for a word', async () => {
+  it('stores tips and finds the last tip she was shown for a word', async () => {
     await repo.putTip({ key: 'w-here|hear|shown', wordId: 'w-here', attempt: 'hear', text: 'A', source: 'plain', at: 1 })
     await repo.putTip({ key: 'w-here|hear|v1', wordId: 'w-here', attempt: 'hear', text: 'B', source: 'ai', at: 2 })
-    expect((await repo.lastTipFor('w-here'))?.text).toBe('B')
+    expect((await repo.lastTipFor('w-here'))?.text).toBe('A') // B is a cached AI tip she may never have seen
     expect((await repo.getTip('w-here|hear|shown'))?.text).toBe('A')
     expect(await repo.lastTipFor('w-there')).toBeUndefined()
     await repo.clearTips()
@@ -137,7 +137,7 @@ describe('Repo', () => {
     const upgraded = Repo.open(name)
     expect((await upgraded.getSettings()).childName).toBe('Amy')
     expect((await upgraded.getAllProgress()).map(p => p.wordId)).toEqual(['w-said'])
-    await upgraded.putTip({ key: 'k', wordId: 'w-said', attempt: 'sed', text: 'T', source: 'plain', at: 1 })
+    await upgraded.putTip({ key: 'w-said|sed|shown', wordId: 'w-said', attempt: 'sed', text: 'T', source: 'plain', at: 1 })
     expect((await upgraded.lastTipFor('w-said'))?.text).toBe('T')
   })
 })

@@ -114,11 +114,23 @@ describe('tip service', () => {
     expect((await repo.getSettings()).aiTipsOn).toBe(true)
   })
 
-  it('records the last tip shown, for the Words tab', async () => {
+  it('records a tip as shown only when the screen says it was shown, for the Words tab', async () => {
     const { tips, repo } = setup()
     const p = tips.prepare(here, 'hear')!
-    await p.result
+    const r = await p.result
     await wait(10)
+    expect(await repo.lastTipFor('w-here')).toBeUndefined()
+    await tips.recordShown(here, p.mistake, r)
+    expect(await repo.lastTipFor('w-here')).toMatchObject({ text: p.mistake.template, source: 'plain' })
+  })
+
+  it('keeps the plain tip she saw as the last tip when a late AI tip is cached afterwards (review I1)', async () => {
+    const { tips, repo } = await enabled({ reply: GOOD, delayMs: 120 })
+    const p = tips.prepare(here, 'hear')!
+    const r = await p.result
+    await tips.recordShown(here, p.mistake, r)
+    await wait(150)
+    expect((await repo.getTip(`w-here|hear|${TIP_VERSION}`))?.text).toBe(GOOD)
     expect(await repo.lastTipFor('w-here')).toMatchObject({ text: p.mistake.template, source: 'plain' })
   })
 })
