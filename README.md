@@ -21,7 +21,7 @@ Press **Start today's adventure!** The app chooses review words, new words, a ga
 - **School Standards**: the spelling statements from the school's writing grids, with evidence.
 - **School Words**: paste each week's list and set the test date. The day before, the app runs a practice test. **Print practice sheet** gives a Look-Say-Cover-Write-Check page.
 - **Rewards**: add real-world rewards (e.g. "5 practice days = trip to the park") and set the weekly goal.
-- **Settings**: voice, speed, session length, sounds, dyslexia-friendly font, PIN.
+- **Settings**: voice, speed, session length, sounds, dyslexia-friendly font, AI spelling tips, PIN.
 - **Data**: backups, restore and reset.
 
 ## Please set up backups
@@ -37,6 +37,20 @@ The online British voices sound best, and the app picks one automatically:
 The offline Windows voices (Hazel, George, Susan) send nothing but sound more robotic; the app falls back to them when the laptop is offline.
 To choose a particular voice, use **Grown-ups → Settings → Voice** and press **Test voice**.
 
+## Spelling tips
+When she gets a word wrong, a short tip under the letter comparison explains the mistake, for example:
+*"hear" means listen with your ears. This word is "here", meaning this place.*
+These plain tips come from fixed rules, are always correct, and need no download.
+
+**AI spelling tips (optional).** In **Grown-ups → Settings → AI spelling tips**, press **Turn on AI tips**. This downloads
+about 0.9 GB once from Hugging Face; after that the AI runs offline on this laptop (it needs Edge or Chrome with WebGPU).
+The AI only rewords the plain tip so it sounds friendlier. It never changes the memory tricks. Automatic checks read every
+AI tip, and she sees the plain tip instead if a check fails or the AI takes longer than 6 seconds.
+- Tips she plays aloud with 🔊 use the voice chosen in Settings. Online voices send the tip's words to Google or Microsoft, just like the spelling words.
+- **Turn off** switches back to plain tips. **Remove the AI model** also deletes the download.
+- **Words** tab: each word shows the last tip she saw, and **Use plain tips for this word** stops AI tips for that word.
+- The AI is Gemma 3 1B by Google, used under the Gemma Terms of Use (ai.google.dev/gemma/terms) and the Gemma Prohibited Use Policy.
+
 ## For developers
-`npm install` · `npm run dev` · `npm test` · `npm run build` · `npm run e2e` · `npm run content:dict` · `npm run content:wheel` · `npm run icons`
+`npm install` · `npm run dev` · `npm test` · `npm run build` · `npm run e2e` · `npm run content:dict` · `npm run content:wheel` · `npm run icons` · `npm run tip-eval` (runs the AI over 72 test mistakes in Edge and writes a review document to `private/`)
 Curriculum sources: DfE *English Appendix 1: Spelling* (Open Government Licence v3.0) and DfES *Letters and Sounds* (2007).

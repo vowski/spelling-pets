@@ -26,6 +26,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          # Spelling tips, switched on after the grown-up approved the wording (review of 2026-10-25).
+          VITE_TIPS: 'on'
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
