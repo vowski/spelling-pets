@@ -65,7 +65,9 @@ describe('StoryTime', () => {
     const user = userEvent.setup()
     renderWithServices(
       <StoryTime activity={{ id: 'a', gameType: 'storyTime', wordIds: sentence.wordIds, sentenceIds: [sentence.id] }} words={[]} onAttempt={() => {}} onDone={() => {}} />,
-      { bank, speaker: createStubSpeaker([], false) })
+      // A 400 ms look, not the usual 30 ms: the sentence is checked right after the click, which can take longer than 30 ms
+      // when the whole suite is running.
+      { bank, speaker: createStubSpeaker([], false), delays: { feedback: 0, peek: 400, gap: 0 } })
     expect(await screen.findByText(sentence.text)).toBeInTheDocument()
     await user.type(await screen.findByLabelText('Type the sentence'), 'My friend')
     expect(screen.queryByText(sentence.text)).toBeNull()
