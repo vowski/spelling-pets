@@ -48,7 +48,8 @@ describe('PupPost', () => {
   it('switches to Look-and-Cover when the voice fails part-way', async () => {
     const speaker = { ...createStubSpeaker([]), available: () => !spokeOnce, speak: async () => { await new Promise(r => setTimeout(r, 20)); spokeOnce = true } }
     let spokeOnce = false
-    renderWithServices(<PupPost activity={activity} words={words} onAttempt={() => {}} onDone={() => {}} />, { speaker })
+    // A 400 ms look, not the usual 30 ms, so the picture is still there when checked while the whole suite is running.
+    renderWithServices(<PupPost activity={activity} words={words} onAttempt={() => {}} onDone={() => {}} />, { speaker, delays: { feedback: 0, peek: 400, gap: 0 } })
     expect(await screen.findByText('Look carefully…')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'said' })).toBeInTheDocument()
   })
