@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event'
 import { Burrow } from './Burrow'
 import { burrowGaps, fillGaps } from './gaps'
 import { renderWithServices } from '../../test/render'
+import { makeTestServices } from '../../test/render'
+import { servicesWithTips } from '../../test/fakeTipModel'
 
 const feb = { id: 'w-february', text: 'February', sets: ['y34' as const], patternUnitIds: [], sentence: 'My birthday is in February.', syllables: ['Feb', 'ru', 'ar', 'y'], tricky: [[3, 5]] as [number, number][], caseSensitive: true }
 
@@ -49,5 +51,13 @@ describe('Burrow', () => {
     expect(screen.getByText('Have a go! Fill in the missing letters.')).toBeInTheDocument()
     await user.type(screen.getByLabelText('Missing letters 1'), 'ru{Enter}')
     expect(onAttempt).toHaveBeenCalledWith(expect.objectContaining({ correct: true }))
+  })
+
+  it('shows a tip for the missing letters', async () => {
+    const services = await servicesWithTips(makeTestServices())
+    const user = userEvent.setup()
+    renderWithServices(<Burrow activity={{ id: 'a', gameType: 'burrow', wordIds: [feb.id] }} words={[feb]} onAttempt={() => {}} onDone={() => {}} />, services)
+    await user.type(screen.getByLabelText('Missing letters 1'), 'u{Enter}')
+    expect(await screen.findByText(/The tricky bit in "February" is "ru"/)).toBeInTheDocument()
   })
 })

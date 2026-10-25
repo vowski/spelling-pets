@@ -2,11 +2,12 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import { useEffect } from 'react'
 import { GAME_COMPONENTS } from '../games/registry'
 import type { GameProps } from '../games/types'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { FreePlay, FreePlayGame } from './FreePlay'
 import { renderWithServices, makeTestServices } from '../test/render'
+import { servicesWithTips } from '../test/fakeTipModel'
 import { prog } from '../engine/testing'
 
 const realPupPost = GAME_COMPONENTS.pupPost
@@ -58,5 +59,12 @@ describe('FreePlay', () => {
     const games = screen.getAllByRole('button').filter(b => b.className.includes('secondary'))
     expect(games.length).toBeGreaterThanOrEqual(10)
     for (const g of games) expect(g, g.textContent ?? '').toBeEnabled()
+  })
+
+  it('warms the AI model up when a game starts', async () => {
+    const services = await servicesWithTips(makeTestServices())
+    const warmUp = vi.spyOn(services.tips, 'warmUp')
+    await playPupPost(services)
+    await waitFor(() => expect(warmUp).toHaveBeenCalledOnce())
   })
 })

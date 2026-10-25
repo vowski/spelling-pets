@@ -5,6 +5,8 @@ import { BunnyHop } from './BunnyHop'
 import { scramble } from './scramble'
 import { makeRng } from '../../engine/rng'
 import { renderWithServices } from '../../test/render'
+import { makeTestServices } from '../../test/render'
+import { servicesWithTips } from '../../test/fakeTipModel'
 import { BUILTIN_BANK, getWord } from '../../content'
 import { createStubSpeaker } from '../../speech/voice'
 
@@ -65,5 +67,15 @@ describe('BunnyHop', () => {
     expect(screen.queryAllByRole('button', { name: /^tile / })).toHaveLength(0)
     expect((await screen.findAllByRole('button', { name: /^tile / })).length).toBe(4)
     expect(screen.queryByRole('img', { name: 'said' })).not.toBeInTheDocument()
+  })
+
+  it('shows a tip for a wrong letter order', async () => {
+    const services = await servicesWithTips(makeTestServices())
+    const user = userEvent.setup()
+    const friend = getWord(BUILTIN_BANK, 'w-friend')
+    renderWithServices(<BunnyHop activity={{ id: 'a', gameType: 'bunnyHop', wordIds: ['w-friend'] }} words={[friend]} onAttempt={() => {}} onDone={() => {}} />, services)
+    screen.getByLabelText('Letter tiles').focus()
+    await user.keyboard('freind')
+    expect(await screen.findByText(/The tricky bit in "friend" is "ie"/)).toBeInTheDocument()
   })
 })

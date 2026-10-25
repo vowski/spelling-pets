@@ -3,6 +3,7 @@ import { useServices } from '../../app/services'
 import { hashString, makeRng } from '../../engine/rng'
 import { Button } from '../../ui/Button'
 import { SpeakButton } from '../../ui/SpeakButton'
+import { TipBox } from '../../ui/TipBox'
 import { WordDisplay } from '../../ui/WordDisplay'
 import { GameFrame } from '../GameFrame'
 import type { GameProps } from '../types'
@@ -16,6 +17,7 @@ export function BunnyHop({ activity, words, onAttempt, onDone }: GameProps) {
   const [i, setI] = useState(0)
   const [chosen, setChosen] = useState<number[]>([])
   const [phase, setPhase] = useState<'build' | 'fix' | 'right'>('build')
+  const [tried, setTried] = useState('')
   const reported = useRef(false)
   const word = words[i]
   const tiles = useMemo(() => (word ? scramble(word.text, makeRng(hashString(`${activity.id}:${word.id}`))) : []), [word, activity.id])
@@ -41,7 +43,7 @@ export function BunnyHop({ activity, words, onAttempt, onDone }: GameProps) {
       onAttempt({ wordId: word.id, correct: ok, firstTry: true, hint: false, typed: built })
     }
     if (ok) { setPhase('right'); sfx.correct(); later(next) }
-    else { setPhase('fix'); setChosen([]); sfx.gentle() }
+    else { setTried(built); setPhase('fix'); setChosen([]); sfx.gentle() }
   }
   const pick = (k: number) => {
     if (phase === 'right' || chosen.includes(k)) return
@@ -66,6 +68,7 @@ export function BunnyHop({ activity, words, onAttempt, onDone }: GameProps) {
           <p className="praise" style={{ color: 'var(--ink)' }}>Almost! Let's look.</p>
           <SpeakButton text="Almost! Let's look. Hop the letters into the right order." />
           <WordDisplay word={word} />
+          <TipBox word={word} typed={tried} />
         </div>
       )}
       {phase === 'right' && <p className="praise">✨ Hop-tastic!</p>}

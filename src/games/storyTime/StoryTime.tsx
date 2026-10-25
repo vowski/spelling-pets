@@ -5,6 +5,7 @@ import { checkSentence, type SentenceCheck } from '../../engine/checker'
 import { useSpeechAvailable } from '../../speech/useSpeech'
 import { Button } from '../../ui/Button'
 import { SpeakButton } from '../../ui/SpeakButton'
+import { TipBox } from '../../ui/TipBox'
 import { GameFrame } from '../GameFrame'
 import type { GameProps, StoryOutcome } from '../types'
 import { splitPhrases } from './phrases'
@@ -92,6 +93,11 @@ export function StoryTime({ activity, onAttempt, onDone }: GameProps) {
                 <li>Capital letter at the start: {check.startsWithCapital ? '✓' : 'Remember it!'}</li>
                 <li>Full stop at the end: {check.endsWithPunctuation ? '✓' : 'Remember it!'}</li>
               </ul>
+              {(() => {
+                // One tip only: for the first misspelt word that is in the word bank.
+                const first = check.words.find(w => !w.correct && w.typed !== null && bank.words.has(wordId(w.expected)))
+                return first ? <TipBox word={bank.words.get(wordId(first.expected))!} typed={first.typed!} /> : null
+              })()}
               <p className="big-word" style={{ fontSize: 34 }}>{sentence.text}</p>
             </>
           )}

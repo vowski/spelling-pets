@@ -3,6 +3,8 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { StoryTime } from './StoryTime'
 import { renderWithServices } from '../../test/render'
+import { makeTestServices } from '../../test/render'
+import { servicesWithTips } from '../../test/fakeTipModel'
 import { buildBank } from '../../content'
 import { createStubSpeaker } from '../../speech/voice'
 
@@ -70,5 +72,18 @@ describe('StoryTime', () => {
     await user.click(screen.getByRole('button', { name: /Look again/ }))
     expect(screen.getByText(sentence.text)).toBeInTheDocument()
     expect(await screen.findByLabelText('Type the sentence')).toHaveValue('My friend')
+  })
+
+  it('shows one tip, for the first misspelt word', async () => {
+    const bank = buildBank()
+    const sentence = bank.sentences.find(s => s.text === 'My friend came to our house.')!
+    const services = await servicesWithTips(makeTestServices({ bank }))
+    const user = userEvent.setup()
+    const { container } = renderWithServices(
+      <StoryTime activity={{ id: 'a', gameType: 'storyTime', wordIds: sentence.wordIds, sentenceIds: [sentence.id] }} words={[]} onAttempt={() => {}} onDone={() => {}} />, services)
+    await waitFor(() => expect(services.speechLog).toContain(sentence.text))
+    await user.type(screen.getByLabelText('Type the sentence'), 'My freind came to our hous.{Enter}')
+    expect(await screen.findByText(/The tricky bit in "friend" is "ie"/)).toBeInTheDocument()
+    expect(container.querySelectorAll('.tip-box')).toHaveLength(1)
   })
 })

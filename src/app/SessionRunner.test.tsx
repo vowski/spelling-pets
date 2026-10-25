@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { SessionRunner } from './SessionRunner'
 import { renderWithServices, makeTestServices } from '../test/render'
+import { servicesWithTips } from '../test/fakeTipModel'
 import { prog } from '../engine/testing'
 
 describe('SessionRunner', () => {
@@ -50,5 +51,12 @@ describe('SessionRunner', () => {
     expect(await screen.findByRole('button', { name: "Let's go!" })).toBeInTheDocument()
     expect(await services.repo.attemptsForWord('w-said')).toHaveLength(2)
     expect(await services.repo.balance()).toBe(6)
+  })
+
+  it('warms the AI model up when the adventure starts', async () => {
+    const services = await servicesWithTips(makeTestServices())
+    const warmUp = vi.spyOn(services.tips, 'warmUp')
+    renderWithServices(<MemoryRouter initialEntries={['/session']}><Routes><Route path="/session" element={<SessionRunner kind="main" />} /><Route path="/" element={<p>home</p>} /></Routes></MemoryRouter>, services)
+    await waitFor(() => expect(warmUp).toHaveBeenCalledOnce())
   })
 })

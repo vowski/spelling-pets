@@ -57,6 +57,7 @@ export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
   }
 
   useEffect(() => {
+    svc.tips?.warmUp() // load the AI model in the background so the first tip isn't slow
     let live = true
     void enqueue(async () => {
       const r = await startOrResumeSession(svc, kind, today, now())

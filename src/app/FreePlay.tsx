@@ -54,6 +54,8 @@ export function FreePlayGame() {
   const finished = useRef<string | null>(null)
   const now = () => clock.now().getTime()
 
+  useEffect(() => { svc.tips?.warmUp() }, [svc.tips])
+
   useEffect(() => {
     let live = true
     void (async () => {
