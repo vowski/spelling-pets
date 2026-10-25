@@ -87,4 +87,12 @@ describe('backup', () => {
     const r = parseBackup(JSON.stringify({ app: 'spelling-pets', schemaVersion: 1, exportedAt: 'x', tables: { mystery: [1], progress: [] } }))
     expect(r.ok && Object.keys(r.backup.tables)).toEqual(['progress'])
   })
+
+  it('leaves tips out of backups', async () => {
+    const src = Repo.open(`b-${Math.random()}`)
+    await src.putTip({ key: 'k', wordId: 'w-said', attempt: 'sed', text: 'T', source: 'plain', at: 1 })
+    const file = await exportBackup(src.db, '2026-10-25T10:00:00.000Z')
+    expect(Object.keys(file.tables)).not.toContain('tips')
+    expect(Object.keys(file.tables)).toContain('progress')
+  })
 })

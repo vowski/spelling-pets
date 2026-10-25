@@ -9,7 +9,7 @@ import {
 } from '../engine/types'
 import {
   DEFAULT_SETTINGS, SpellingDB, type AttemptRow, type CounterId, type ErrorRow, type InventoryRow,
-  type SessionKind, type SessionRow, type SettingsRow, type StoryResultRow,
+  type SessionKind, type SessionRow, type SettingsRow, type StoryResultRow, type TipRow,
 } from './db'
 
 const COUNTERS: CounterId[] = ['wheelPuzzles', 'wheelThreeStars', 'bonusWords', 'perfectStoryTimes', 'punctuationSentences']
@@ -282,6 +282,31 @@ export class Repo {
   }
 
   // Errors
+  // Spelling tips
+  getTip(key: string): Promise<TipRow | undefined> {
+    return this.db.tips.get(key)
+  }
+
+  async putTip(row: TipRow): Promise<void> {
+    await this.db.tips.put(row)
+  }
+
+  /** The newest tip stored for a word. */
+  async lastTipFor(wordId: string): Promise<TipRow | undefined> {
+    const rows = await this.db.tips.where('wordId').equals(wordId).toArray()
+    return rows.reduce<TipRow | undefined>((best, r) => (!best || r.at > best.at ? r : best), undefined)
+  }
+
+  async clearTips(): Promise<void> {
+    await this.db.tips.clear()
+  }
+
+  async setPlainTips(wordId: string, plain: boolean): Promise<void> {
+    const current = (await this.getSettings()).plainTipWordIds ?? []
+    const next = plain ? [...new Set([...current, wordId])] : current.filter(id => id !== wordId)
+    await this.updateSettings({ plainTipWordIds: next })
+  }
+
   async logError(where: string, message: string, nowMs: number): Promise<void> {
     await this.db.errors.add({ at: nowMs, where, message: message.slice(0, 500) })
   }

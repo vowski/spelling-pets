@@ -31,6 +31,10 @@ export interface SettingsRow {
   coins: number
   equipped: Partial<Record<AccessorySlot, string>>
   hatched: boolean
+  /** The grown-up switched AI spelling tips on (off by default). */
+  aiTipsOn?: boolean
+  /** Words the grown-up set to always use the plain tip. */
+  plainTipWordIds?: string[]
 }
 
 export const DEFAULT_SETTINGS: SettingsRow = {
@@ -47,6 +51,8 @@ export interface AttemptRow {
 }
 export type SessionKind = 'main' | 'extra' | 'free'
 export interface SessionRow { id: string; date: DateStr; kind: SessionKind; startedAt: number; endedAt: number | null; plan: SessionPlan; doneActivityIds: string[]; complete: boolean; coins: number; startSnapshot?: AchievementSnapshot }
+/** A spelling tip: a cached AI tip (key …|<tip version>) or the last tip shown for a word (key …|shown). */
+export interface TipRow { key: string; wordId: string; attempt: string; text: string; source: 'ai' | 'plain'; at: number }
 export interface WalletRow { id?: number; at: number; delta: number; reason: string }
 export interface InventoryRow { itemId: string; count: number }
 export interface EarnedRow { id: string; earnedAt: number }
@@ -75,6 +81,7 @@ export class SpellingDB extends Dexie {
   storyResults!: EntityTable<StoryResultRow, 'id'>
   errors!: EntityTable<ErrorRow, 'id'>
   handles!: EntityTable<HandleRow, 'id'>
+  tips!: EntityTable<TipRow, 'key'>
 
   constructor(name = 'spelling-pets') {
     super(name)
@@ -98,6 +105,8 @@ export class SpellingDB extends Dexie {
       errors: '++id, at',
       handles: 'id',
     })
+    // Version 2: spelling tips. Not in BACKUP_TABLES: tips can always be made again.
+    this.version(2).stores({ tips: 'key, wordId, at' })
   }
 }
 

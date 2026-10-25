@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
+import Dexie from 'dexie'
+import { DEFAULT_SETTINGS } from './db'
 import { Repo } from './repo'
 import { prog, T } from '../engine/testing'
 import type { SessionRow } from './db'
@@ -101,5 +103,41 @@ describe('Repo', () => {
     expect((await repo.recentStoryResults()).map(r => r.at)).toEqual([1, 2])
     await repo.logError('game', 'boom', 3)
     expect(await repo.getErrors()).toEqual([expect.objectContaining({ where: 'game', message: 'boom' })])
+  })
+
+  it('stores tips and finds the latest tip for a word', async () => {
+    await repo.putTip({ key: 'w-here|hear|shown', wordId: 'w-here', attempt: 'hear', text: 'A', source: 'plain', at: 1 })
+    await repo.putTip({ key: 'w-here|hear|v1', wordId: 'w-here', attempt: 'hear', text: 'B', source: 'ai', at: 2 })
+    expect((await repo.lastTipFor('w-here'))?.text).toBe('B')
+    expect((await repo.getTip('w-here|hear|shown'))?.text).toBe('A')
+    expect(await repo.lastTipFor('w-there')).toBeUndefined()
+    await repo.clearTips()
+    expect(await repo.lastTipFor('w-here')).toBeUndefined()
+  })
+
+  it('keeps a list of words that use plain tips', async () => {
+    await repo.setPlainTips('w-here', true)
+    await repo.setPlainTips('w-here', true)
+    expect((await repo.getSettings()).plainTipWordIds).toEqual(['w-here'])
+    await repo.setPlainTips('w-here', false)
+    expect((await repo.getSettings()).plainTipWordIds).toEqual([])
+  })
+
+  it('upgrades a version-1 database without losing data', async () => {
+    const name = `v1-${Math.random()}`
+    const old = new Dexie(name)
+    old.version(1).stores({
+      settings: 'id', progress: 'wordId, box, due', attempts: '++id, wordId, sessionId, at', sessions: 'id, date', placement: 'level',
+      units: 'unitId', schoolLists: 'id, testDate', customWords: 'wordId', wallet: '++id, at', inventory: 'itemId', stickers: 'id',
+      badges: 'id', friends: 'id', realRewards: 'id', counters: 'id', storyResults: '++id, at', errors: '++id, at', handles: 'id',
+    })
+    await old.table('settings').put({ ...DEFAULT_SETTINGS, childName: 'Amy' })
+    await old.table('progress').put(prog('w-said', { box: 3 }))
+    old.close()
+    const upgraded = Repo.open(name)
+    expect((await upgraded.getSettings()).childName).toBe('Amy')
+    expect((await upgraded.getAllProgress()).map(p => p.wordId)).toEqual(['w-said'])
+    await upgraded.putTip({ key: 'k', wordId: 'w-said', attempt: 'sed', text: 'T', source: 'plain', at: 1 })
+    expect((await upgraded.lastTipFor('w-said'))?.text).toBe('T')
   })
 })
