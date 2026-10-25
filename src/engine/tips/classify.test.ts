@@ -18,6 +18,9 @@ describe('classifyMistake', () => {
     ['happier', 'happyer', 'yToI', 'When "happy" gets "er", the "y" changes to "i": "happier".'],
     ['station', 'stashun', 'ending', 'The "shun" sound at the end of "station" is spelt "tion".'],
     ['friend', 'freind', 'tricky', 'The tricky bit in "friend" is "ie". Remember: a friend to the END.'],
+    // Wording the grown-up asked for in the 2026-10-25 review.
+    ['are', 'era', 'tricky', 'The whole of "are" is tricky, so learn it by heart.'],
+    ['bee', 'be', 'homophone', '"be" means to act or feel a certain way, like be kind. This word is "bee", meaning a buzzing insect that makes honey.'],
   ])('%s typed as %s is a %s mistake', (target, typed, type, template) => {
     expect(classifyMistake(w(target), typed, bank)).toMatchObject({ type, template })
   })

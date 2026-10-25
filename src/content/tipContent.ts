@@ -5,7 +5,7 @@ export const HOMOPHONE_GLOSSES: Readonly<Record<string, string>> = {
   to: 'towards, like going to school',
   too: 'also, or more than enough',
   two: 'the number 2',
-  be: 'to exist, like be kind',
+  be: 'to act or feel a certain way, like be kind',
   bee: 'a buzzing insect that makes honey',
   hear: 'listen with your ears',
   here: 'this place',

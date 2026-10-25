@@ -131,7 +131,8 @@ function tricky(word: Word, attempt: string): Mistake | null {
   if (first < 0 || !word.tricky.some(([a, b]) => first >= a && first < b)) return null
   const bits = word.tricky.map(([a, b]) => word.text.slice(a, b))
   const t = word.text
-  const lead = bits.length === 1 ? `The tricky bit in "${t}" is "${bits[0]}".` : `The tricky bits in "${t}" are ${bits.map(b => `"${b}"`).join(' and ')}.`
+  const lead = bits.length === 1 && bits[0] === t ? `The whole of "${t}" is tricky, so learn it by heart.`
+    : bits.length === 1 ? `The tricky bit in "${t}" is "${bits[0]}".` : `The tricky bits in "${t}" are ${bits.map(b => `"${b}"`).join(' and ')}.`
   const trick = MEMORY_TRICKS[word.id]
   const template = trick ? `${lead} ${trick}` : lead
   return { type: 'tricky', target: t, attempt, facts: [lead, ...(trick ? [trick] : [])], template, reword: lead, ...(trick ? { keep: trick } : {}),

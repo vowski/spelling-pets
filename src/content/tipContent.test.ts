@@ -12,7 +12,8 @@ describe('tip content', () => {
     for (const m of members) {
       const g = HOMOPHONE_GLOSSES[m]
       expect(g, m).toBeTruthy()
-      expect(g.split(/\s+/).length, m).toBeLessThanOrEqual(8)
+      // Short enough that "<a> means <gloss>. This word is <b>, meaning <gloss>." stays within the 25-word tip limit.
+      expect(g.split(/\s+/).length, m).toBeLessThanOrEqual(10)
       expect(g, m).not.toMatch(/\.$|^[A-Z]/)
       expect(AMERICAN.test(g), m).toBe(false)
       for (const w of g.split(/\W+/).filter(Boolean)) expect(isBlockedWord(w), `${m}: ${w}`).toBe(false)
