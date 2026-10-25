@@ -4,10 +4,15 @@ import { toDateStr, type DateStr } from '../engine/dates'
 import type { Speaker } from '../speech/voice'
 import type { Repo } from '../storage/repo'
 import type { Clock } from './clock'
+import type { TipService } from './tips'
 import type { Sfx } from './sfx'
 
 export interface Delays { feedback: number; peek: number; gap: number }
-export interface Services { repo: Repo; bank: Bank; speaker: Speaker; clock: Clock; sfx: Sfx; delays: Delays }
+export interface Services {
+  repo: Repo; bank: Bank; speaker: Speaker; clock: Clock; sfx: Sfx; delays: Delays
+  /** Spelling tips; absent unless the build sets VITE_TIPS=on (held back until the parent approves the wording). */
+  tips?: TipService
+}
 export const DEFAULT_DELAYS: Delays = { feedback: 900, peek: 3000, gap: 450 }
 
 const ServicesContext = createContext<Services | null>(null)
