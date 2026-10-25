@@ -1,9 +1,19 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SettingsTab } from './SettingsTab'
 import { renderWithServices, makeTestServices } from '../test/render'
 import { hashPin, checkPin } from '../app/pin'
+import { createTipService } from '../app/tips'
+import { isBlockedWord } from '../content/dictionary'
+import { fakeTipModel, servicesWithTips, type FakeTipModelOptions } from '../test/fakeTipModel'
+
+const NOTICE = 'Downloads about 0.9 GB once from Hugging Face. After that the AI works offline on this laptop. Tips you play aloud use the voice chosen above. Online voices send the words to Google or Microsoft, just like the spelling words.'
+function servicesWithModel(o: FakeTipModelOptions = {}) {
+  const s = makeTestServices()
+  const model = fakeTipModel(o)
+  return { ...s, model, tips: createTipService({ repo: s.repo, bank: s.bank, model, clock: s.clock, timeoutMs: 1000, isBlocked: isBlockedWord }) }
+}
 
 describe('SettingsTab', () => {
   it('saves settings', async () => {
@@ -36,5 +46,60 @@ describe('SettingsTab', () => {
     await user.type(screen.getByLabelText('Current PIN'), '1111')
     await user.click(screen.getByRole('button', { name: 'Change PIN' }))
     await waitFor(async () => expect(await checkPin('2222', await services.repo.getSettings())).toBe(true))
+  })
+
+  describe('AI spelling tips', () => {
+    it('turns AI tips on after showing the download notice', async () => {
+      const services = servicesWithModel()
+      const user = userEvent.setup()
+      renderWithServices(<SettingsTab />, services)
+      await user.click(await screen.findByRole('button', { name: 'Turn on AI tips' }))
+      expect(screen.getByText(NOTICE)).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Download and turn on' }))
+      expect(await screen.findByText('On')).toBeInTheDocument()
+      expect((await services.repo.getSettings()).aiTipsOn).toBe(true)
+      expect(screen.getByText(/AI tips use Gemma 3 1B by Google/)).toBeInTheDocument()
+    })
+
+    it('says why it cannot run on an unsupported computer', async () => {
+      const services = servicesWithModel({ unsupported: 'no WebGPU' })
+      const user = userEvent.setup()
+      renderWithServices(<SettingsTab />, services)
+      await user.click(await screen.findByRole('button', { name: 'Turn on AI tips' }))
+      await user.click(screen.getByRole('button', { name: 'Download and turn on' }))
+      expect(await screen.findByText("This computer can't run AI tips; she'll keep getting the plain tips.")).toBeInTheDocument()
+      expect((await services.repo.getSettings()).aiTipsOn).toBeFalsy()
+    })
+
+    // Review Focus #2: the first download fails part-way
+    it('shows a download problem and lets you try again', async () => {
+      const services = servicesWithModel({ downloadFails: 'Failed to fetch' })
+      const user = userEvent.setup()
+      renderWithServices(<SettingsTab />, services)
+      await user.click(await screen.findByRole('button', { name: 'Turn on AI tips' }))
+      await user.click(screen.getByRole('button', { name: 'Download and turn on' }))
+      expect(await screen.findByText('Something went wrong: Failed to fetch')).toBeInTheDocument()
+      services.model.options.downloadFails = undefined
+      await user.click(screen.getByRole('button', { name: 'Turn on AI tips' }))
+      await user.click(screen.getByRole('button', { name: 'Download and turn on' }))
+      expect(await screen.findByText('On')).toBeInTheDocument()
+    })
+
+    it('removes the model after confirming', async () => {
+      const services = await servicesWithTips(makeTestServices())
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const user = userEvent.setup()
+      renderWithServices(<SettingsTab />, services)
+      await user.click(await screen.findByRole('button', { name: 'Remove the AI model' }))
+      expect(await screen.findByText('Off')).toBeInTheDocument()
+      expect((await services.repo.getSettings()).aiTipsOn).toBe(false)
+    })
+
+    it('hides the AI section and licence note without the feature', async () => {
+      renderWithServices(<SettingsTab />)
+      await screen.findByLabelText("Child's name")
+      expect(screen.queryByRole('heading', { name: 'AI spelling tips' })).not.toBeInTheDocument()
+      expect(screen.queryByText(/Gemma 3 1B by Google/)).not.toBeInTheDocument()
+    })
   })
 })

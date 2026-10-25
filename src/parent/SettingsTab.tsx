@@ -1,12 +1,53 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { checkPin, hashPin, isValidPin, newSalt } from '../app/pin'
 import { useServices } from '../app/services'
+import type { TipService } from '../app/tips'
 import type { SettingsRow } from '../storage/db'
 import { Button } from '../ui/Button'
 
+const TIPS_NOTICE = 'Downloads about 0.9 GB once from Hugging Face. After that the AI works offline on this laptop. Tips you play aloud use the voice chosen above. Online voices send the words to Google or Microsoft, just like the spelling words.'
+const UNSUPPORTED = "This computer can't run AI tips; she'll keep getting the plain tips."
+
+/** Switch, status and removal for AI spelling tips. Off by default; turning on shows the download notice first. */
+function AiTipsPanel({ tips }: { tips: TipService }) {
+  const status = useSyncExternalStore(tips.subscribe, tips.status)
+  const [confirming, setConfirming] = useState(false)
+  useEffect(() => { tips.warmUp() }, [tips])
+  const busy = status.kind === 'downloading' || status.kind === 'loading'
+  const on = status.kind === 'ready' || busy
+  const remove = () => { if (window.confirm('Remove the AI model from this laptop? AI tips will turn off.')) void tips.remove() }
+  return (
+    <div className="panel">
+      <h2>AI spelling tips</h2>
+      <p className="muted">After a wrong spelling she sees one short tip explaining the mistake. With AI tips on, a small AI model on this laptop rewords the tip so it sounds friendlier; every AI tip is checked, and the plain tip is shown if a check fails.</p>
+      <p>Status:{' '}
+        {status.kind === 'off' && <strong>Off</strong>}
+        {status.kind === 'downloading' && <><strong>Downloading… {status.percent}%</strong> <progress max={100} value={status.percent} /></>}
+        {status.kind === 'loading' && <strong>Getting ready…</strong>}
+        {status.kind === 'ready' && <strong>On</strong>}
+        {status.kind === 'unsupported' && <><strong>{UNSUPPORTED}</strong> <span className="muted">({status.reason})</span></>}
+        {status.kind === 'error' && <strong>Something went wrong: {status.message}</strong>}
+      </p>
+      {confirming ? (
+        <div>
+          <p>{TIPS_NOTICE}</p>
+          <Button onClick={() => { setConfirming(false); void tips.enable() }}>Download and turn on</Button>{' '}
+          <Button variant="ghost" onClick={() => setConfirming(false)}>Cancel</Button>
+        </div>
+      ) : (
+        <p>
+          {on ? <Button variant="secondary" disabled={busy} onClick={() => void tips.disable()}>Turn off</Button>
+            : <Button onClick={() => setConfirming(true)}>Turn on AI tips</Button>}{' '}
+          <Button variant="ghost" disabled={busy} onClick={remove}>Remove the AI model</Button>
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function SettingsTab() {
-  const { repo, speaker } = useServices()
+  const { repo, speaker, tips } = useServices()
   const stored = useLiveQuery(() => repo.getSettings(), [repo])
   const [form, setForm] = useState<SettingsRow | null>(null)
   const [saved, setSaved] = useState('')
@@ -48,8 +89,9 @@ export function SettingsTab() {
         </label>{' '}
         <Button variant="secondary" onClick={() => { speaker.configure({ voiceURI: form.voiceURI, rate: form.speechRate }); void speaker.speak("Hello! Let's practise our spellings.") }}>Test voice</Button>
         <p><label>Speaking speed <input aria-label="Speaking speed" type="range" min={0.6} max={1.1} step={0.05} value={form.speechRate} onChange={e => set('speechRate', Number(e.target.value))} /> {form.speechRate.toFixed(2)}</label></p>
-        <p className="muted">Voices whose names include "Natural" (Edge) or start with "Google" (Chrome) are online voices: the browser sends the words being spoken to Microsoft or Google to create the audio. Other voices work offline.</p>
+        <p className="muted">Voices whose names include "Natural" (Edge) or start with "Google" (Chrome) are online voices: the browser sends the words being spoken, including any tip you play aloud, to Microsoft or Google to create the audio. Other voices work offline.</p>
       </div>
+      {tips && <AiTipsPanel tips={tips} />}
       <div className="panel">
         <h2>Practice</h2>
         <label>Session length{' '}
@@ -80,6 +122,7 @@ export function SettingsTab() {
       <div className="panel">
         <h2>About Spelling Pets</h2>
         <p className="muted">Word lists and spelling rules: Department for Education, <em>National Curriculum in England: English Appendix 1 – Spelling</em> (© Crown copyright, Open Government Licence v3.0) and DfES <em>Letters and Sounds</em> (2007). Sticker pictures use this device's emoji. Fonts: Andika and OpenDyslexic (SIL Open Font Licence).</p>
+        {tips && <p className="muted">AI tips use Gemma 3 1B by Google, under the Gemma Terms of Use (ai.google.dev/gemma/terms) and the Gemma Prohibited Use Policy.</p>}
       </div>
     </section>
   )
