@@ -9,10 +9,11 @@ type Generate = ((messages: unknown, options: Record<string, unknown>) => Promis
 let loading: Promise<Generate> | null = null
 const reply = (r: WorkerReply) => (self as unknown as { postMessage(m: WorkerReply): void }).postMessage(r)
 
-function load(id: number, ortBase: string, allowDownload: boolean): Promise<Generate> {
+// Transformers.js reads cached files first. A warm-up only gets here after hasModelFiles() found all of them, so it never
+// fetches the model (Transformers.js refuses to run with remote models switched off as well as local ones).
+function load(id: number, ortBase: string): Promise<Generate> {
   if (loading) return loading
   env.allowLocalModels = false
-  env.allowRemoteModels = allowDownload // warm-up loads the cached files only, never the network
   const onnx = env.backends.onnx as { wasm?: { wasmPaths?: string } }
   if (onnx.wasm) onnx.wasm.wasmPaths = ortBase // served by the app, so Hugging Face is the only outside download
   const files = new Map<string, { loaded: number; total: number }>()
@@ -50,12 +51,12 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
     } else if (req.type === 'load') {
       // A missing model is reported, never fetched: the grown-up chose the 0.9 GB download once, not on every start.
       if (!loading && !(await hasModelFiles(caches))) { reply({ id: req.id, ok: false, error: MODEL_MISSING, missing: true }); return }
-      await load(req.id, req.ortBase, false)
+      await load(req.id, req.ortBase)
       reply({ id: req.id, ok: true })
     } else if (req.type === 'download') {
       const full = loading ? null : await notEnoughSpace(navigator.storage)
       if (full) throw new Error(full)
-      await load(req.id, req.ortBase, true)
+      await load(req.id, req.ortBase)
       // Transformers.js only warns when it can't save a file, so check that the files really were kept.
       if (!(await hasModelFiles(caches))) { await unload(); throw new Error(MODEL_NOT_SAVED) }
       reply({ id: req.id, ok: true })
