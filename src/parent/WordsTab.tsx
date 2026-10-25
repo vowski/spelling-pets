@@ -4,7 +4,7 @@ import { useServices, useToday } from '../app/services'
 import type { SetId } from '../content/types'
 import { markKnown, setFocus } from '../engine/scheduler'
 import { newProgress, type WordProgress } from '../engine/types'
-import type { AttemptRow } from '../storage/db'
+import type { AttemptRow, TipRow } from '../storage/db'
 import { Button } from '../ui/Button'
 
 export const BOX_NAMES = ['New', 'Learning', 'Practising', 'Review', 'Secure', 'Mastered'] as const
@@ -12,15 +12,16 @@ const SETS: [SetId | 'all', string][] = [['all', 'All'], ['y1cew', 'Year 1 trick
 const fmt = (ms: number | null) => (ms ? new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '–')
 
 export function WordsTab() {
-  const { repo, bank } = useServices()
+  const { repo, bank, tips } = useServices()
   const today = useToday()
   const progress = useLiveQuery(async () => new Map((await repo.getAllProgress()).map(p => [p.wordId, p])), [repo])
+  const plainTips = useLiveQuery(async () => new Set((await repo.getSettings()).plainTipWordIds ?? []), [repo])
   const [set, setSet] = useState<SetId | 'all'>('all')
   const [status, setStatus] = useState('all')
   const [q, setQ] = useState('')
   const [limit, setLimit] = useState(100)
-  const [open, setOpen] = useState<{ id: string; rows: AttemptRow[] } | null>(null)
-  if (!progress) return <p>Loading…</p>
+  const [open, setOpen] = useState<{ id: string; rows: AttemptRow[]; tip?: TipRow } | null>(null)
+  if (!progress || !plainTips) return <p>Loading…</p>
 
   const get = (id: string): WordProgress => progress.get(id) ?? newProgress(id)
   const words = [...bank.words.values()].filter(w =>
@@ -29,7 +30,7 @@ export function WordsTab() {
     (!q || w.text.toLowerCase().includes(q.toLowerCase())))
 
   const save = (p: WordProgress) => repo.putProgress([p])
-  const history = async (id: string) => setOpen(open?.id === id ? null : { id, rows: await repo.attemptsForWord(id) })
+  const history = async (id: string) => setOpen(open?.id === id ? null : { id, rows: await repo.attemptsForWord(id), tip: tips ? await repo.lastTipFor(id) : undefined })
 
   return (
     <section className="panel">
@@ -57,10 +58,14 @@ export function WordsTab() {
                   <Button variant="ghost" onClick={() => void save(setFocus(p, !p.focus))}>{p.focus ? 'Remove focus' : '⭐ Focus'}</Button>
                   <Button variant="ghost" onClick={() => { if (window.confirm(`Mark '${w.text}' as Secure?`)) void save(markKnown(p, today)) }}>She knows this</Button>
                   <Button variant="ghost" onClick={() => void history(w.id)}>History</Button>
+                  {tips && (plainTips.has(w.id)
+                    ? <Button variant="ghost" onClick={() => void repo.setPlainTips(w.id, false)}>Allow AI tips for this word</Button>
+                    : <Button variant="ghost" onClick={() => void repo.setPlainTips(w.id, true)}>Use plain tips for this word</Button>)}
                 </td>
               </tr>,
               open?.id === w.id && (
                 <tr key={`${w.id}-h`}><td colSpan={7}>
+                  {tips && <p>{open.tip ? `Last tip (${open.tip.source === 'ai' ? 'AI' : 'plain'}): ${open.tip.text}` : 'No tips yet'}</p>}
                   {open.rows.length === 0 ? <span className="muted">No attempts yet.</span> : (
                     <ul>{open.rows.map(a => <li key={a.id}>{fmt(a.at)} · {a.game} · "{a.typed}" {a.correct ? '✓' : '✗'}</li>)}</ul>
                   )}
