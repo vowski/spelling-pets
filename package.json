@@ -13,7 +13,8 @@
     "e2e": "playwright test",
     "content:dict": "tsx scripts/build-dictionary.ts",
     "content:wheel": "tsx scripts/generate-wheel-puzzles.ts",
-    "icons": "tsx scripts/make-icons.ts"
+    "icons": "tsx scripts/make-icons.ts",
+    "tip-eval": "node scripts/tip-eval.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

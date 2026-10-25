@@ -45,6 +45,14 @@ describe('tip service', () => {
     expect(model!.calls).toBe(1)
   })
 
+  it('sends only the first part of a tricky-word tip to the model and adds the memory trick back', async () => {
+    const asked: string[] = []
+    const { tips } = await enabled({ reply: msgs => { asked.push(msgs.at(-1)!.content); return 'Watch the “ie” in “friend”.' } })
+    const r = await tips.prepare(bank.words.get(wordId('friend'))!, 'freind')!.result
+    expect(asked).toEqual(['Tip to reword: The tricky bit in "friend" is "ie".'])
+    expect(r).toEqual({ text: 'Watch the “ie” in “friend”. Remember: a friend to the END.', source: 'ai' })
+  })
+
   it('falls back to the plain tip when the reply fails a check', async () => {
     const { tips, repo } = await enabled({ reply: 'Great job! "here" means this place.' })
     const p = tips.prepare(here, 'hear')!

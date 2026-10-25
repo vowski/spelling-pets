@@ -1,6 +1,6 @@
 import type { Mistake } from './classify'
 
-const AMERICAN = /\b(color|colors|colored|favorite|favorites|realize[sd]?|recognize[sd]?|center|centers|theater|mom|gray|honor|neighbor|neighbors|organize[sd]?|apologize[sd]?)\b|\b\w{3,}iz(e|es|ed|ing)\b/i
+const AMERICAN = /\b(color|colors|colored|favorite|favorites|realize[sd]?|recognize[sd]?|center|centers|theater|mom|gray|honor|neighbor|neighbors|organize[sd]?|apologize[sd]?)\b|\b\w{3,}iz(e|es|ed|ing)\b|\b(mr|mrs|ms|dr)\./i
 const PRAISE = /\b(great|brilliant|amazing|well done|good job|clever|fantastic)\b/i
 const FIRST_PERSON = /\bI\b|\bI'm\b|\bI'll\b/
 

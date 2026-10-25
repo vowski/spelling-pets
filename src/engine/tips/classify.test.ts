@@ -10,14 +10,26 @@ describe('classifyMistake', () => {
     ['here', 'hear', 'homophone', '"hear" means listen with your ears. This word is "here", meaning this place.'],
     ['here', 'HEAR', 'homophone', '"hear" means listen with your ears. This word is "here", meaning this place.'],
     ['Monday', 'monday', 'capital', 'Days of the week always start with a capital letter: "Monday".'],
+    ['Mr', 'mr', 'capital', '"Mr" goes with a name, so it starts with a capital letter.'],
+    ['Kent', 'kent', 'capital', 'Names start with a capital letter: "Kent".'],
     ["can't", 'cant', 'apostrophe', '"can\'t" is short for "cannot". The apostrophe shows where letters are missing.'],
     ['patting', 'pating', 'doubling', '"pat" has a short sound and ends in one consonant, so double the "t" before "ing": "patting".'],
-    ['hiking', 'hikeing', 'dropE', '"hike" ends in "e". Drop the "e" before adding "ing" to make "hiking".'],
+    ['hiking', 'hikeing', 'dropE', '"hike" ends in "e", so drop the "e" before "ing": "hiking".'],
     ['happier', 'happyer', 'yToI', 'When "happy" gets "er", the "y" changes to "i": "happier".'],
     ['station', 'stashun', 'ending', 'The "shun" sound at the end of "station" is spelt "tion".'],
     ['friend', 'freind', 'tricky', 'The tricky bit in "friend" is "ie". Remember: a friend to the END.'],
   ])('%s typed as %s is a %s mistake', (target, typed, type, template) => {
     expect(classifyMistake(w(target), typed, bank)).toMatchObject({ type, template })
+  })
+
+  it('keeps a memory trick out of the part the model rewords', () => {
+    expect(classifyMistake(w('friend'), 'freind', bank)).toMatchObject({
+      reword: 'The tricky bit in "friend" is "ie".', keep: 'Remember: a friend to the END.',
+      template: 'The tricky bit in "friend" is "ie". Remember: a friend to the END.',
+    })
+    const m = classifyMistake(w('here'), 'hear', bank)!
+    expect(m.reword).toBe(m.template)
+    expect(m.keep).toBeUndefined()
   })
 
   it('gives no tip when it cannot tell what went wrong', () => {

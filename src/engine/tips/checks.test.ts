@@ -45,6 +45,20 @@ describe('checkTip', () => {
     expect(checkTip(text, m(t, typed), deps).length).toBeGreaterThan(0)
   })
 
+  it('fails a rule tip that names the wrong root word (laptop run 1)', () => {
+    const text = '“Dropping” has a short sound and ends in one consonant, so double the “p” before “ing”: “dropping”.'
+    expect(checkTip(text, m('dropping', 'droping'), deps)).toContain('drops the key fact: "drop"')
+  })
+
+  it('fails a tricky-word tip that garbles the memory trick (laptop run 1)', () => {
+    expect(checkTip('February is “ru”. Let’s look at it: February, ru.', m('February', 'Febuary'), deps)).toContain('drops the key fact: feb-ru-ar-y')
+    expect(checkTip('“ai” is tricky in “said”, remember, Sally Ann is Dancing.', m('said', 'sed'), deps)).toEqual([])
+  })
+
+  it('rejects the American full stop after Mr and Mrs (laptop run 2)', () => {
+    expect(checkTip('Mrs. goes with a name, so it starts with a capital letter.', m('Mrs', 'mrs'), deps)).toContain('American spelling')
+  })
+
   it('every template passes its own checks', () => {
     const all = everyMistake()
     expect(all.length).toBeGreaterThan(150)
