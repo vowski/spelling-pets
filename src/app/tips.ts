@@ -35,6 +35,16 @@ export interface TipServiceDeps {
   isBlocked: (word: string) => boolean
 }
 
+/** A short fingerprint of a text (FNV-1a), so a cache key changes whenever the plain tip's wording does. */
+function fingerprint(s: string): string {
+  let h = 0x811c9dc5
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0
+  return h.toString(36)
+}
+
+/** Where an AI tip is cached: per word, attempt, model + prompt version, and the plain tip it rewords. */
+export const tipCacheKey = (word: Word, m: Mistake) => `${word.id}|${m.attempt.toLowerCase()}|${TIP_VERSION}|${fingerprint(m.template)}`
+
 /** Two known rewordings the model must get right before AI tips can be switched on. */
 const SELF_TEST: [target: string, typed: string][] = [['here', 'hear'], ['patting', 'pating']]
 const MAX_FAILURES = 3
@@ -59,7 +69,7 @@ export function createTipService(deps: TipServiceDeps): TipService {
         return null
       }
       // Cached even if it arrived after the time limit, so the same mistake gets it instantly next time.
-      await repo.putTip({ key: `${attemptKey(word, m.attempt)}|${TIP_VERSION}`, wordId: word.id, attempt: m.attempt, text, source: 'ai', at: now() })
+      await repo.putTip({ key: tipCacheKey(word, m), wordId: word.id, attempt: m.attempt, text, source: 'ai', at: now() })
       return { text, source: 'ai' }
     } catch (e) {
       failures++
@@ -73,8 +83,9 @@ export function createTipService(deps: TipServiceDeps): TipService {
     const plain: TipResult = { text: m.template, source: 'plain' }
     const settings = await repo.getSettings()
     if (!model || !settings.aiTipsOn || status.kind !== 'ready' || settings.plainTipWordIds?.includes(word.id)) return plain
-    const cached = await repo.getTip(`${attemptKey(word, m.attempt)}|${TIP_VERSION}`)
-    if (cached) return { text: cached.text, source: 'ai' }
+    const cached = await repo.getTip(tipCacheKey(word, m))
+    // Checked again: the checks may have been tightened since it was cached.
+    if (cached && !checkTip(cached.text, m, checkDeps).length) return { text: cached.text, source: 'ai' }
     const timeLimit = new Promise<null>(r => setTimeout(() => r(null), deps.timeoutMs))
     return (await Promise.race([reword(word, m), timeLimit])) ?? plain
   }

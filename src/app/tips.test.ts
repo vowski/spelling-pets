@@ -4,7 +4,8 @@ import { isBlockedWord } from '../content/dictionary'
 import { wordId } from '../content/parse'
 import { TIP_VERSION } from '../ai/tipModel'
 import { fixedClock } from './clock'
-import { createTipService } from './tips'
+import { classifyMistake } from '../engine/tips/classify'
+import { createTipService, tipCacheKey } from './tips'
 import { Repo } from '../storage/repo'
 import { fakeTipModel, type FakeTipModelOptions } from '../test/fakeTipModel'
 
@@ -65,7 +66,7 @@ describe('tip service', () => {
     const p = tips.prepare(here, 'hear')!
     expect((await p.result).source).toBe('plain')
     await wait(150)
-    expect((await repo.getTip(`w-here|hear|${TIP_VERSION}`))?.text).toBe(GOOD)
+    expect((await repo.getTip(tipCacheKey(here, p.mistake)))?.text).toBe(GOOD)
   })
 
   it('uses plain tips for a word the grown-up switched to plain', async () => {
@@ -86,6 +87,25 @@ describe('tip service', () => {
   it('ignores cached tips from another model or prompt version', async () => {
     const { tips, repo, model } = await enabled({ reply: GOOD })
     await repo.putTip({ key: 'w-here|hear|old-model#p0', wordId: 'w-here', attempt: 'hear', text: 'Old tip about "here".', source: 'ai', at: 1 })
+    expect(await tips.prepare(here, 'hear')!.result).toEqual({ text: GOOD, source: 'ai' })
+    expect(model!.calls).toBe(1)
+  })
+
+  it('reuses a cached AI tip only while the plain tip has the same wording (review I2)', async () => {
+    const { tips, repo, model } = await enabled({ reply: GOOD })
+    const m = classifyMistake(here, 'hear', bank)!
+    expect(tipCacheKey(here, m)).toContain(TIP_VERSION)
+    expect(tipCacheKey(here, m)).not.toBe(tipCacheKey(here, { ...m, template: 'An older wording of the "here" tip.' }))
+    // A tip cached under the key used before wording was part of it is not reused.
+    await repo.putTip({ key: `w-here|hear|${TIP_VERSION}`, wordId: 'w-here', attempt: 'hear', text: 'Old: "here" means this place.', source: 'ai', at: 1 })
+    expect(await tips.prepare(here, 'hear')!.result).toEqual({ text: GOOD, source: 'ai' })
+    expect(model!.calls).toBe(1)
+  })
+
+  it('checks a cached AI tip again before reusing it (review I2)', async () => {
+    const { tips, repo, model } = await enabled({ reply: GOOD })
+    const m = classifyMistake(here, 'hear', bank)!
+    await repo.putTip({ key: tipCacheKey(here, m), wordId: 'w-here', attempt: 'hear', text: 'Great job! "here" means this place.', source: 'ai', at: 1 })
     expect(await tips.prepare(here, 'hear')!.result).toEqual({ text: GOOD, source: 'ai' })
     expect(model!.calls).toBe(1)
   })
@@ -130,7 +150,7 @@ describe('tip service', () => {
     const r = await p.result
     await tips.recordShown(here, p.mistake, r)
     await wait(150)
-    expect((await repo.getTip(`w-here|hear|${TIP_VERSION}`))?.text).toBe(GOOD)
+    expect((await repo.getTip(tipCacheKey(here, p.mistake)))?.text).toBe(GOOD)
     expect(await repo.lastTipFor('w-here')).toMatchObject({ text: p.mistake.template, source: 'plain' })
   })
 })
