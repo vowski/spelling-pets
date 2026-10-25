@@ -1,4 +1,4 @@
-import type { TipModel } from '../ai/tipModel'
+import { ModelMissingError, type TipModel } from '../ai/tipModel'
 import type { Services } from '../app/services'
 import { createTipService, type TipService } from '../app/tips'
 import { isBlockedWord } from '../content/dictionary'
@@ -11,22 +11,28 @@ export interface FakeTipModelOptions {
   fail?: boolean
   unsupported?: string
   downloadFails?: string
+  /** load() reports that the model files are no longer cached. */
+  missing?: boolean
 }
 
 /** A stand-in for the in-browser model, so tips can be tested without a GPU. */
-export function fakeTipModel(o: FakeTipModelOptions = {}): TipModel & { calls: number; options: FakeTipModelOptions } {
+export function fakeTipModel(o: FakeTipModelOptions = {}): TipModel & { calls: number; downloads: number; options: FakeTipModelOptions } {
   const model = {
     calls: 0,
+    downloads: 0,
     options: o,
     async checkSupport() {
       return model.options.unsupported ? { ok: false as const, reason: model.options.unsupported } : { ok: true as const }
     },
     async download(onProgress: (percent: number) => void) {
+      model.downloads++
       if (model.options.downloadFails) throw new Error(model.options.downloadFails)
       onProgress(50)
       onProgress(100)
     },
-    async load() {},
+    async load() {
+      if (model.options.missing) throw new ModelMissingError()
+    },
     async generate(messages: ChatMessage[]) {
       model.calls++
       if (model.options.delayMs) await new Promise(r => setTimeout(r, model.options.delayMs))

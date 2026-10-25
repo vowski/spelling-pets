@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { ModelMissingError } from './tipModel'
 import { createWorkerTipModel } from './workerTipModel'
 
 type Msg = { id: number; type: string }
@@ -34,6 +35,11 @@ describe('createWorkerTipModel', () => {
   it('passes on an error from the worker', async () => {
     const model = createWorkerTipModel(() => fakeWorker((msg, reply) => reply({ id: msg.id, ok: false, error: 'no network' })))
     await expect(model.download(() => {})).rejects.toThrow('no network')
+  })
+
+  it('reports a model that is no longer cached as its own error, so nothing downloads by itself (review I3)', async () => {
+    const model = createWorkerTipModel(() => fakeWorker((msg, reply) => reply({ id: msg.id, ok: false, error: 'gone', missing: true })))
+    await expect(model.load()).rejects.toBeInstanceOf(ModelMissingError)
   })
 
   it('rejects waiting calls when the worker crashes', async () => {

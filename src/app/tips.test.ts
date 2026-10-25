@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { BUILTIN_BANK as bank } from '../content'
 import { isBlockedWord } from '../content/dictionary'
 import { wordId } from '../content/parse'
-import { TIP_VERSION } from '../ai/tipModel'
+import { MODEL_MISSING, TIP_VERSION } from '../ai/tipModel'
 import { fixedClock } from './clock'
 import { classifyMistake } from '../engine/tips/classify'
 import { createTipService, tipCacheKey } from './tips'
@@ -108,6 +108,26 @@ describe('tip service', () => {
     await repo.putTip({ key: tipCacheKey(here, m), wordId: 'w-here', attempt: 'hear', text: 'Great job! "here" means this place.', source: 'ai', at: 1 })
     expect(await tips.prepare(here, 'hear')!.result).toEqual({ text: GOOD, source: 'ai' })
     expect(model!.calls).toBe(1)
+  })
+
+  it('warmUp(): loads the model when AI tips were left on', async () => {
+    const { repo } = await enabled()
+    const model = fakeTipModel()
+    const tips = createTipService({ repo, bank, model, clock: fixedClock('2026-10-26T09:00:00'), timeoutMs: 50, isBlocked: isBlockedWord })
+    tips.warmUp()
+    await wait(20)
+    expect(tips.status().kind).toBe('ready')
+  })
+
+  it('warmUp(): turns AI tips off and says so when the model is no longer on this laptop, without downloading (review I3)', async () => {
+    const { repo } = await enabled()
+    const model = fakeTipModel({ missing: true })
+    const tips = createTipService({ repo, bank, model, clock: fixedClock('2026-10-26T09:00:00'), timeoutMs: 50, isBlocked: isBlockedWord })
+    tips.warmUp()
+    await wait(20)
+    expect(tips.status()).toEqual({ kind: 'error', message: MODEL_MISSING })
+    expect((await repo.getSettings()).aiTipsOn).toBe(false)
+    expect(model.downloads).toBe(0)
   })
 
   it('enable(): stays off and says why on an unsupported computer', async () => {

@@ -1,6 +1,6 @@
 // Dev-only: runs the real model in this browser over every evaluation case and exposes the results for
 // scripts/tip-eval.mjs, which writes the parent's review document.
-import { TIP_MODEL, TIP_VERSION } from '../../src/ai/tipModel'
+import { ModelMissingError, TIP_MODEL, TIP_VERSION } from '../../src/ai/tipModel'
 import { createWorkerTipModel } from '../../src/ai/workerTipModel'
 import { BUILTIN_BANK as bank } from '../../src/content'
 import { isBlockedWord } from '../../src/content/dictionary'
@@ -20,6 +20,8 @@ async function main() {
   if (!support.ok) throw new Error(support.reason)
   let t0 = performance.now()
   let last = -10
+  // Both real paths: load() uses the cached files only (or reports them missing); download() fetches and checks they were saved.
+  await model.load().then(() => log('loaded from the cache'), e => { if (!(e instanceof ModelMissingError)) throw e; log('not cached yet') })
   await model.download(p => { if (p - last >= 10) { last = p; log(`download ${Math.round(p)}%`) } })
   const loadSeconds = (performance.now() - t0) / 1000
   const results = []

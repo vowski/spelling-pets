@@ -22,12 +22,23 @@ export type ModelStatus =
   | { kind: 'unsupported'; reason: string }
   | { kind: 'error'; message: string }
 
+export const MODEL_MISSING = "The AI model isn't on this laptop any more, so AI tips are off. Turn them on again to download it."
+export const MODEL_NOT_SAVED = "The AI model couldn't be saved on this laptop, perhaps because it is short of space, so AI tips are off."
+
+/** load() rejects with this when the model files aren't cached: the app never downloads 0.9 GB without being asked. */
+export class ModelMissingError extends Error {
+  constructor() {
+    super(MODEL_MISSING)
+    this.name = 'ModelMissingError'
+  }
+}
+
 /** The on-device language model, as the tip service sees it. */
 export interface TipModel {
   checkSupport(): Promise<{ ok: true } | { ok: false; reason: string }>
   /** Downloads the model files (once; then cached by the browser) and loads them onto the GPU. */
   download(onProgress: (percent: number) => void): Promise<void>
-  /** Loads the cached model onto the GPU. Safe to call repeatedly. */
+  /** Loads the cached model onto the GPU. Safe to call repeatedly. Never downloads: rejects with ModelMissingError instead. */
   load(): Promise<void>
   generate(messages: ChatMessage[]): Promise<string>
   /** Deletes the cached model files. */

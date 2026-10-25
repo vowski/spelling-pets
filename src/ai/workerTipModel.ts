@@ -1,5 +1,5 @@
 import type { ChatMessage } from '../engine/tips/prompt'
-import type { TipModel } from './tipModel'
+import { ModelMissingError, type TipModel } from './tipModel'
 
 export type WorkerRequest =
   | { id: number; type: 'support' | 'remove' }
@@ -7,7 +7,7 @@ export type WorkerRequest =
   | { id: number; type: 'generate'; messages: ChatMessage[] }
 export type WorkerReply =
   | { id: number; ok: true; value?: unknown }
-  | { id: number; ok: false; error: string }
+  | { id: number; ok: false; error: string; missing?: true }
   | { type: 'progress'; id: number; percent: number }
 
 type WithoutId<T> = T extends unknown ? Omit<T, 'id'> : never
@@ -39,7 +39,7 @@ export function createWorkerTipModel(
       if ('type' in r) { p.onProgress?.(r.percent); return }
       pending.delete(r.id)
       if (r.ok) p.resolve(r.value)
-      else p.reject(new Error(r.error))
+      else p.reject(r.missing ? new ModelMissingError() : new Error(r.error))
     }
     w.onerror = (e: ErrorEvent) => failAll(e.message || 'The AI stopped working.')
     worker = w

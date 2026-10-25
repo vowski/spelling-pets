@@ -4,7 +4,7 @@ import type { Word } from '../content/types'
 import { checkTip } from '../engine/tips/checks'
 import { classifyMistake, type Mistake } from '../engine/tips/classify'
 import { rewordMessages, tipFromReply } from '../engine/tips/prompt'
-import { TIP_VERSION, type ModelStatus, type TipModel } from '../ai/tipModel'
+import { ModelMissingError, TIP_VERSION, type ModelStatus, type TipModel } from '../ai/tipModel'
 import type { Repo } from '../storage/repo'
 import type { Clock } from './clock'
 
@@ -159,6 +159,8 @@ export function createTipService(deps: TipServiceDeps): TipService {
           set({ kind: 'ready' })
         } catch (e) {
           await repo.logError('tips', e instanceof Error ? e.message : String(e), now())
+          // The browser lost the model (or a backup was restored on another laptop): switch off rather than re-download.
+          if (e instanceof ModelMissingError) await repo.updateSettings({ aiTipsOn: false })
           set({ kind: 'error', message: e instanceof Error ? e.message : String(e) })
         }
       })
