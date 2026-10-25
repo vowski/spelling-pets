@@ -60,12 +60,16 @@ function review(data) {
     '',
     '## 1. Plain tips (always correct, shown when AI tips are off or a check fails)',
     '',
-    'Three examples of each kind. Section 4 has the plain tip for every mistake tested.',
+    'One example of every wording, and at least three of each kind. Section 4 has the plain tip for every mistake tested.',
     '',
   ]
   for (const [type, rs] of byType) {
     lines.push(`**${kind(type)}**`, '')
-    for (const r of rs.slice(0, 3)) lines.push(`- ${r.target} ← she wrote "${r.typed}": ${r.template}`)
+    // The first mistake of each wording family (review I6), then more until there are three.
+    const shown = []
+    for (const r of rs) if ((r.families ?? []).some(f => !shown.some(s => s.families.includes(f)))) shown.push(r)
+    for (const r of rs) if (shown.length < 3 && !shown.includes(r)) shown.push(r)
+    for (const r of rs.filter(r => shown.includes(r))) lines.push(`- ${r.target} ← she wrote "${r.typed}": ${r.template}`)
     lines.push('')
   }
   lines.push('## 2. Word meanings used in sound-alike tips', '', '| Word | Means |', '|---|---|')

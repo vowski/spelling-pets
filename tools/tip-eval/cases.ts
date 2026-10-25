@@ -6,6 +6,20 @@ import { classifyMistake, type MistakeType } from '../../src/engine/tips/classif
 
 export interface EvalCase { wordId: string; typed: string }
 
+/** The shapes a plain tip can take. The review document shows the grown-up at least one of each (review I6). */
+export const WORDING_FAMILIES: [name: string, test: RegExp][] = [
+  ['the word I', /^"I" is always/], ['words starting with I', /starts with "I"/], ['days', /^Days of the week/],
+  ['months', /^Months of the year/], ['Mr and Mrs', /goes with a name/], ['names', /^Names start/],
+  ['sound-alike words', /means .*This word is/], ['apostrophes', /is short for/], ['double the last letter', /so double the/],
+  ['drop the e', /so drop the "e"/], ['y changes to i', /the "y" changes to "i"/],
+  ['endings with a sound', /^The "[^"]+" sound at the end/], ['endings', /^The end of/],
+  ['one tricky bit', /^The tricky bit in/], ['two tricky bits', /^The tricky bits in/], ['tricky all the way through', /^The whole of/],
+  ['memory tricks', /Remember:/], ['say every part', /Say every part:/],
+]
+
+/** The wording families a plain tip belongs to (a tricky tip with a memory trick belongs to two). */
+export const wordingFamilies = (template: string): string[] => WORDING_FAMILIES.filter(([, re]) => re.test(template)).map(([name]) => name)
+
 const HAND: EvalCase[] = [
   { wordId: 'w-here', typed: 'hear' }, { wordId: 'w-there', typed: 'their' }, { wordId: 'w-because', typed: 'becos' },
   { wordId: 'w-happier', typed: 'happyer' }, { wordId: 'w-friend', typed: 'freind' }, { wordId: 'w-wednesday', typed: 'wensday' },
@@ -22,7 +36,15 @@ function generated(bank: Bank): EvalCase[] {
   // capitals: days, I-words, others
   for (const w of words.filter(w => w.sets.includes('days')).slice(0, 3)) add(w.id, w.text.toLowerCase())
   for (const w of words.filter(w => /^I('|$)/.test(w.text)).slice(0, 2)) add(w.id, w.text.toLowerCase())
-  for (const w of words.filter(w => w.caseSensitive && !w.sets.includes('days') && !/^I('|$)/.test(w.text)).slice(0, 2)) add(w.id, w.text.toLowerCase())
+  // other capitals: up to two of each wording (months, Mr and Mrs, names)
+  const perFamily = new Map<string, number>()
+  for (const w of words.filter(w => w.caseSensitive && !w.sets.includes('days') && !/^I('|$)/.test(w.text))) {
+    const m = classifyMistake(w, w.text.toLowerCase(), bank)
+    const family = m ? wordingFamilies(m.template)[0] : undefined
+    if (!family || (perFamily.get(family) ?? 0) >= 2) continue
+    perFamily.set(family, (perFamily.get(family) ?? 0) + 1)
+    add(w.id, w.text.toLowerCase())
+  }
   // homophones: one mix-up from each of 8 groups
   const groups = [...new Set(words.map(w => w.homophoneGroup).filter((g): g is string => !!g))].slice(0, 8)
   for (const g of groups) {
@@ -57,8 +79,10 @@ function generated(bank: Bank): EvalCase[] {
   }
   // tricky parts: swap the tricky letters (or drop a single one) in curriculum tricky words
   let tricky = 0
+  let twoBits = 0
   for (const w of words.filter(w => w.sets.some(s => s === 'y1cew' || s === 'y2cew' || s === 'y34'))) {
-    if (tricky >= QUOTA + 1 || !w.tricky.length) continue
+    const isTwo = w.tricky.length > 1
+    if (!w.tricky.length || (isTwo ? twoBits >= 2 : tricky >= QUOTA + 1)) continue
     const [a, b] = w.tricky[0]
     const bit = w.text.slice(a, b)
     const changed = bit.length > 1 ? [...bit].reverse().join('') : ''
@@ -66,7 +90,8 @@ function generated(bank: Bank): EvalCase[] {
     const typed = w.text.slice(0, a) + changed + w.text.slice(b)
     if (classifyMistake(w, typed, bank)?.type !== 'tricky') continue
     add(w.id, typed)
-    tricky++
+    if (isTwo) twoBits++
+    else tricky++
   }
   return out
 }

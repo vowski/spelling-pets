@@ -8,7 +8,7 @@ import { HOMOPHONE_GLOSSES, MEMORY_TRICKS } from '../../src/content/tipContent'
 import { checkTip } from '../../src/engine/tips/checks'
 import { classifyMistake } from '../../src/engine/tips/classify'
 import { TIP_PROMPT_VERSION, rewordMessages, tipFromReply } from '../../src/engine/tips/prompt'
-import { EVAL_CASES } from './cases'
+import { EVAL_CASES, wordingFamilies } from './cases'
 
 const out = document.getElementById('log')!
 const log = (line: string) => { console.log(line); out.textContent += line + '\n' }
@@ -30,7 +30,7 @@ async function main() {
     const reply = tipFromReply(m, await model.generate(rewordMessages(m.reword)))
     const seconds = (performance.now() - t0) / 1000
     const problems = checkTip(reply, m, { isBlocked: isBlockedWord })
-    results.push({ ...c, target: m.target, type: m.type, template: m.template, reply, problems, seconds })
+    results.push({ ...c, target: m.target, type: m.type, families: wordingFamilies(m.template), template: m.template, reply, problems, seconds })
     log(`${m.type.padEnd(10)} ${m.target} ← ${c.typed}: ${seconds.toFixed(1)}s ${problems.length ? '✗ ' + problems.join('; ') : '✓'} | ${reply}`)
   }
   g.__TIP_EVAL__ = {
