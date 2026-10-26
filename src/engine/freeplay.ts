@@ -27,7 +27,7 @@ function starterWords(bank: Bank, seed: number, sets: readonly ('y1cew' | 'y2cew
  * Free Play always has something to play. Her own words and patterns come first; until she has any,
  * a game uses a starter set marked practiceOnly, so it earns coins but never changes her learning boxes.
  */
-export function planFreePlay(bank: Bank, state: LearnerState, game: GameType, opts: { seed: number; wheelAnchors: ReadonlySet<string> }): Activity | null {
+export function planFreePlay(bank: Bank, state: LearnerState, game: GameType, opts: { seed: number; wheelAnchors: ReadonlySet<string>; avoid?: readonly string[] }): Activity | null {
   const id = `free-${game}-${opts.seed}`
   const kind = UNIT_KIND[game]
   if (kind) {
@@ -49,7 +49,11 @@ export function planFreePlay(bank: Bank, state: LearnerState, game: GameType, op
     return easy.length ? { id, gameType: game, wordIds: [...new Set(easy.flatMap(s => s.wordIds))], sentenceIds: easy.map(s => s.id), practiceOnly: true } : null
   }
   if (game === 'wheel') {
-    const anchor = met.find(w => opts.wheelAnchors.has(w))
+    // Any of her words with a puzzle, at random, but not the one she has just played: taking the first in order gave
+    // the same puzzle ("today") every time.
+    const own = met.filter(w => opts.wheelAnchors.has(w))
+    const fresh = own.filter(w => !opts.avoid?.includes(w))
+    const anchor = sample(fresh.length ? fresh : own, 1, makeRng(opts.seed))[0]
     if (anchor) return { id, gameType: game, wordIds: [anchor] }
     const starter = starterWords(bank, opts.seed, ['y1cew', 'hfw', 'y2cew']).find(w => opts.wheelAnchors.has(w))
     return starter ? { id, gameType: game, wordIds: [starter], practiceOnly: true } : null

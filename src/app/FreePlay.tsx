@@ -52,6 +52,7 @@ export function FreePlayGame() {
   const [round, setRound] = useState(0)
   const chain = useRef<Promise<unknown>>(Promise.resolve())
   const finished = useRef<string | null>(null)
+  const lastWords = useRef<string[]>([]) // so "play again" doesn't repeat the Word Wheel puzzle she just played
   const now = () => clock.now().getTime()
 
   useEffect(() => { svc.tips?.warmUp() }, [svc.tips])
@@ -60,11 +61,12 @@ export function FreePlayGame() {
     let live = true
     void (async () => {
       const state = await repo.loadLearnerState(today)
-      const a = planFreePlay(bank, state, game as GameType, { seed: now() + round, wheelAnchors: WHEEL_ANCHORS })
+      const a = planFreePlay(bank, state, game as GameType, { seed: now() + round, wheelAnchors: WHEEL_ANCHORS, avoid: lastWords.current })
       if (!live) return
       if (!a) { navigate('/play'); return }
       const r: SessionRow = { id: `${today}-free-${now()}`, date: today, kind: 'free', startedAt: now(), endedAt: null, plan: { kind: 'extra', activities: [a], newMaterial: { kind: 'none' } }, doneActivityIds: [], complete: false, coins: 0 }
       await repo.saveSession(r)
+      lastWords.current = a.wordIds
       setRow(r); setActivity(a); setDone(false); setEarned(0)
     })()
     return () => { live = false }

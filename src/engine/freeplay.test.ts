@@ -24,6 +24,24 @@ describe('free play', () => {
     expect(planFreePlay(bank, s, 'pupPost', { seed: 1, wheelAnchors: anchors })?.wordIds).toEqual(['w-because', 'w-was', 'w-said'])
     expect(planFreePlay(bank, s, 'wheel', { seed: 1, wheelAnchors: anchors })?.wordIds).toEqual(['w-because'])
   })
+  it('gives Word Wheel a puzzle from any of her words, not the same one every time', () => {
+    const wheelWords = ['w-today', 'w-said', 'w-because', 'w-was', 'w-they', 'w-people']
+    const s = makeState({ progressList: wheelWords.map((id, i) => prog(id, { box: 3, due: '2026-12-01', lastSeenAt: i })) })
+    const chosen = new Set(Array.from({ length: 30 }, (_, seed) => planFreePlay(bank, s, 'wheel', { seed, wheelAnchors: new Set(wheelWords) })!.wordIds[0]))
+    expect(chosen.size).toBeGreaterThanOrEqual(4)
+    for (const id of chosen) expect(wheelWords).toContain(id)
+  })
+
+  it('never gives the Word Wheel puzzle she has just played when there is another', () => {
+    const wheelWords = ['w-today', 'w-said']
+    const s = makeState({ progressList: wheelWords.map(id => prog(id, { box: 3 })) })
+    for (let seed = 0; seed < 20; seed++) {
+      expect(planFreePlay(bank, s, 'wheel', { seed, wheelAnchors: new Set(wheelWords), avoid: ['w-today'] })!.wordIds).toEqual(['w-said'])
+    }
+    const one = makeState({ progressList: [prog('w-today', { box: 3 })] })
+    expect(planFreePlay(bank, one, 'wheel', { seed: 1, wheelAnchors: new Set(['w-today']), avoid: ['w-today'] })!.wordIds).toEqual(['w-today'])
+  })
+
   it('uses a started unit for pattern games', () => {
     const units = new Map([['y1-tch', { unitId: 'y1-tch', status: 'learning' as const, startedOn: T, completedOn: null, taughtWordIds: [] }]])
     const a = planFreePlay(bank, makeState({ units, progressList: [prog('w-said', { box: 1 })] }), 'sortPen', { seed: 1, wheelAnchors: anchors })
