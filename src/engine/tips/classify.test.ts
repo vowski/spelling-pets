@@ -35,8 +35,33 @@ describe('classifyMistake', () => {
     expect(m.keep).toBeUndefined()
   })
 
-  it('gives no tip when it cannot tell what went wrong', () => {
-    for (const typed of ['', '   ', 'xqzt', 'because', 'b'.repeat(40), '!!!']) expect(classifyMistake(w('because'), typed, bank), typed).toBeNull()
+  it('gives no tip for an empty, correct or far too long attempt', () => {
+    for (const typed of ['', '   ', 'because', 'b'.repeat(40)]) expect(classifyMistake(w('because'), typed, bank), typed).toBeNull()
+  })
+
+  // AI-written feedback for any wrong spelling: the mistakes the rules can't name get a "letters" mistake.
+  it('gives every other wrong spelling a letters tip that names the letters she got wrong', () => {
+    expect(classifyMistake(w('because'), 'bicos', bank)).toMatchObject({
+      type: 'letters', letters: [{ has: 'e', wrote: 'i' }, { has: 'au', wrote: 'o' }, { has: 'e', wrote: '' }],
+      template: 'In "because", you wrote "i" where it has "e", you wrote "o" where it has "au" and you missed out "e".',
+    })
+    expect(classifyMistake(w('what'), 'wot', bank)).toMatchObject({ type: 'letters', template: 'In "what", you wrote "o" where it has "ha".' })
+    expect(classifyMistake(w('busy'), 'bussy', bank)).toMatchObject({ type: 'letters', template: 'In "busy", you added "s".' })
+    expect(classifyMistake(w('probably'), 'probly', bank)?.template).toMatch(/^In "probably", you missed out "(ab|ba)"\.$/)
+  })
+
+  it('gives a plain look-carefully tip, without the AI, when the attempt is nothing like the word', () => {
+    for (const typed of ['xqzt', '!!!']) {
+      expect(classifyMistake(w('because'), typed, bank), typed).toMatchObject({
+        type: 'letters', plainOnly: true, template: 'Look carefully at each letter of "because".',
+      })
+    }
+  })
+
+  it('lets a tricky-letter tip talk about the letters she wrote', () => {
+    const m = classifyMistake(w('friend'), 'freind', bank)!
+    expect(m).toMatchObject({ type: 'tricky', letters: [{ has: 'ie', wrote: 'ei' }] })
+    expect(m.quotable).toContain('ei')
   })
 
   it('treats a curly apostrophe and extra spaces like a straight one', () => {
@@ -48,9 +73,9 @@ describe('classifyMistake', () => {
     expect(classifyMistake(w('Wednesday'), 'wensday', bank)?.type).toBe('tricky')
   })
 
-  it('only gives school-list words the safe kinds of tip', () => {
+  it('only gives school-list words the safe kinds of tip: apostrophes and the letters she got wrong', () => {
     const custom = buildBank([{ wordId: 'w-crocodile', text: 'crocodile' }]).words.get('w-crocodile')!
-    expect(classifyMistake(custom, 'crocodil', bank)).toBeNull()
+    expect(classifyMistake(custom, 'crocodil', bank)).toMatchObject({ type: 'letters', template: 'In "crocodile", you missed out "e".' })
   })
 
   it('classifies the wrong form of every suffix pair in the word bank', () => {

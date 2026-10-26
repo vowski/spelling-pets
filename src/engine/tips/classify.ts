@@ -3,8 +3,9 @@ import { CONTRACTIONS, HOMOPHONE_GLOSSES, MEMORY_TRICKS } from '../../content/ti
 import type { Word } from '../../content/types'
 import { checkWord, normalise } from '../checker'
 import { diffLetters } from '../diff'
+import { letterChunks, type LetterChunk } from './letters'
 
-export type MistakeType = 'capital' | 'homophone' | 'apostrophe' | 'doubling' | 'dropE' | 'yToI' | 'ending' | 'tricky'
+export type MistakeType = 'capital' | 'homophone' | 'apostrophe' | 'doubling' | 'dropE' | 'yToI' | 'ending' | 'tricky' | 'letters'
 
 export interface Mistake {
   type: MistakeType
@@ -24,6 +25,10 @@ export interface Mistake {
   quotable: string[]
   /** Sound-alike tips only: each word's meaning (its key word) must come after that word, not after the other one. */
   meanings?: { word: string; token: string }[]
+  /** Tricky and letters mistakes: each run of letters she got wrong, so the tip can talk about what she wrote. */
+  letters?: LetterChunk[]
+  /** The attempt is nothing like the word: always the plain "look carefully" tip, never the AI. */
+  plainOnly?: true
 }
 
 type Suffix = { root: string; suffix: string; kind: 'doubling' | 'dropE' | 'yToI' }
@@ -133,6 +138,7 @@ function tricky(word: Word, attempt: string): Mistake | null {
   }
   if (first < 0 || !word.tricky.some(([a, b]) => first >= a && first < b)) return null
   const bits = word.tricky.map(([a, b]) => word.text.slice(a, b))
+  const chunks = letterChunks(word.text, attempt)
   const t = word.text
   const lead = bits.length === 1 && bits[0] === t ? `The whole of "${t}" is tricky, so learn it by heart.`
     : bits.length === 1 ? `The tricky bit in "${t}" is "${bits[0]}".` : `The tricky bits in "${t}" are ${bits.map(b => `"${b}"`).join(' and ')}.`
@@ -140,10 +146,29 @@ function tricky(word: Word, attempt: string): Mistake | null {
   const template = trick ? `${lead} ${trick}` : lead
   return { type: 'tricky', target: t, attempt, facts: [lead, ...(trick ? [trick] : [])], template, reword: lead, ...(trick ? { keep: trick } : {}),
     // The trick is added back word for word after the reworded lead (tipFromReply); this guards that it survived.
-    mustMention: [...bits.map(b => `"${b.toLowerCase()}"`), ...(trick ? [trick.slice(trick.indexOf(':') + 1).trim().replace(/\.$/, '').toLowerCase()] : [])], quotable: [t.toLowerCase(), ...bits.map(b => b.toLowerCase())] }
+    mustMention: [...bits.map(b => `"${b.toLowerCase()}"`), ...(trick ? [trick.slice(trick.indexOf(':') + 1).trim().replace(/\.$/, '').toLowerCase()] : [])],
+    quotable: [t.toLowerCase(), ...bits.map(b => b.toLowerCase()), ...chunkLetters(chunks)], letters: chunks }
 }
 
-/** Works out what kind of mistake she made, with the facts and an always-correct plain tip; null when it can't tell. */
+const chunkLetters = (chunks: LetterChunk[]) => chunks.flatMap(c => [c.has, c.wrote]).filter(Boolean)
+const joinAnd = (parts: string[]) => (parts.length < 2 ? parts.join('') : `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`)
+
+/** Any other wrong spelling: name the letters she got wrong. Too different from the word, and it's a plain "look carefully". */
+function letters(word: Word, attempt: string): Mistake {
+  const t = word.text
+  const chunks = letterChunks(t, attempt)
+  const lower = attempt.toLowerCase()
+  const odd = (c: LetterChunk) => c.wrote === lower || `${c.has}${c.wrote}`.includes("'")
+  if (!/^[a-z']+$/i.test(attempt) || !chunks.length || chunks.length > 3 || chunks.some(odd)) {
+    const template = `Look carefully at each letter of "${t}".`
+    return { type: 'letters', target: t, attempt, facts: [template], template, reword: template, mustMention: [], quotable: [t.toLowerCase()], plainOnly: true }
+  }
+  const clauses = chunks.map(c => (!c.wrote ? `you missed out "${c.has}"` : !c.has ? `you added "${c.wrote}"` : `you wrote "${c.wrote}" where it has "${c.has}"`))
+  const template = `In "${t}", ${joinAnd(clauses)}.`
+  return { type: 'letters', target: t, attempt, facts: [template], template, reword: template, mustMention: [], quotable: [t.toLowerCase(), ...chunkLetters(chunks)], letters: chunks }
+}
+
+/** Works out what kind of mistake she made, with the facts and an always-correct plain tip; null when there is nothing to say. */
 export function classifyMistake(word: Word, typed: string, bank: Bank): Mistake | null {
   const attempt = normalise(typed)
   if (!attempt) return null
@@ -151,6 +176,6 @@ export function classifyMistake(word: Word, typed: string, bank: Bank): Mistake 
   if (check.correct || attempt.length > word.text.length * 2) return null
   if (check.capitalOnly) return capital(word, attempt)
   // School-list words have no tricky letters, meanings or patterns: only the safe kinds of tip.
-  if (word.custom) return apostrophe(word, attempt)
-  return homophone(word, attempt) ?? apostrophe(word, attempt) ?? suffix(word, attempt, bank) ?? ending(word, attempt) ?? tricky(word, attempt)
+  if (word.custom) return apostrophe(word, attempt) ?? letters(word, attempt)
+  return homophone(word, attempt) ?? apostrophe(word, attempt) ?? suffix(word, attempt, bank) ?? ending(word, attempt) ?? tricky(word, attempt) ?? letters(word, attempt)
 }

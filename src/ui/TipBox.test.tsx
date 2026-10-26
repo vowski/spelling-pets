@@ -27,9 +27,9 @@ describe('TipBox', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('shows nothing when the mistake is unclassifiable', async () => {
+  it('shows nothing when there is nothing to say (a far too long attempt)', async () => {
     const services = await servicesWithTips(makeTestServices(), { reply: GOOD })
-    const { container } = renderWithServices(<TipBox word={here} typed="xqzt" />, services)
+    const { container } = renderWithServices(<TipBox word={here} typed={'h'.repeat(20)} />, services)
     await wait(20)
     expect(container).toBeEmptyDOMElement()
   })

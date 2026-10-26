@@ -79,7 +79,7 @@ describe('checkTip', () => {
   it('every template passes its own checks', () => {
     const all = everyMistake()
     expect(all.length).toBeGreaterThan(150)
-    expect(new Set(all.map(x => x.type))).toEqual(new Set(['capital', 'homophone', 'apostrophe', 'doubling', 'dropE', 'yToI', 'ending', 'tricky']))
+    expect(new Set(all.map(x => x.type))).toEqual(new Set(['capital', 'homophone', 'apostrophe', 'doubling', 'dropE', 'yToI', 'ending', 'tricky', 'letters']))
     for (const mistake of all) expect(checkTip(mistake.template, mistake, deps), `${mistake.target}/${mistake.attempt}: ${mistake.template}`).toEqual([])
   })
 })

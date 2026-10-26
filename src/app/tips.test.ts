@@ -28,8 +28,8 @@ async function enabled(o: FakeTipModelOptions = {}) {
 }
 
 describe('tip service', () => {
-  it('returns null when the mistake cannot be classified', () => {
-    expect(setup().tips.prepare(here, 'xqzt')).toBeNull()
+  it('returns null when there is nothing to say (an empty or far too long attempt)', () => {
+    for (const typed of ['', 'h'.repeat(20)]) expect(setup().tips.prepare(here, typed), typed).toBeNull()
   })
 
   it('gives the plain tip straight away while AI tips are off', async () => {

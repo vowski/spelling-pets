@@ -15,6 +15,7 @@ export const WORDING_FAMILIES: [name: string, test: RegExp][] = [
   ['endings with a sound', /^The "[^"]+" sound at the end/], ['endings', /^The end of/],
   ['one tricky bit', /^The tricky bit in/], ['two tricky bits', /^The tricky bits in/], ['tricky all the way through', /^The whole of/],
   ['memory tricks', /Remember:/], ['say every part', /Say every part:/],
+  ['the letters she got wrong', /^In "[^"]+", you /], ['look carefully', /^Look carefully at each letter/],
 ]
 
 /** The wording families a plain tip belongs to (a tricky tip with a memory trick belongs to two). */
@@ -96,10 +97,30 @@ function generated(bank: Bank): EvalCase[] {
   return out
 }
 
+/** Realistic misspellings a 7-year-old makes, by correct word. Many are ones the rules can't name (they get a letters tip). */
+const REALISTIC: [word: string, typed: string][] = [
+  ['because', 'becuase'], ['because', 'bicos'], ['because', 'becaus'], ['friend', 'frend'], ['said', 'sayd'], ['said', 'seid'],
+  ['people', 'peple'], ['people', 'pepole'], ['Wednesday', 'wednsday'], ['February', 'febuary'], ['beautiful', 'beutiful'],
+  ['beautiful', 'butiful'], ['beautiful', 'bootifool'], ['could', 'cud'], ['could', 'coud'], ['would', 'wud'], ['which', 'wich'],
+  ['once', 'wuns'], ['school', 'skool'], ['school', 'scool'], ['busy', 'bizzy'], ['different', 'diffrent'], ['difficult', 'dificult'],
+  ['library', 'libary'], ['probably', 'probly'], ['surprise', 'suprise'], ['interest', 'intrest'], ['address', 'adress'],
+  ['answer', 'anser'], ['caught', 'cort'], ['caught', 'cought'], ['enough', 'enuf'], ['minute', 'minit'], ['separate', 'seperate'],
+  ['thought', 'thort'], ['through', 'thru'], ['woman', 'womun'], ['potatoes', 'potatos'], ['special', 'speshal'],
+  ['believe', 'belive'], ['believe', 'beleive'], ['island', 'iland'], ['knowledge', 'nolege'], ['station', 'stasion'],
+  ['happily', 'happyly'], ['they', 'thay'], ['were', 'wer'], ['there', 'thair'], ['what', 'wot'], ['want', 'wont'],
+  ['water', 'worter'], ['again', 'agen'], ['again', 'a gen'], ['come', 'cum'], ['some', 'sum'], ['love', 'luv'], ['eye', 'i'],
+]
+
+/** The realistic misspellings whose word is in the bank, as evaluation cases. */
+export function realisticCases(bank: Bank): EvalCase[] {
+  const byText = new Map([...bank.words.values()].map(w => [w.text.toLowerCase(), w.id]))
+  return REALISTIC.flatMap(([text, typed]) => (byText.has(text.toLowerCase()) ? [{ wordId: byText.get(text.toLowerCase())!, typed }] : []))
+}
+
 function build(bank: Bank): EvalCase[] {
   const seen = new Set<string>()
   const all: EvalCase[] = []
-  for (const c of [...HAND, ...generated(bank)]) {
+  for (const c of [...HAND, ...generated(bank), ...realisticCases(bank)]) {
     const key = `${c.wordId}|${c.typed}`
     const w = bank.words.get(c.wordId)
     if (seen.has(key) || !w || !classifyMistake(w, c.typed, bank)) continue
