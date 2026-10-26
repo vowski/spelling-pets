@@ -88,6 +88,12 @@ describe('checkTip', () => {
     expect(checkTip(because, m('because', 'becos'), deps)).toEqual([])
   })
 
+  it('lets an ending tip talk about the letters she wrote when she did not spell it the way it sounds (laptop run of 2026-10-26)', () => {
+    const reply = 'You wrote “s” where the word has “t”, the “shun” sound at the end of “station” is spelt “tion”.'
+    expect(checkTip(reply, m('station', 'stasion'), deps)).toEqual([])
+    expect(checkTip('You wrote “t” where the word has “s”. The “shun” sound at the end of “station” is spelt “tion”.', m('station', 'stasion'), deps)).toContain('gets her letters backwards')
+  })
+
   it('rejects a letters tip that says nothing about her letters', () => {
     expect(checkTip('"because" is a tricky word, so learn it well.', m('because', 'bicos'), deps)).toContain('says nothing about her letters')
   })

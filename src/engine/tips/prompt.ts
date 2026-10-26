@@ -1,5 +1,5 @@
 import type { Mistake, MistakeType } from './classify'
-import { letterChunks, type LetterChunk } from './letters'
+import type { LetterChunk } from './letters'
 
 export interface ChatMessage { role: 'system' | 'user' | 'assistant'; content: string }
 
@@ -36,10 +36,8 @@ function whatSheDid(m: Mistake): string {
   if (m.letters?.length) return describeLetters(m.letters)
   const q = m.quotable
   if (m.type === 'ending') {
-    // Only "the way it sounds" when she really wrote the sound ("stashun"), not another ending ("stasion").
-    if (q[2] && m.attempt.toLowerCase().endsWith(q[2])) return 'She spelt the end of the word the way it sounds.'
-    const chunks = letterChunks(m.target, m.attempt)
-    return chunks.length && chunks.length <= 3 ? describeLetters(chunks) : 'She spelt the end of the word wrongly.'
+    // An ending she didn't spell the way it sounds ("stasion") carries her letters, handled above.
+    return q[2] && m.attempt.toLowerCase().endsWith(q[2]) ? 'She spelt the end of the word the way it sounds.' : 'She spelt the end of the word wrongly.'
   }
   switch (m.type) {
     case 'homophone': return `She wrote "${m.attempt.toLowerCase()}", a real word that sounds the same but means something else.`

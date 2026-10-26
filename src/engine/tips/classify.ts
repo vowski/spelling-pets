@@ -123,7 +123,11 @@ function ending(word: Word, attempt: string): Mistake | null {
   if (!found || attempt.toLowerCase().endsWith(found[0])) return null
   const [e, sound] = found
   const template = sound ? `The "${sound}" sound at the end of "${t}" is spelt "${e}".` : `The end of "${t}" is spelt "${e}".`
-  return { type: 'ending', target: t, attempt, facts: [template], template, reword: template, mustMention: [`"${e}"`], quotable: [t.toLowerCase(), e, ...(sound ? [sound] : [])] }
+  // Spelt the way it sounds ("stashun"): the notes say so. Otherwise ("stasion") the tip talks about her letters.
+  const chunks = sound && attempt.toLowerCase().endsWith(sound) ? [] : letterChunks(t, attempt)
+  const letters = chunks.length && chunks.length <= 3 ? { letters: chunks } : {}
+  return { type: 'ending', target: t, attempt, facts: [template], template, reword: template, mustMention: [`"${e}"`],
+    quotable: [t.toLowerCase(), e, ...(sound ? [sound] : []), ...(letters.letters ? chunkLetters(chunks) : [])], ...letters }
 }
 
 function tricky(word: Word, attempt: string): Mistake | null {
