@@ -129,3 +129,74 @@ describe('checkTip', () => {
     for (const mistake of all) expect(checkTip(mistake.template, mistake, deps), `${mistake.target}/${mistake.attempt}: ${mistake.template}`).toEqual([])
   })
 })
+
+// Code review of 2026-10-26: replies a small model could plausibly write, which must never reach her.
+describe('checkTip after the code review', () => {
+  it.each([
+    ['said', 'sed', 'You wrote ‘ai’ where ‘e’ should be. “Said” has an “ai” – that’s the tricky part. Remember: Sally Ann Is Dancing.'],
+    ['come', 'cum', 'You wrote ‘u’ instead of ‘e’. “Come” has an “o”, so you need to put the ‘e’ back.'],
+    ['which', 'wich', 'You added the ‘h’ in “which”. Look at the “h”.'],
+    ['friend', 'freind', 'You wrote ‘ie’ instead of ‘ei’. “ie” is the tricky part of “friend”. Remember: a friend to the END.'],
+    ['busy', 'bussy', 'You missed out \'s\' in "busy". Look at the "s".'],
+  ])('C1: rejects a false letter claim in single quotes: %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).not.toEqual([])
+  })
+
+  it.each([
+    ['come', 'cum', 'You wrote “u” instead of “o”. “Come” has an “o”, so take the ‘e’ off.'],
+    ['which', 'wich', 'You missed “h” in “which”. It’s important to leave out the ‘h’.'],
+    ['because', 'bicos', 'In “because”, use “i” instead of “e”.'],
+    ['because', 'bicos', 'In “because”, the “e” should be an “i”.'],
+    ['because', 'bicos', 'Change the “e” to an “i” in “because”.'],
+    ['because', 'bicos', 'You used “e” instead of “i” in “because”.'],
+    ['what', 'wot', 'In “what”, the “ha” should be “o”.'],
+    ['because', 'bicos', 'You wrote “o”, but “because” has an “e” there.'],
+    ['where', 'wear', 'You wrote “ar”, but “where” has “h” there.'],
+    ['because', 'bicos', 'You wrote “i” where the word has “au”. It is “because”.'],
+    ['busy', 'bussy', 'You added "s". "busy" is spelt with a double "s".'],
+    ['happy', 'hapy', 'You missed out “p”. “happy” has three “p” letters.'],
+    ['which', 'wich', 'You missed the “h”. “which” is spelt w-i-c-h.'],
+  ])('C2: rejects a letter claim it cannot verify, or one that teaches the misspelling: %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).not.toEqual([])
+  })
+
+  it('rejects a claim that she wrote some letters instead of the whole word (laptop run of 2026-10-26)', () => {
+    const reply = 'You wrote “po” instead of “people”. ‘eo’ is the tricky part of ‘people’. Remember: People Eat Orange Peel Like Elephants.'
+    expect(checkTip(reply, m('people', 'pepole'), deps)).toContain('gets her letters wrong')
+  })
+
+  it('accepts "put the … back" for a letter she missed', () => {
+    expect(checkTip('You wrote “u” instead of “o”. “Some” has an ‘o’, so put the ‘e’ back.', m('some', 'sum'), deps)).toEqual([])
+  })
+
+  it.each([
+    ['which', 'wich', 'You spelt “which” correctly, but missed the “h”.'],
+    ['friend', 'freind', 'You got the “ie” right in “friend”. Remember: a friend to the END.'],
+    ['station', 'stasion', 'The “shun” sound at the end of “station” is spelt “tion”, and you wrote it right.'],
+    ['which', 'wich', 'Wrong! You missed the “h” in “which”.'],
+    ['which', 'wich', 'Silly you, you missed the “h” in “which”.'],
+    ['which', 'wich', 'Nice try! You missed the “h” in “which”.'],
+    ['which', 'wich', 'Super! You missed the “h” in “which”.'],
+    ['which', 'wich', 'Perfect! You missed the “h” in “which”.'],
+    ['which', 'wich', 'Excellent spelling. You missed the “h” in “which”.'],
+  ])('I1: rejects telling her she was right, praise and harsh words: %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).not.toEqual([])
+  })
+
+  it.each([
+    ['probably', 'probly', 'You missed out “ba” in “probably”, just like basket.'],
+    ['which', 'wich', 'You missed the “h” in “which”. The h is silent so you cannot hear it.'],
+  ])('rejects the worked example\'s word and made-up rules: %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).not.toEqual([])
+  })
+
+  it.each([
+    ['library', 'libary', 'You missed the ‘r’ in “library”.'],
+    ['what', 'wot', 'You wrote “o” where “what” has “ha”.'],
+    ['minute', 'minit', 'You wrote “i” where “minute” has “u”, and you missed out “e”.'],
+    ['because', 'bicos', 'You wrote “i” where “because” has “e”, and “o” where it has “au”.'],
+    ['said', 'seid', 'You wrote “e” where “a” should be. “Said” has a tricky “ai” sound. Remember: Sally Ann Is Dancing.'],
+  ])('C1/I3: accepts true letter claims, in single quotes or naming the word: %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).toEqual([])
+  })
+})

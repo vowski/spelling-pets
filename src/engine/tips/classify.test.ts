@@ -75,7 +75,8 @@ describe('classifyMistake', () => {
 
   it('only gives school-list words the safe kinds of tip: apostrophes and the letters she got wrong', () => {
     const custom = buildBank([{ wordId: 'w-crocodile', text: 'crocodile' }]).words.get('w-crocodile')!
-    expect(classifyMistake(custom, 'crocodil', bank)).toMatchObject({ type: 'letters', template: 'In "crocodile", you missed out "e".' })
+    expect(classifyMistake(custom, 'crocodil', bank)).toMatchObject({ type: 'letters', template: 'In "crocodile", you missed out the end, "e".' })
+    expect(classifyMistake(custom, 'crocdile', bank)).toMatchObject({ type: 'letters', template: 'In "crocodile", you missed out "o".' })
   })
 
   it('classifies the wrong form of every suffix pair in the word bank', () => {
@@ -108,5 +109,12 @@ describe('classifyMistake', () => {
       }
     }
     expect(checked).toBeGreaterThan(50)
+  })
+})
+
+describe('classifyMistake after the code review', () => {
+  it('I2: a part-typed word says she missed out the end', () => {
+    expect(classifyMistake(w('because'), 'be', bank)).toMatchObject({ letters: [{ has: 'cause', wrote: '' }], template: 'In "because", you missed out the end, "cause".' })
+    expect(classifyMistake(w('Saturday'), 'Sa', bank)?.template).toBe('In "Saturday", you missed out the end, "turday".')
   })
 })

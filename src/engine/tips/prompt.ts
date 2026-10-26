@@ -85,6 +85,9 @@ export const FEEDBACK_EXAMPLES: Record<MistakeType, [notes: string, answer: stri
     'You wrote "i", but "basket" has an "e" there.'],
 }
 
+/** The worked examples' own words: a reply that uses one (other than her word) has copied the example ("just like basket"). */
+export const FEEDBACK_EXAMPLE_WORDS = ['flower', 'flour', 'scotland', "wasn't", 'skip', 'skipping', 'smile', 'smiling', 'spy', 'spies', 'potion', 'doubt', 'basket']
+
 /** The model's whole prompt for one mistake: the rules, a worked example of the same kind, then her notes. */
 export function feedbackMessages(m: Mistake): ChatMessage[] {
   const [exampleNotes, exampleAnswer] = FEEDBACK_EXAMPLES[m.type]

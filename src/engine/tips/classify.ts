@@ -168,7 +168,8 @@ function letters(word: Word, attempt: string): Mistake {
     return { type: 'letters', target: t, attempt, facts: [template], template, reword: template, mustMention: [], quotable: [t.toLowerCase()], plainOnly: true }
   }
   const clauses = chunks.map(c => (!c.wrote ? `you missed out "${c.has}"` : !c.has ? `you added "${c.wrote}"` : `you wrote "${c.wrote}" where it has "${c.has}"`))
-  const template = `In "${t}", ${joinAnd(clauses)}.`
+  const partTyped = t.toLowerCase().startsWith(lower)
+  const template = partTyped ? `In "${t}", you missed out the end, "${chunks[0].has}".` : `In "${t}", ${joinAnd(clauses)}.`
   return { type: 'letters', target: t, attempt, facts: [template], template, reword: template, mustMention: [], quotable: [t.toLowerCase(), ...chunkLetters(chunks)], letters: chunks }
 }
 
