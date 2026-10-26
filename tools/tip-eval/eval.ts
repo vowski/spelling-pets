@@ -7,7 +7,7 @@ import { isBlockedWord } from '../../src/content/dictionary'
 import { HOMOPHONE_GLOSSES, MEMORY_TRICKS } from '../../src/content/tipContent'
 import { checkTip } from '../../src/engine/tips/checks'
 import { classifyMistake } from '../../src/engine/tips/classify'
-import { TIP_PROMPT_VERSION, rewordMessages, tipFromReply } from '../../src/engine/tips/prompt'
+import { TIP_PROMPT_VERSION, feedbackMessages, feedbackNotes, tipFromReply } from '../../src/engine/tips/prompt'
 import { EVAL_CASES, wordingFamilies } from './cases'
 
 const out = document.getElementById('log')!
@@ -29,10 +29,10 @@ async function main() {
     const word = bank.words.get(c.wordId)!
     const m = classifyMistake(word, c.typed, bank)!
     t0 = performance.now()
-    const reply = tipFromReply(m, await model.generate(rewordMessages(m.reword)))
+    const reply = m.plainOnly ? m.template : tipFromReply(m, await model.generate(feedbackMessages(m)))
     const seconds = (performance.now() - t0) / 1000
     const problems = checkTip(reply, m, { isBlocked: isBlockedWord })
-    results.push({ ...c, target: m.target, type: m.type, families: wordingFamilies(m.template), template: m.template, reply, problems, seconds })
+    results.push({ ...c, target: m.target, type: m.type, families: wordingFamilies(m.template), template: m.template, notes: feedbackNotes(m), plainOnly: !!m.plainOnly, reply, problems, seconds })
     log(`${m.type.padEnd(10)} ${m.target} ← ${c.typed}: ${seconds.toFixed(1)}s ${problems.length ? '✗ ' + problems.join('; ') : '✓'} | ${reply}`)
   }
   g.__TIP_EVAL__ = {

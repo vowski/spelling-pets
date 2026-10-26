@@ -46,12 +46,27 @@ describe('tip service', () => {
     expect(model!.calls).toBe(1)
   })
 
-  it('sends only the first part of a tricky-word tip to the model and adds the memory trick back', async () => {
+  it('asks the model to write feedback about the letters she wrote, and adds the memory trick back', async () => {
     const asked: string[] = []
-    const { tips } = await enabled({ reply: msgs => { asked.push(msgs.at(-1)!.content); return 'Watch the “ie” in “friend”.' } })
+    const reply = 'You wrote “ei”, but the tricky bit in “friend” is “ie”.'
+    const { tips } = await enabled({ reply: msgs => { asked.push(msgs.at(-1)!.content); return reply } })
     const r = await tips.prepare(bank.words.get(wordId('friend'))!, 'freind')!.result
-    expect(asked).toEqual(['Tip to reword: The tricky bit in "friend" is "ie".'])
-    expect(r).toEqual({ text: 'Watch the “ie” in “friend”. Remember: a friend to the END.', source: 'ai' })
+    expect(asked).toHaveLength(1)
+    expect(asked[0]).toContain('What she did: She wrote "ei" where the word has "ie".')
+    expect(asked[0]).not.toContain('Remember')
+    expect(r).toEqual({ text: `${reply} Remember: a friend to the END.`, source: 'ai' })
+  })
+
+  it('writes AI feedback for a mistake the rules cannot name (review: any wrong spelling)', async () => {
+    const reply = 'You wrote “o”, but “what” has “ha” there.'
+    const { tips } = await enabled({ reply })
+    expect(await tips.prepare(bank.words.get(wordId('what'))!, 'wot')!.result).toEqual({ text: reply, source: 'ai' })
+  })
+
+  it('gives the plain look-carefully tip, without asking the model, when the attempt is nothing like the word', async () => {
+    const { tips, model } = await enabled({ reply: GOOD })
+    expect(await tips.prepare(here, 'xqzt')!.result).toEqual({ text: 'Look carefully at each letter of "here".', source: 'plain' })
+    expect(model!.calls).toBe(0)
   })
 
   it('falls back to the plain tip when the reply fails a check', async () => {

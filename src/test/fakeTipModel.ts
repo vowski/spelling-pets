@@ -5,7 +5,7 @@ import { isBlockedWord } from '../content/dictionary'
 import type { ChatMessage } from '../engine/tips/prompt'
 
 export interface FakeTipModelOptions {
-  /** Fixed reply, or a function of the prompt. Default: echo the template being reworded (always passes the checks). */
+  /** Fixed reply, or a function of the prompt. Default: the facts from the notes, which always pass the checks. */
   reply?: string | ((messages: ChatMessage[]) => string)
   delayMs?: number
   fail?: boolean
@@ -13,6 +13,16 @@ export interface FakeTipModelOptions {
   downloadFails?: string
   /** load() reports that the model files are no longer cached. */
   missing?: boolean
+}
+
+/** The fake model's default feedback: the facts from the notes as sentences, or what she did plus the word. */
+function echoNotes(notes: string): string {
+  const lines = notes.split('\n')
+  const facts = lines.filter(l => l.startsWith('- ')).map(l => l.slice(2).replace(/([^.])$/, '$1.'))
+  if (facts.length) return facts.join(' ')
+  const word = /The correct word: "(.+)"/.exec(notes)?.[1] ?? ''
+  const did = lines.find(l => l.startsWith('What she did: '))?.slice('What she did: '.length) ?? ''
+  return `${did} The word is "${word}".`
 }
 
 /** A stand-in for the in-browser model, so tips can be tested without a GPU. */
@@ -39,7 +49,7 @@ export function fakeTipModel(o: FakeTipModelOptions = {}): TipModel & { calls: n
       if (model.options.fail) throw new Error('model failed')
       const { reply } = model.options
       if (typeof reply === 'function') return reply(messages)
-      return reply ?? messages.at(-1)!.content.replace(/^Tip to reword: /, '')
+      return reply ?? echoNotes(messages.at(-1)!.content)
     },
     async remove() {},
   }

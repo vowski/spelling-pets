@@ -3,7 +3,7 @@ import { wordId } from '../content/parse'
 import type { Word } from '../content/types'
 import { checkTip } from '../engine/tips/checks'
 import { classifyMistake, type Mistake } from '../engine/tips/classify'
-import { rewordMessages, tipFromReply } from '../engine/tips/prompt'
+import { feedbackMessages, tipFromReply } from '../engine/tips/prompt'
 import { ModelMissingError, TIP_VERSION, type ModelStatus, type TipModel } from '../ai/tipModel'
 import type { Repo } from '../storage/repo'
 import type { Clock } from './clock'
@@ -61,7 +61,7 @@ export function createTipService(deps: TipServiceDeps): TipService {
 
   const reword = async (word: Word, m: Mistake): Promise<TipResult | null> => {
     try {
-      const text = tipFromReply(m, await model!.generate(rewordMessages(m.reword)))
+      const text = tipFromReply(m, await model!.generate(feedbackMessages(m)))
       failures = 0
       const problems = checkTip(text, m, checkDeps)
       if (problems.length) {
@@ -82,7 +82,7 @@ export function createTipService(deps: TipServiceDeps): TipService {
   const resolve = async (word: Word, m: Mistake): Promise<TipResult> => {
     const plain: TipResult = { text: m.template, source: 'plain' }
     const settings = await repo.getSettings()
-    if (!model || !settings.aiTipsOn || status.kind !== 'ready' || settings.plainTipWordIds?.includes(word.id)) return plain
+    if (!model || !settings.aiTipsOn || status.kind !== 'ready' || m.plainOnly || settings.plainTipWordIds?.includes(word.id)) return plain
     const cached = await repo.getTip(tipCacheKey(word, m))
     // Checked again: the checks may have been tightened since it was cached.
     if (cached && !checkTip(cached.text, m, checkDeps).length) return { text: cached.text, source: 'ai' }
@@ -93,7 +93,7 @@ export function createTipService(deps: TipServiceDeps): TipService {
   const selfTest = async (): Promise<boolean> => {
     for (const [target, typed] of SELF_TEST) {
       const m = classifyMistake(deps.bank.words.get(wordId(target))!, typed, deps.bank)!
-      const reply = tipFromReply(m, await model!.generate(rewordMessages(m.reword)))
+      const reply = tipFromReply(m, await model!.generate(feedbackMessages(m)))
       if (checkTip(reply, m, checkDeps).length) return false
     }
     return true
