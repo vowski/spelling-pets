@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import { readFileSync } from 'node:fs'
-import { ortCacheName } from './src/ai/modelCache'
+import { ortCacheName } from './src/ai/ortCache.ts'
 
 // The runtime cache is named after the ONNX Runtime version, so an upgrade never pairs old .wasm files with new code.
 const ORT_VERSION: string = JSON.parse(readFileSync('node_modules/onnxruntime-web/package.json', 'utf8')).version

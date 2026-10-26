@@ -1,4 +1,5 @@
 // Checks on the browser's copy of the AI model, so the app never downloads 0.9 GB without being asked (review I3).
+import { ORT_CACHE, ortCacheName } from './ortCache'
 import { TIP_MODEL } from './tipModel'
 
 /** The Cache Storage name Transformers.js keeps model files in. */
@@ -16,10 +17,7 @@ export async function hasModelFiles(storage: Pick<CacheStorage, 'has' | 'open'>)
   return modelFileUrls().every(u => urls.has(u))
 }
 
-const ORT_CACHE = 'ort-runtime'
-
-/** The service worker's cache for the ONNX Runtime files, named after its version so an upgrade never mixes old and new. */
-export const ortCacheName = (version: string): string => `${ORT_CACHE}-${version}`
+export { ortCacheName }
 
 /** "Remove the AI model": deletes the model files and the AI runtime files, and leaves every other cache alone. */
 export async function clearAiCaches(storage: Pick<CacheStorage, 'keys' | 'delete'>): Promise<void> {
