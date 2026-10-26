@@ -58,6 +58,24 @@ describe('checkTip', () => {
     expect(checkTip(text, m(t, typed), deps)).not.toEqual([])
   })
 
+  it.each([
+    ['because', 'bicos', 'You wrote "e" where "because" has "i".'],
+    ['friend', 'freind', 'You wrote "ie", but "friend" has "ei".'],
+    ['what', 'wot', 'You missed out "o" in "what".'],
+  ])('rejects AI feedback that gets her letters backwards: %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).toContain('gets her letters backwards')
+  })
+
+  it('rejects a letters tip that says nothing about her letters', () => {
+    expect(checkTip('"because" is a tricky word, so learn it well.', m('because', 'bicos'), deps)).toContain('says nothing about her letters')
+  })
+
+  it('accepts AI feedback about her letters, and does not count the memory trick towards the length', () => {
+    expect(checkTip('You wrote "o", but "what" has "ha" there.', m('what', 'wot'), deps)).toEqual([])
+    const tricky = 'You wrote "ei". The tricky bit in "friend" is "ie", so look carefully at it. Remember: a friend to the END.'
+    expect(checkTip(tricky, m('friend', 'freind'), deps)).toEqual([])
+  })
+
   it('accepts a sound-alike tip that explains the correct word first', () => {
     expect(checkTip('“Here” means this place; “hear” means listen with your ears.', m('here', 'hear'), deps)).toEqual([])
   })

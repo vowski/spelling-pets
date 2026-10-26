@@ -1,4 +1,5 @@
 import type { Mistake } from './classify'
+import type { LetterChunk } from './letters'
 
 const AMERICAN = /\b(color|colors|colored|favorite|favorites|realize[sd]?|recognize[sd]?|center|centers|theater|mom|gray|honor|neighbor|neighbors|organize[sd]?|apologize[sd]?)\b|\b\w{3,}iz(e|es|ed|ing)\b|\b(mr|mrs|ms|dr)\./i
 const PRAISE = /\b(great|brilliant|amazing|well done|good job|clever|fantastic)\b/i
@@ -22,8 +23,10 @@ export function checkTip(text: string, m: Mistake, deps: { isBlocked: (word: str
 
   if (!lower.includes(target)) problems.push('leaves out the correct word')
   if (m.type !== 'homophone' && attempt !== target && new RegExp(`(^|[^a-z'])${escape(attempt)}($|[^a-z'])`).test(lower)) problems.push('shows her misspelling')
-  const words = t.split(/\s+/).filter(Boolean).length
-  const sentences = (t.match(/[.!?](?=\s|$)/g) ?? []).length
+  // The memory trick is reviewed text added after the AI's part, so only the AI's part counts towards the length.
+  const body = m.keep && t.endsWith(m.keep) ? t.slice(0, -m.keep.length).trim() : t
+  const words = body.split(/\s+/).filter(Boolean).length
+  const sentences = (body.match(/[.!?](?=\s|$)/g) ?? []).length
   if (words > 25 || sentences > 2) problems.push('too long')
   if (/[\n<*#]/.test(t)) problems.push('stray formatting')
   if (AMERICAN.test(t)) problems.push('American spelling')
@@ -39,6 +42,10 @@ export function checkTip(text: string, m: Mistake, deps: { isBlocked: (word: str
   const added = [...new Set(lower.replace(/"[^"]*"/g, '').match(NEGATIONS) ?? [])].filter(w => !new RegExp(`\\b${w}\\b`).test(template))
   if (added.length) problems.push(`adds ${added.join(', ')}`)
   if (m.meanings && mixesUpMeanings(lower, m.meanings)) problems.push('mixes up the meanings')
+  if (m.letters) {
+    if (getsLettersBackwards(lower, m.letters)) problems.push('gets her letters backwards')
+    if (m.type === 'letters' && !m.letters.some(c => lower.includes(`"${c.has || c.wrote}"`))) problems.push('says nothing about her letters')
+  }
   const missing = m.mustMention.filter(token => !lower.includes(token))
   if (missing.length) problems.push(`drops the key fact: ${missing.join(', ')}`)
   return problems
@@ -50,6 +57,15 @@ function findWord(text: string, word: string): number {
   if (q >= 0) return q
   const r = new RegExp(`(^|[^a-z'])${escape(word)}($|[^a-z'])`).exec(text)
   return r ? r.index + r[1].length : -1
+}
+
+/** True when a tip says she wrote the word's letters, or that the word has the letters she wrote (or that she missed them). */
+function getsLettersBackwards(text: string, chunks: LetterChunk[]): boolean {
+  const wrote = new Set(chunks.map(c => c.wrote).filter(Boolean))
+  const has = new Set(chunks.map(c => c.has).filter(Boolean))
+  const says = (verbs: string, letters: string) => new RegExp(`\\b(${verbs})\\s+(the\\s+|an?\\s+|only\\s+one\\s+)?(letters?\\s+)?"${escape(letters)}"`).test(text)
+  return [...has].some(h => !wrote.has(h) && says('wrote|write|added|add|put|typed', h))
+    || [...wrote].some(w => !has.has(w) && says('has|have|needs|need|missed out|missed|left out|forgot', w))
 }
 
 /** True when a sound-alike tip gives a word's meaning after the other word instead of after its own. */
