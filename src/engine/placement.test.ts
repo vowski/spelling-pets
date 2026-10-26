@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { BUILTIN_BANK as bank } from '../content'
 import {
-  buildPlacementPlan, nextPlacementChunk, recordPlacementAnswer, finaliseLevels, isPlacementDone, spreadDue,
+  buildPlacementPlan, huntProgress, nextPlacementChunk, recordPlacementAnswer, finaliseLevels, isPlacementDone, spreadDue,
 } from './placement'
 import { T, prog } from './testing'
 import type { PlacementLevelState, WordProgress } from './types'
@@ -12,6 +12,27 @@ const answerAll = (levels: PlacementLevelState[], level: string, correctCount: n
   l.sampledIds.forEach((id, i) => { out = recordPlacementAnswer(out, id, i < correctCount) })
   return out
 }
+
+describe('huntProgress', () => {
+  it('says how far the Treasure Hunt has got and how many hunts are left before the egg hatches', () => {
+    expect(huntProgress([])).toEqual({ done: 0, total: 52, huntsLeft: 5, midHunt: false }) // not started yet
+    let plan = buildPlacementPlan(bank, 123)
+    expect(huntProgress(plan)).toEqual({ done: 0, total: 52, huntsLeft: 5, midHunt: false })
+    for (const id of nextPlacementChunk(plan)) plan = recordPlacementAnswer(plan, id, true)
+    expect(huntProgress(plan)).toEqual({ done: 12, total: 52, huntsLeft: 4, midHunt: false })
+  })
+
+  it('counts a hunt she has started as one, however few of its words are left', () => {
+    let plan = buildPlacementPlan(bank, 123)
+    for (const id of nextPlacementChunk(plan)) plan = recordPlacementAnswer(plan, id, true)
+    const today = nextPlacementChunk(plan)
+    for (const id of today.slice(0, 6)) plan = recordPlacementAnswer(plan, id, false)
+    // 6 left today, then 28 more: 12 + 12 + 4.
+    expect(huntProgress(plan, today)).toEqual({ done: 18, total: 52, huntsLeft: 4, midHunt: true })
+    for (const id of today.slice(6)) plan = recordPlacementAnswer(plan, id, true)
+    expect(huntProgress(plan, today)).toEqual({ done: 24, total: 52, huntsLeft: 3, midHunt: false })
+  })
+})
 
 describe('placement', () => {
   it('samples 10/7/10/10/15 distinct headwords per level, deterministically', () => {

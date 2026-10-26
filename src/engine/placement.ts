@@ -77,6 +77,29 @@ export function finaliseLevels(
   return { levels: out, updates: [...updates.values()] }
 }
 
+export interface HuntProgress {
+  /** Treasure Hunt words she has answered, out of the whole hunt. */
+  done: number
+  total: number
+  /** Treasure Hunts left before the egg hatches, counting one she has started as one. */
+  huntsLeft: number
+  /** She is part-way through a Treasure Hunt (today's unfinished adventure). */
+  midHunt: boolean
+}
+
+/**
+ * How far the Treasure Hunt has got, for the egg on the home screen. `openHunt` is the words of a hunt she has started
+ * but not finished; before the first adventure there is no plan yet, so the planned size is used.
+ */
+export function huntProgress(levels: readonly PlacementLevelState[], openHunt: readonly string[] = [], size = PLACEMENT_CHUNK): HuntProgress {
+  const all = levels.length ? levels.flatMap(l => l.sampledIds) : null
+  const total = all ? all.length : PLACEMENT_LEVELS.reduce((n, l) => n + l.sample, 0)
+  const answered = new Set(levels.flatMap(l => Object.keys(l.answers)))
+  const done = all ? all.filter(id => answered.has(id)).length : 0
+  const leftToday = all ? openHunt.filter(id => all.includes(id) && !answered.has(id)).length : 0
+  return { done, total, huntsLeft: (leftToday ? 1 : 0) + Math.ceil((total - done - leftToday) / size), midHunt: leftToday > 0 }
+}
+
 export function isPlacementDone(levels: readonly PlacementLevelState[]): boolean {
   return levels.length > 0 && levels.every(l => l.status === 'done')
 }

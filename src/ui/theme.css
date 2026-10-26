@@ -68,3 +68,9 @@ button { cursor: pointer; }
 .tip-box { width: min(560px, 100%); min-height: 64px; box-sizing: border-box; background: #fff; border: 2px solid #f3d27a; border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; }
 .tip-box[data-state="thinking"] { border-style: dashed; border-color: var(--line); color: var(--muted); }
 .tip-text { margin: 0; font-size: 22px; line-height: 1.35; }
+
+/* The egg's countdown on the home screen */
+.hatch-progress { width: 100%; max-width: 420px; display: grid; gap: 6px; justify-items: center; text-align: center; }
+.hatch-progress .bar { width: 100%; }
+.hatch-left { font-weight: 700; font-size: 1.2em; margin: 0; }
+.hatch-progress p { margin: 0; }
