@@ -27,6 +27,13 @@ describe('feedbackMessages', () => {
     expect(feedbackNotes(mistake('patting', 'pating'))).toContain('What she did: She wrote only one "t" before "ing".')
   })
 
+  it('only says she spelt an ending the way it sounds when she did (laptop run of 2026-10-26)', () => {
+    expect(feedbackNotes(mistake('station', 'stashun'))).toContain('What she did: She spelt the end of the word the way it sounds.')
+    const stasion = feedbackNotes(mistake('station', 'stasion'))
+    expect(stasion).toContain('What she did: She wrote "s" where the word has "t".')
+    expect(stasion).not.toContain('the way it sounds')
+  })
+
   it('has a worked example for every kind of mistake, and none uses a word from her word bank', () => {
     expect(Object.keys(FEEDBACK_EXAMPLES).sort()).toEqual(['apostrophe', 'capital', 'doubling', 'dropE', 'ending', 'homophone', 'letters', 'tricky', 'yToI'])
     for (const [notes] of Object.values(FEEDBACK_EXAMPLES)) {

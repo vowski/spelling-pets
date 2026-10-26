@@ -42,8 +42,12 @@ export function checkTip(text: string, m: Mistake, deps: { isBlocked: (word: str
   const added = [...new Set(lower.replace(/"[^"]*"/g, '').match(NEGATIONS) ?? [])].filter(w => !new RegExp(`\\b${w}\\b`).test(template))
   if (added.length) problems.push(`adds ${added.join(', ')}`)
   if (m.meanings && mixesUpMeanings(lower, m.meanings)) problems.push('mixes up the meanings')
+  // Reasons are where a small model makes things up ("'do' is tricky because it's a vowel sound"): only the notes' own.
+  const unquoted = (s: string) => s.replace(/"[^"]*"/g, '')
+  if (/\bbecause\b/.test(unquoted(lower)) && !/\bbecause\b/.test(unquoted(template))) problems.push('adds a reason')
   if (m.letters) {
     if (getsLettersBackwards(lower, m.letters)) problems.push('gets her letters backwards')
+    if (claimsOtherLetters(lower, m.letters)) problems.push('gets her letters wrong')
     if (m.type === 'letters' && !m.letters.some(c => lower.includes(`"${c.has || c.wrote}"`))) problems.push('says nothing about her letters')
   }
   const missing = m.mustMention.filter(token => !lower.includes(token))
@@ -66,6 +70,15 @@ function getsLettersBackwards(text: string, chunks: LetterChunk[]): boolean {
   const says = (verbs: string, letters: string) => new RegExp(`\\b(${verbs})\\s+(the\\s+|an?\\s+|only\\s+one\\s+)?(letters?\\s+)?"${escape(letters)}"`).test(text)
   return [...has].some(h => !wrote.has(h) && says('wrote|write|added|add|put|typed', h))
     || [...wrote].some(w => !has.has(w) && says('has|have|needs|need|missed out|missed|left out|forgot', w))
+}
+
+/** True when a tip says she missed, or wrote instead, letters other than the ones she actually got wrong. */
+function claimsOtherLetters(text: string, chunks: LetterChunk[]): boolean {
+  const quoted = (span: string) => [...span.matchAll(/"([^"]+)"/g)].map(q => q[1])
+  // "You missed out the "k" and the "dge"": every letter group in the list counts.
+  const missed = [...text.matchAll(/\b(?:missed out|missed|left out|forgot)((?:\s+(?:the|an?|letters?|and|or)\b|\s*,|\s+"[^"]+")+)/g)].flatMap(x => quoted(x[1]))
+  const swaps = [...text.matchAll(/\bwrote\s+(?:the\s+|an?\s+)?(?:letters?\s+)?"([^"]+)"\s+(?:instead of|where|in place of)\s+(?:the\s+|an?\s+)?(?:letters?\s+)?"([^"]+)"/g)]
+  return missed.some(x => !chunks.some(c => c.has === x)) || swaps.some(([, w, h]) => !chunks.some(c => c.wrote === w && c.has === h))
 }
 
 /** True when a sound-alike tip gives a word's meaning after the other word instead of after its own. */

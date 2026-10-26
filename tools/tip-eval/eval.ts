@@ -8,7 +8,7 @@ import { HOMOPHONE_GLOSSES, MEMORY_TRICKS } from '../../src/content/tipContent'
 import { checkTip } from '../../src/engine/tips/checks'
 import { classifyMistake } from '../../src/engine/tips/classify'
 import { TIP_PROMPT_VERSION, feedbackMessages, feedbackNotes, tipFromReply } from '../../src/engine/tips/prompt'
-import { EVAL_CASES, wordingFamilies } from './cases'
+import { EVAL_CASES, realisticCases, wordingFamilies } from './cases'
 
 const out = document.getElementById('log')!
 const log = (line: string) => { console.log(line); out.textContent += line + '\n' }
@@ -24,6 +24,7 @@ async function main() {
   await model.load().then(() => log('loaded from the cache'), e => { if (!(e instanceof ModelMissingError)) throw e; log('not cached yet') })
   await model.download(p => { if (p - last >= 10) { last = p; log(`download ${Math.round(p)}%`) } })
   const loadSeconds = (performance.now() - t0) / 1000
+  const realistic = new Set(realisticCases(bank).map(c => `${c.wordId}|${c.typed}`))
   const results = []
   for (const c of EVAL_CASES) {
     const word = bank.words.get(c.wordId)!
@@ -32,7 +33,7 @@ async function main() {
     const reply = m.plainOnly ? m.template : tipFromReply(m, await model.generate(feedbackMessages(m)))
     const seconds = (performance.now() - t0) / 1000
     const problems = checkTip(reply, m, { isBlocked: isBlockedWord })
-    results.push({ ...c, target: m.target, type: m.type, families: wordingFamilies(m.template), template: m.template, notes: feedbackNotes(m), plainOnly: !!m.plainOnly, reply, problems, seconds })
+    results.push({ ...c, target: m.target, type: m.type, families: wordingFamilies(m.template), template: m.template, notes: feedbackNotes(m), plainOnly: !!m.plainOnly, realistic: realistic.has(`${c.wordId}|${c.typed}`), reply, problems, seconds })
     log(`${m.type.padEnd(10)} ${m.target} ← ${c.typed}: ${seconds.toFixed(1)}s ${problems.length ? '✗ ' + problems.join('; ') : '✓'} | ${reply}`)
   }
   g.__TIP_EVAL__ = {

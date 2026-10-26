@@ -1,6 +1,7 @@
 // Dev-only: `npm run tip-eval`. Runs the real spelling-tip model in Edge on this laptop over every evaluation case and
 // writes the parent's review document to private/tip-review/ (never committed).
-// `npm run tip-eval -- --from private/tip-review/<date>-results.json` rewrites the document from saved results.
+// `npm run tip-eval -- --from private/tip-review/<date>-results.json [--grades <grades.json>]` rewrites the document from saved
+// results, with my hand read of every AI tip ({ "wordId|typed": ["correct" | "weak" | "wrong", "reason"] }).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { chromium } from '@playwright/test'
 import { createServer } from 'vite'
@@ -8,6 +9,7 @@ import { createServer } from 'vite'
 const KINDS = {
   homophone: 'Sound-alike words', tricky: 'Tricky letters', capital: 'Capital letters', apostrophe: 'Apostrophes',
   doubling: 'Double the last letter', dropE: 'Drop the e', yToI: 'Y changes to i', ending: 'Word endings',
+  letters: 'Wrong letters',
 }
 
 async function runModel() {
@@ -29,14 +31,17 @@ async function runModel() {
   }
 }
 
-function review(data) {
+/** grades: optional map of `${wordId}|${typed}` → [correct | weak | wrong, reason], from reading every AI tip by hand. */
+function review(data, grades) {
   const results = data.results
-  const passed = results.filter(r => r.problems.length === 0)
-  const failed = results.filter(r => r.problems.length > 0)
-  const times = results.map(r => r.seconds).sort((a, b) => a - b)
+  const ai = results.filter(r => !r.plainOnly)
+  const passed = ai.filter(r => r.problems.length === 0)
+  const times = ai.map(r => r.seconds).sort((a, b) => a - b)
   const median = times[Math.floor(times.length / 2)]
   const esc = s => String(s).replace(/\|/g, '\\|')
   const kind = t => KINDS[t] ?? t
+  const grade = r => grades?.[`${r.wordId}|${r.typed}`]
+  const tally = rs => ['correct', 'weak', 'wrong'].map(g => `${rs.filter(r => grade(r)?.[0] === g).length} ${g}`).join(', ')
   const byType = new Map()
   for (const r of results) { if (!byType.has(r.type)) byType.set(r.type, []); byType.get(r.type).push(r) }
 
@@ -46,19 +51,26 @@ function review(data) {
     'Please read every sentence below. Mark anything that is wrong, unclear or unkind, and say what it should be.',
     'Tips only reach her after you approve this document.',
     '',
-    'How a tip is made: fixed rules work out what kind of mistake it is and write the plain tip, which is always correct.',
-    'The AI only rewords the plain tip so it sounds friendlier. It never sees or changes the memory tricks, which are added back',
-    'word for word. Automatic checks read every AI tip; if one fails, or the AI takes longer than 6 seconds, she sees the plain tip.',
+    'How feedback is made: when she gets a word wrong, the app works out exactly what she did (which letters she missed,',
+    'added or wrote instead, and the spelling rule when one applies). The AI then writes feedback to her about that, in its',
+    'own words. Automatic checks read it first; if a check fails, or the AI takes longer than 6 seconds, she sees the plain',
+    'tip instead. Memory tricks are added after the AI\'s feedback, word for word. These mistakes are test samples only: in',
+    'the app, the AI writes feedback for whatever she types.',
     '',
     '## Summary',
     '',
     `- Model: ${data.model.id} (revision ${data.model.revision.slice(0, 7)}, ${data.model.dtype}); prompt version ${data.promptVersion}`,
     `- Browser: ${data.userAgent}`,
-    `- AI tips passing every automatic check: **${passed.length} of ${results.length}** (${Math.round((passed.length / results.length) * 100)}%). The others would show the plain tip instead.`,
+    `- AI feedback passing every automatic check: **${passed.length} of ${ai.length}** (${Math.round((passed.length / ai.length) * 100)}%). The others would show the plain tip instead.`,
+    ...(grades ? [
+      `- My read of all ${ai.length} AI tips: ${tally(ai)}.`,
+      `- **What she would see** (the ${passed.length} that pass the checks): **${tally(passed)}**.`,
+      `- Realistic misspellings only (${ai.filter(r => r.realistic).length}): ${tally(ai.filter(r => r.realistic))}; passing the checks: ${tally(passed.filter(r => r.realistic))}.`,
+    ] : []),
     `- Time per AI tip: median **${median.toFixed(1)} s**, slowest ${times.at(-1).toFixed(1)} s (the app waits at most 6 s, then shows the plain tip)`,
     `- Model load: ${data.loadSeconds.toFixed(0)} s (already downloaded on this laptop)`,
     '',
-    '## 1. Plain tips (always correct, shown when AI tips are off or a check fails)',
+    '## 1. Plain tips (shown when AI tips are off, or when the AI\'s feedback fails a check)',
     '',
     'One example of every wording, and at least three of each kind. Section 4 has the plain tip for every mistake tested.',
     '',
@@ -76,16 +88,22 @@ function review(data) {
   for (const [w, g] of Object.entries(data.glosses)) lines.push(`| ${esc(w)} | ${esc(g)} |`)
   lines.push('', '## 3. Memory tricks', '')
   for (const [w, t] of Object.entries(data.tricks)) lines.push(`- **${w}**: ${t}`)
-  lines.push('', '## 4. Every AI tip from this laptop', '')
-  if (failed.length) {
-    lines.push('These failed a check, so she would see the plain tip instead:', '')
-    for (const r of failed) lines.push(`- ${r.target} ← "${r.typed}": ${r.problems.join('; ')}`)
+  const table = rs => {
+    lines.push(`| # | Kind | Word | She wrote | AI feedback | Checks |${grades ? ' My read |' : ''} Plain tip instead | Time |`, `|---|---|---|---|---|---|${grades ? '---|' : ''}---|---|`)
+    for (const r of rs) {
+      const g = grade(r)
+      const read = grades ? ` ${r.plainOnly ? '—' : g ? `**${g[0]}**${g[1] ? ': ' + esc(g[1]) : ''}` : '?'} |` : ''
+      const fed = r.plainOnly ? '*(nothing like the word: plain tip only)*' : esc(r.reply)
+      const checks = r.plainOnly ? '—' : r.problems.length ? '✗ ' + esc(r.problems.join('; ')) : '✓'
+      lines.push(`| ${results.indexOf(r) + 1} | ${kind(r.type)} | ${esc(r.target)} | ${esc(r.typed)} | ${fed} | ${checks} |${read} ${esc(r.template)} | ${r.plainOnly ? '—' : r.seconds.toFixed(1) + ' s'} |`)
+    }
     lines.push('')
   }
-  lines.push('| # | Kind | Word | She wrote | Plain tip | AI tip | Checks | Time |', '|---|---|---|---|---|---|---|---|')
-  results.forEach((r, i) => lines.push(`| ${i + 1} | ${kind(r.type)} | ${esc(r.target)} | ${esc(r.typed)} | ${esc(r.template)} | ${esc(r.reply)} | ${r.problems.length ? '✗ ' + esc(r.problems.join('; ')) : '✓'} | ${r.seconds.toFixed(1)} s |`))
-  lines.push('')
-  return { text: lines.join('\n'), passed: passed.length, total: results.length, median }
+  lines.push('', '## 4. AI feedback for every test mistake', '', '### 4a. Realistic misspellings', '')
+  table(results.filter(r => r.realistic))
+  lines.push('### 4b. One of every kind of mistake the rules know', '')
+  table(results.filter(r => !r.realistic))
+  return { text: lines.join('\n'), passed: passed.length, total: ai.length, median }
 }
 
 const fromArg = process.argv.indexOf('--from')
@@ -94,7 +112,9 @@ if (data.error) throw new Error(`Evaluation failed: ${data.error}`)
 const date = data.when.slice(0, 10)
 mkdirSync('private/tip-review', { recursive: true })
 const file = `private/tip-review/${date}-review.md`
-const doc = review(data)
+const gradesArg = process.argv.indexOf('--grades')
+const grades = gradesArg > 0 ? JSON.parse(readFileSync(process.argv[gradesArg + 1], 'utf8')) : undefined
+const doc = review(data, grades)
 writeFileSync(file, doc.text)
 if (fromArg < 0) writeFileSync(`private/tip-review/${date}-results.json`, JSON.stringify(data, null, 2))
 console.log(`wrote ${file}: ${doc.passed}/${doc.total} pass, median ${doc.median.toFixed(1)} s`)

@@ -66,6 +66,28 @@ describe('checkTip', () => {
     expect(checkTip(text, m(t, typed), deps)).toContain('gets her letters backwards')
   })
 
+  it.each([
+    ['do', 'd', 'You missed out the “o”. “Do” is tricky because it’s a vowel sound.'],
+    ['the', 'th', 'You missed out the “e”. “The” is tricky because it’s a special word.'],
+  ])('rejects a made-up reason (laptop run of 2026-10-26): %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).toContain('adds a reason')
+  })
+
+  it.each([
+    ['friend', 'frend', 'You missed the “ie” in “friend”. “Friend” has a tricky “ie” part. Remember: a friend to the END.'],
+    ['school', 'scool', 'You missed out the “ch”. “School” has a tricky “ch” sound.'],
+    ['knowledge', 'nolege', 'You missed out the “k” and the “dge”. “Knowledge” has “k” and “dge” in it.'],
+    ['thought', 'thort', 'You wrote “r” where “ough” should be. “Thought” has “ough”, so pay attention to the letters.'],
+  ])('rejects letter claims that do not match what she wrote (laptop run of 2026-10-26): %s / %s', (t, typed, text) => {
+    expect(checkTip(text, m(t, typed), deps)).toContain('gets her letters wrong')
+  })
+
+  it('accepts true letter claims, and "because" when it is the spelling word', () => {
+    expect(checkTip('You missed out the “h”. “School” has a tricky “ch” sound.', m('school', 'scool'), deps)).toEqual([])
+    const because = 'You wrote “o” where “au” should be in “because”. Remember: Big Elephants Can Always Understand Small Elephants.'
+    expect(checkTip(because, m('because', 'becos'), deps)).toEqual([])
+  })
+
   it('rejects a letters tip that says nothing about her letters', () => {
     expect(checkTip('"because" is a tricky word, so learn it well.', m('because', 'bicos'), deps)).toContain('says nothing about her letters')
   })

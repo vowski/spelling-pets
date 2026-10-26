@@ -1,4 +1,5 @@
 import type { Mistake, MistakeType } from './classify'
+import { letterChunks, type LetterChunk } from './letters'
 
 export interface ChatMessage { role: 'system' | 'user' | 'assistant'; content: string }
 
@@ -27,12 +28,19 @@ const KIND: Record<MistakeType, string> = {
   letters: 'some wrong letters',
 }
 
+const describeLetters = (chunks: LetterChunk[]) =>
+  chunks.map(c => (!c.wrote ? `She missed out "${c.has}".` : !c.has ? `She added "${c.wrote}".` : `She wrote "${c.wrote}" where the word has "${c.has}".`)).join(' ')
+
 /** What she did, as the app knows it for certain: from how the mistake was classified, or from her actual letters. */
 function whatSheDid(m: Mistake): string {
-  if (m.letters?.length) {
-    return m.letters.map(c => (!c.wrote ? `She missed out "${c.has}".` : !c.has ? `She added "${c.wrote}".` : `She wrote "${c.wrote}" where the word has "${c.has}".`)).join(' ')
-  }
+  if (m.letters?.length) return describeLetters(m.letters)
   const q = m.quotable
+  if (m.type === 'ending') {
+    // Only "the way it sounds" when she really wrote the sound ("stashun"), not another ending ("stasion").
+    if (q[2] && m.attempt.toLowerCase().endsWith(q[2])) return 'She spelt the end of the word the way it sounds.'
+    const chunks = letterChunks(m.target, m.attempt)
+    return chunks.length && chunks.length <= 3 ? describeLetters(chunks) : 'She spelt the end of the word wrongly.'
+  }
   switch (m.type) {
     case 'homophone': return `She wrote "${m.attempt.toLowerCase()}", a real word that sounds the same but means something else.`
     case 'capital': return m.target === 'I' ? 'She wrote a small "i".' : 'She started it with a small letter.'
@@ -40,7 +48,6 @@ function whatSheDid(m: Mistake): string {
     case 'doubling': return `She wrote only one "${q[1]}" before "${q[2]}".`
     case 'dropE': return `She kept the "e" before "${q[2]}".`
     case 'yToI': return `She kept the "y" before "${q[1]}".`
-    case 'ending': return 'She spelt the end of the word the way it sounds.'
     default: return 'She got the tricky part of the word wrong.'
   }
 }
