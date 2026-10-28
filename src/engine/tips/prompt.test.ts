@@ -9,7 +9,7 @@ const mistake = (t: string, typed: string) => classifyMistake(bank.words.get(wor
 describe('feedbackMessages', () => {
   it('asks the model to write the feedback itself from notes, with one worked example of the same kind', () => {
     const msgs = feedbackMessages(mistake('because', 'bicos'))
-    expect(TIP_PROMPT_VERSION).toBe(4) // 4: the tricky example became "yoghurt" when "doubt" joined her Year 5 words
+    expect(TIP_PROMPT_VERSION).toBe(4) // 4: the tricky example became "thumb" (same shape as "doubt") when "doubt" joined her Year 5 words
     expect(msgs.map(x => x.role)).toEqual(['system', 'user', 'assistant', 'user'])
     expect(msgs[0].content).toBe(FEEDBACK_SYSTEM)
     expect(FEEDBACK_SYSTEM).toContain('never tell her that what she wrote was right')

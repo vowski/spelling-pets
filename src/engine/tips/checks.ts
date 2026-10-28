@@ -12,8 +12,8 @@ const NEGATIONS = /\b(not|never|no|don't|doesn't|isn't|aren't|keep|without)\b/g
 const VERDICTS = /\b(right|correct|correctly|perfect|wrong|mistakes?|silly|oops|fail|failed)\b/g
 /** ...that can teach the wrong spelling ("take the 'e' off", "use 'i'", "a double 's'", "three 'p' letters"); */
 const INSTRUCTIONS = /\b(take|leave|remove|drop|change|use|swap|should be|double|twice|two|three)\b/g
-/** ...or make up a rule the notes never give ("the h is silent", "a vowel sound"). */
-const RULES = /\b(silent|vowels?|consonants?|rule)\b/g
+/** ...or make up a rule or fact the notes never give ("the h is silent", "a vowel sound", "a long word"). */
+const RULES = /\b(silent|vowels?|consonants?|rule|long|short)\b/g
 /** Spelling a word out letter by letter ("w-i-c-h") can spell out her misspelling. */
 const SPELLED_OUT = /\b[a-z](?:-[a-z]){2,}\b|\b[a-z](?: [a-z]){2,}\b/
 
@@ -90,6 +90,8 @@ type Role = 'wrote' | 'missed' | 'has' | 'pair' | 'look' | 'none'
 const ART = String.raw`(?:\s+(?:the|an?|only one|letters?|a tricky|tricky))*`
 /** The role a sentence gives the quoted letters that come next, from the words just before them. */
 function roleBefore(ctx: string, previous: Role): Role {
+  // An instruction ("so you need to put "e"") must name the word's letters, never the ones she wrote.
+  if (new RegExp(String.raw`\b(?:to|so|must|should)\s+(?:put|use|write|add)${ART}\s*$`).test(ctx)) return 'has'
   if (/\band\s*(?:the\s+|an?\s+)?$/.test(ctx) && previous !== 'none' && previous !== 'look') return previous === 'pair' ? 'wrote' : previous // "…, and "o" where…"
   if (new RegExp(String.raw`\b(?:wrote|typed|put|used)\b.*\b(?:instead of|in place of|where|but)\s+(?:(?:"[^"]+"|it|the word)\s+(?:has|needs)\b${ART}\s*)?${ART}\s*$`).test(ctx)) return 'pair'
   if (new RegExp(String.raw`\b(?:wrote|typed|put|used|added)${ART}\s*$`).test(ctx)) return 'wrote'

@@ -200,3 +200,17 @@ describe('checkTip after the code review', () => {
     expect(checkTip(text, m(t, typed), deps)).toEqual([])
   })
 })
+
+// Laptop runs of 2026-10-28 (prompt 4): the only two AI tips that passed every check but were wrong.
+describe('checkTip, laptop runs of 2026-10-28', () => {
+  it('rejects telling her to write her own wrong letter ("you need to put "e"")', () => {
+    const reply = 'You wrote “e” where “a” should be. “Separate” has an “a”, so you need to put “e”. Remember: there is a rat in separate.'
+    expect(checkTip(reply, m('separate', 'seperate'), deps)).toContain('gets her letters backwards')
+    expect(checkTip('You wrote “u” instead of “o”. “Some” has an ‘o’, so you need to put the ‘e’ back.', m('some', 'sum'), deps)).toEqual([])
+  })
+
+  it('rejects a made-up fact about how long the word is', () => {
+    expect(checkTip('You wrote “a” where “e” should be. “Are” is a long word, so remember it!', m('are', 'era'), deps)).toContain('makes up a rule')
+    expect(checkTip('You wrote “i” where “eye” should be. “Eye” is a short word, so remember it!', m('eye', 'i'), deps)).toContain('makes up a rule')
+  })
+})
