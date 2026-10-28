@@ -28,7 +28,7 @@ describe('word bank', () => {
     expect(bank.y34Families).toHaveLength(20)
     expect(bank.setIds.y56).toHaveLength(104) // 100 headwords + equipped, equipment, immediately, sincerely
     expect(bank.y56Families).toHaveLength(13)
-    expect(bank.units).toHaveLength(67)
+    expect(bank.units).toHaveLength(81)
   })
   it('shares one record for words in several sets', () => {
     const the = getWord(bank, 'w-the')

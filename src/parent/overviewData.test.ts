@@ -49,7 +49,7 @@ describe('overview data', () => {
   it('lists level bars with Year 3 markers', () => {
     const bars = levelBars(computeStats(bank, new Map(), new Map(), []))
     expect(bars.map(b => [b.label, b.total])).toEqual([
-      ['Year 1 tricky words', 45], ['Days of the week', 7], ['100 high-frequency words', 100], ['Year 2 tricky words', 64], ['Year 3/4 word list', 100], ['Spelling patterns', 67],
+      ['Year 1 tricky words', 45], ['Days of the week', 7], ['100 high-frequency words', 100], ['Year 2 tricky words', 64], ['Year 3/4 word list', 100], ['Spelling patterns', 81],
     ])
     expect(bars[4].markers).toEqual([50, 70])
   })

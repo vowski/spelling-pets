@@ -31,6 +31,6 @@ describe('computeStats', () => {
     const s = computeStats(bank, new Map(), units, [])
     expect([...s.unitsDone].sort()).toEqual(['y1-nk', 'y3-ation'])
     expect(s.unitsDoneByYear).toEqual({ 1: 1, 2: 0, 3: 1, 4: 0, 5: 0, 6: 0 })
-    expect(s.unitsByYear).toEqual({ 1: 25, 2: 21, 3: 10, 4: 11, 5: 0, 6: 0 })
+    expect(s.unitsByYear).toEqual({ 1: 25, 2: 21, 3: 10, 4: 11, 5: 8, 6: 6 })
   })
 })

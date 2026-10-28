@@ -4,7 +4,7 @@ import type { LetterChunk } from './letters'
 export interface ChatMessage { role: 'system' | 'user' | 'assistant'; content: string }
 
 /** Bump whenever the prompt changes: it is part of the tip cache key, so old tips are regenerated. */
-export const TIP_PROMPT_VERSION = 3
+export const TIP_PROMPT_VERSION = 4
 
 /**
  * The model writes the feedback itself, about what she actually wrote. It gets notes, never a finished tip: the correct
@@ -79,14 +79,14 @@ export const FEEDBACK_EXAMPLES: Record<MistakeType, [notes: string, answer: stri
     'You kept the "y", but when "spy" gets "es", the "y" changes to "i": "spies".'],
   ending: [notes('potion', 'ending', 'She spelt the end of the word the way it sounds.', ['The "shun" sound at the end of "potion" is spelt "tion".']),
     'You spelt the end the way it sounds, but the "shun" sound at the end of "potion" is spelt "tion".'],
-  tricky: [notes('doubt', 'tricky', 'She missed out "b".', ['The tricky bit in "doubt" is "b".']),
-    'You missed out the "b". The tricky bit in "doubt" is "b", so look carefully at that part.'],
+  tricky: [notes('yoghurt', 'tricky', 'She missed out "h".', ['The tricky bit in "yoghurt" is "gh".']),
+    'You missed out the "h". The tricky bit in "yoghurt" is "gh", so look carefully at that part.'],
   letters: [notes('basket', 'letters', 'She wrote "i" where the word has "e".', []),
     'You wrote "i", but "basket" has an "e" there.'],
 }
 
 /** The worked examples' own words: a reply that uses one (other than her word) has copied the example ("just like basket"). */
-export const FEEDBACK_EXAMPLE_WORDS = ['flower', 'flour', 'scotland', "wasn't", 'skip', 'skipping', 'smile', 'smiling', 'spy', 'spies', 'potion', 'doubt', 'basket']
+export const FEEDBACK_EXAMPLE_WORDS = ['flower', 'flour', 'scotland', "wasn't", 'skip', 'skipping', 'smile', 'smiling', 'spy', 'spies', 'potion', 'yoghurt', 'basket']
 
 /** The model's whole prompt for one mistake: the rules, a worked example of the same kind, then her notes. */
 export function feedbackMessages(m: Mistake): ChatMessage[] {

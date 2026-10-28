@@ -4,6 +4,8 @@ import { Y1_UNITS } from './y1'
 import { Y2_UNITS } from './y2'
 import { Y3_UNITS } from './y3'
 import { Y4_UNITS } from './y4'
+import { Y5_UNITS } from './y5'
+import { Y6_UNITS } from './y6'
 import { ALL_UNIT_DEFS } from './index'
 
 export function checkUnits(units: PatternUnitDef[]) {
@@ -58,7 +60,24 @@ describe('Year 3 and 4 pattern units', () => {
     Y4_UNITS.forEach(u => expect(u.year).toBe(4))
   })
   it('ALL_UNIT_DEFS has unique ids across years', () => {
-    expect(ALL_UNIT_DEFS).toHaveLength(25 + 21 + 10 + 11)
+    expect(ALL_UNIT_DEFS).toHaveLength(67 + 8 + 6)
     expect(new Set(ALL_UNIT_DEFS.map(u => u.id)).size).toBe(ALL_UNIT_DEFS.length)
+  })
+})
+
+// Years 5 and 6 from DfE English Appendix 1; the builder's split between the two years (design of 2026-10-28).
+describe('Year 5 and 6 pattern units', () => {
+  it('Y5 units are well-formed and tagged Year 5', () => {
+    expect(Y5_UNITS.map(u => u.id)).toEqual(['y5-cious-tious', 'y5-cial-tial', 'y5-ant-ent', 'y5-ance-ence', 'y5-able-ible', 'y5-ably-ibly', 'y5-silent-letters', 'y5-ce-se'])
+    checkUnits(Y5_UNITS)
+    Y5_UNITS.forEach(u => expect(u.year).toBe(5))
+  })
+  it('Y6 units are well-formed and tagged Year 6', () => {
+    expect(Y6_UNITS.map(u => u.id)).toEqual(['y6-fer', 'y6-hyphens', 'y6-ei-after-c', 'y6-ough', 'y6-homophones-1', 'y6-homophones-2'])
+    checkUnits(Y6_UNITS)
+    Y6_UNITS.forEach(u => expect(u.year).toBe(6))
+  })
+  it('never uses the word builder for -fer words, so no "short sound" doubling tip is given for them', () => {
+    expect(Y6_UNITS.find(u => u.id === 'y6-fer')!.game.kind).toBe('sort')
   })
 })
