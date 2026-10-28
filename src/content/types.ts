@@ -1,5 +1,5 @@
-export type SetId = 'y1cew' | 'days' | 'hfw' | 'y2cew' | 'y34' | 'pattern' | 'school'
-export type Year = 1 | 2 | 3 | 4
+export type SetId = 'y1cew' | 'days' | 'hfw' | 'y2cew' | 'y34' | 'y56' | 'pattern' | 'school'
+export type Year = 1 | 2 | 3 | 4 | 5 | 6
 
 export interface Word {
   id: string

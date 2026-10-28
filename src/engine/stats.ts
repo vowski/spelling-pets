@@ -1,5 +1,5 @@
 import type { Bank } from '../content'
-import type { SetId } from '../content/types'
+import type { SetId, Year } from '../content/types'
 import { isMastered, isSecure } from './scheduler'
 import { isUnitDone } from './units'
 import type { UnitState, WordProgress } from './types'
@@ -12,12 +12,12 @@ export interface LearnerStats {
   secureBySet: Record<SetId, number>
   sizeBySet: Record<SetId, number>
   unitsDone: ReadonlySet<string>
-  unitsDoneByYear: Record<1 | 2 | 3 | 4, number>
-  unitsByYear: Record<1 | 2 | 3 | 4, number>
+  unitsDoneByYear: Record<Year, number>
+  unitsByYear: Record<Year, number>
   storyResults: readonly StoryResult[]
 }
 
-const SETS: SetId[] = ['y1cew', 'days', 'hfw', 'y2cew', 'y34', 'pattern', 'school']
+const SETS: SetId[] = ['y1cew', 'days', 'hfw', 'y2cew', 'y34', 'y56', 'pattern', 'school']
 
 export function computeStats(
   bank: Bank,
@@ -28,14 +28,15 @@ export function computeStats(
   const secureBySet = Object.fromEntries(SETS.map(s => [s, 0])) as Record<SetId, number>
   const sizeBySet = Object.fromEntries(SETS.map(s => [s, 0])) as Record<SetId, number>
   for (const set of SETS) {
-    const ids = bank.setIds[set].filter(id => set !== 'y34' || !bank.words.get(id)?.followOnOf)
+    // The statutory lists count headwords only (100 each), not their follow-on forms.
+    const ids = bank.setIds[set].filter(id => (set !== 'y34' && set !== 'y56') || !bank.words.get(id)?.followOnOf)
     sizeBySet[set] = ids.length
     secureBySet[set] = ids.filter(id => { const p = progress.get(id); return p !== undefined && isSecure(p) }).length
   }
   const all = [...progress.values()].filter(p => bank.words.has(p.wordId))
   const unitsDone = new Set([...units.values()].filter(isUnitDone).map(u => u.unitId))
-  const unitsDoneByYear = { 1: 0, 2: 0, 3: 0, 4: 0 }
-  const unitsByYear = { 1: 0, 2: 0, 3: 0, 4: 0 }
+  const unitsDoneByYear: Record<Year, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
+  const unitsByYear: Record<Year, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
   for (const u of bank.units) {
     unitsByYear[u.year]++
     if (unitsDone.has(u.id)) unitsDoneByYear[u.year]++

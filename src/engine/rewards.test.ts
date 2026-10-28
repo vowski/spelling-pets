@@ -3,9 +3,9 @@ import { coinsForAttempt, petStage, evaluateAchievements, stickerTriggers, rewar
 import { makeRng } from './rng'
 import { STICKERS } from '../content/rewards'
 
-const zeroSets = { y1cew: 0, days: 0, hfw: 0, y2cew: 0, y34: 0, pattern: 0, school: 0 }
+const zeroSets = { y1cew: 0, days: 0, hfw: 0, y2cew: 0, y34: 0, y56: 0, pattern: 0, school: 0 }
 const snap = (over: Partial<AchievementSnapshot> = {}): AchievementSnapshot => ({
-  placementDone: 1, secureTotal: 0, secureBySet: { ...zeroSets }, sizeBySet: { y1cew: 45, days: 7, hfw: 100, y2cew: 64, y34: 100, pattern: 400, school: 0 },
+  placementDone: 1, secureTotal: 0, secureBySet: { ...zeroSets }, sizeBySet: { y1cew: 45, days: 7, hfw: 100, y2cew: 64, y34: 100, y56: 100, pattern: 400, school: 0 },
   unitsDone: 0, weeklyGoalsMet: 0, wheelPuzzles: 0, wheelThreeStars: 0, bonusWords: 0, perfectStoryTimes: 0, punctuationSentences: 0, ...over,
 })
 const none = { stickers: new Set<string>(), badges: new Set<string>(), friends: new Set<string>() }

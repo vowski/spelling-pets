@@ -7,6 +7,7 @@ import { DAYS } from './words/days'
 import { Y2CEW } from './words/y2cew'
 import { HFW_EXTRA } from './words/hfw'
 import { Y34_FAMILIES } from './words/y34'
+import { Y56_FAMILIES } from './words/y56'
 import { ALL_UNIT_DEFS } from './units'
 import { parseWordSpec, wordId } from './parse'
 
@@ -25,6 +26,8 @@ describe('word bank', () => {
     expect(bank.setIds.hfw).toHaveLength(100)
     expect(bank.setIds.y34).toHaveLength(109)
     expect(bank.y34Families).toHaveLength(20)
+    expect(bank.setIds.y56).toHaveLength(104) // 100 headwords + equipped, equipment, immediately, sincerely
+    expect(bank.y56Families).toHaveLength(13)
     expect(bank.units).toHaveLength(67)
   })
   it('shares one record for words in several sets', () => {
@@ -36,6 +39,8 @@ describe('word bank', () => {
     expect(getWord(bank, 'w-february').caseSensitive).toBe(true)
     expect(getWord(bank, 'w-because').caseSensitive).toBe(false)
     expect(getWord(bank, 'w-accidentally').followOnOf).toBe('w-accident')
+    expect(getWord(bank, 'w-equipment').followOnOf).toBe('w-equip')
+    expect(getWord(bank, 'w-yacht').sets).toContain('y56')
   })
   it('assigns homophone groups', () => {
     expect(getWord(bank, 'w-hear').homophoneGroup).toBe('hear/here')
@@ -52,7 +57,7 @@ describe('word bank', () => {
     }
   })
   it('PATTERN_WORDS has exactly the unit words not defined elsewhere', () => {
-    const earlier = new Set([...Y1CEW, ...DAYS, ...Y2CEW, ...HFW_EXTRA, ...Y34_FAMILIES.flatMap(f => f.entries)].map(e => wordId(parseWordSpec(e[0]).text)))
+    const earlier = new Set([...Y1CEW, ...DAYS, ...Y2CEW, ...HFW_EXTRA, ...Y34_FAMILIES.flatMap(f => f.entries), ...Y56_FAMILIES.flatMap(f => f.entries)].map(e => wordId(parseWordSpec(e[0]).text)))
     const needed = new Set(ALL_UNIT_DEFS.flatMap(u => u.words).map(wordId).filter(id => !earlier.has(id)))
     const have = PATTERN_WORDS.map(e => wordId(parseWordSpec(e[0]).text))
     expect(new Set(have).size).toBe(have.length)

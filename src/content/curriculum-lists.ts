@@ -44,3 +44,23 @@ export const Y34_FOLLOW_ONS: Record<string, string> = {
   accidentally: 'accident', actually: 'actual', business: 'busy', eighth: 'eight', forwards: 'forward',
   occasionally: 'occasion', possession: 'possess', although: 'though', women: 'woman',
 }
+
+/** The statutory Years 5–6 word list (DfE English Appendix 1, OGL v3.0): headwords, verbatim, in the list's order. */
+export const Y56_HEADWORDS = [
+  'accommodate', 'accompany', 'according', 'achieve', 'aggressive', 'amateur', 'ancient', 'apparent', 'appreciate',
+  'attached', 'available', 'average', 'awkward', 'bargain', 'bruise', 'category', 'cemetery', 'committee', 'communicate',
+  'community', 'competition', 'conscience', 'conscious', 'controversy', 'convenience', 'correspond', 'criticise',
+  'curiosity', 'definite', 'desperate', 'determined', 'develop', 'dictionary', 'disastrous', 'embarrass', 'environment',
+  'equip', 'especially', 'exaggerate', 'excellent', 'existence', 'explanation', 'familiar', 'foreign', 'forty',
+  'frequently', 'government', 'guarantee', 'harass', 'hindrance', 'identity', 'immediate', 'individual', 'interfere',
+  'interrupt', 'language', 'leisure', 'lightning', 'marvellous', 'mischievous', 'muscle', 'necessary', 'neighbour',
+  'nuisance', 'occupy', 'occur', 'opportunity', 'parliament', 'persuade', 'physical', 'prejudice', 'privilege',
+  'profession', 'programme', 'pronunciation', 'queue', 'recognise', 'recommend', 'relevant', 'restaurant', 'rhyme',
+  'rhythm', 'sacrifice', 'secretary', 'shoulder', 'signature', 'sincere', 'soldier', 'stomach', 'sufficient', 'suggest',
+  'symbol', 'system', 'temperature', 'thorough', 'twelfth', 'variety', 'vegetable', 'vehicle', 'yacht',
+] as const
+
+/** Forms the list gives in brackets: equip (–ped, –ment), immediate(ly), sincere(ly). */
+export const Y56_FOLLOW_ONS: Record<string, string> = {
+  equipped: 'equip', equipment: 'equip', immediately: 'immediate', sincerely: 'sincere',
+}

@@ -536,7 +536,6 @@ export const PATTERN_WORDS: WordEntry[] = [
   // y3-ei-eigh-ey
   ['v[ei]n', 'You can see a blue vein on my wrist.'],
   ['w[eigh]', 'How much do you weigh?'],
-  ['n[eigh]|bour', 'Our neighbour has a big dog.'],
   ['sl[eigh]', 'Santa rides in a sleigh.'],
   ['o|b[ey]', 'Dogs learn to obey their owners.'],
   ['gr[ey]', 'The sky is grey and cloudy.'],

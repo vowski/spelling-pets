@@ -1,0 +1,177 @@
+import type { WordEntry } from '../types'
+
+/**
+ * The statutory Years 5–6 word list, grouped into teaching families by the part that makes each word tricky.
+ * Follow-on forms carry their headword. Tricky parts are the letters children most often get wrong.
+ */
+export const Y56_FAMILIES: { name: string; entries: WordEntry[] }[] = [
+  {
+    name: 'double-cc-mm',
+    entries: [
+      ['a[cc]o[mm]o|date', 'The hotel can accommodate six people.'],
+      ['a[cc]om|pa|ny', 'Will you accompany me to the shop?'],
+      ['co[mm]i[tt]ee', 'The school committee planned the summer fair.'],
+      ['co[mm]u|ni|cate', 'Dolphins communicate with clicks and whistles.'],
+      ['co[mm]u|ni|ty', 'Our community has a lovely park.'],
+      ['re[c]o[mm]end', 'I recommend this book about dragons.'],
+      ['pro|gra[mme]', 'We watched a programme about penguins.'],
+    ],
+  },
+  {
+    name: 'double-gg-rr-ss',
+    entries: [
+      ['a[gg]re[ss]|ive', 'The goose was aggressive and chased us.'],
+      ['em|ba[rr]a[ss]', 'Silly jokes embarrass my big sister.'],
+      ['ha[r]a[ss]', 'It is unkind to harass other people.'],
+      ['su[gg]est', 'Can you suggest a name for my kitten?'],
+      ['in|te[rr]upt', 'Please do not interrupt when others are talking.'],
+      ['co[rr]e|spond', 'Pen pals correspond by writing letters.'],
+      ['a[pp]a|r[ent]', 'It was apparent that the cake had gone.'],
+      ['a[pp]re|[ci]ate', 'I appreciate all your help today.'],
+    ],
+  },
+  {
+    name: 'double-cc-ff-ll-tt',
+    entries: [
+      ['e[xc]e[ll]ent', 'Your drawing is excellent!'],
+      ['ne[c]e[ss]a|ry', 'It is necessary to wash your hands.'],
+      ['o[cc]u|py', 'The children occupy every seat on the bus.'],
+      ['o[cc]ur', 'Storms often occur in the winter.'],
+      ['o[pp]or|tu|ni|ty', 'The trip was a wonderful opportunity to learn.'],
+      ['su[ff]i[ci]ent', 'We have sufficient food for the picnic.'],
+      ['a[tt]a[ch]ed', 'The label is attached to the parcel.'],
+      ['[gu]a|ran|[tee]', 'I guarantee you will love this game.'],
+    ],
+  },
+  {
+    name: 'silent-and-odd-letters',
+    entries: [
+      ['mu[sc]le', 'My leg muscle ached after the race.'],
+      ['ya[ch]t', 'A white yacht sailed across the bay.'],
+      ['[rh][y]me', 'Can you find a word to rhyme with "cat"?'],
+      ['[rh][y]thm', 'Clap your hands to the rhythm of the song.'],
+      ['sto|ma[ch]', 'My stomach rumbled before lunch.'],
+      ['li[gh][tn]ing', 'A flash of lightning lit up the sky.'],
+      ['twel[f]th', 'My twelfth birthday will be in May.'],
+      ['for[ei][g]n', 'We met a foreign visitor from Spain.'],
+    ],
+  },
+  {
+    name: 'ou-or-ai-ue',
+    entries: [
+      ['sh[ou]l|der', 'The parrot sat on my shoulder.'],
+      ['thor[ough]', 'Give your teeth a thorough brush tonight.'],
+      ['n[eigh]|b[our]', 'Our neighbour has a very fluffy cat.'],
+      ['f[or]|ty', 'There are forty children in the hall.'],
+      ['a[w]k|[w]ard', 'The big box was awkward to carry.'],
+      ['bar|g[ai]n', 'This toy was a bargain at the sale.'],
+      ['br[ui]se', 'I got a bruise when I fell over.'],
+      ['q[ueue]', 'We waited in a long queue for ice cream.'],
+    ],
+  },
+  {
+    name: 'ie-ei-sc',
+    entries: [
+      ['ach[ie]ve', 'You can achieve great things if you practise.'],
+      ['l[ei]|[sure]', 'Reading is my favourite leisure activity.'],
+      ['mis|ch[ie]|[vous]', 'The mischievous kitten hid my sock.'],
+      ['an|[ci]ent', 'We visited an ancient castle on holiday.'],
+      ['con|[sc][ie]nce', 'My conscience told me to say sorry.'],
+      ['con|[sc][ious]', 'I was conscious of everyone looking at me.'],
+      ['sin|[c][ere]', 'She gave a sincere apology to her friend.'],
+      ['sin|[c][ere]|ly', 'I ended my letter with "Yours sincerely".', 'sincere'],
+    ],
+  },
+  {
+    name: 'ous-and-ui',
+    entries: [
+      ['di|sa[str]ous', 'The burnt cake was a disastrous mess.'],
+      ['mar|ve[ll]ous', 'We had a marvellous day at the beach.'],
+      ['cu|ri[os]|i|ty', 'Her curiosity made her open the box.'],
+      ['n[ui]|[s]ance', 'The buzzing fly was a real nuisance.'],
+      ['per|[su]ade', 'Can you persuade Dad to let us stay up?'],
+    ],
+  },
+  {
+    name: 'ence-ance-ant',
+    entries: [
+      ['con|ve|n[ie]|[nce]', 'The shop opens late for our convenience.'],
+      ['ex|is|t[ence]', 'Dinosaurs came into existence long ago.'],
+      ['hind|[r][ance]', 'The heavy bag was a hindrance on the walk.'],
+      ['in|ter|f[ere]', 'Please do not interfere with my model.'],
+      ['rel|[e]|v[ant]', 'Only write facts that are relevant.'],
+      ['rest|[au]|r[ant]', 'We ate pizza at an Italian restaurant.'],
+      ['av|[ai]l|[able]', 'Are there any seats available on the train?'],
+    ],
+  },
+  {
+    name: 'tion-and-ment',
+    entries: [
+      ['comp|[e]t|[i]|tion', 'I won a prize in the drawing competition.'],
+      ['ex|pl[a]|na|tion', 'Thank you for your clear explanation.'],
+      ['pro|[nun]|ci|a|tion', 'Her French pronunciation is very good.'],
+      ['pro|[f]e[ss]|ion', 'Nursing is a caring profession.'],
+      ['gov|er[n]|ment', 'The government makes the laws.'],
+      ['en|vi|ro[n]|ment', 'We must look after the environment.'],
+      ['par|l[ia]|ment', 'A group of owls is called a parliament.'],
+      ['e[qu]ip', 'We will equip the team with new kit.'],
+      ['e[qu]i[pp]ed', 'The kitchen is equipped with a big oven.', 'equip'],
+      ['e[qu]ip|ment', 'Put the sports equipment back in the shed.', 'equip'],
+    ],
+  },
+  {
+    name: 'ise-ate-ite',
+    entries: [
+      ['crit|i|[ci][se]', 'It is not kind to criticise people unfairly.'],
+      ['rec|o[g]|ni[se]', 'Did you recognise your old teacher?'],
+      ['e[x]a[gg]|er|ate', 'Please do not exaggerate the story.'],
+      ['des|[per]|ate', 'The thirsty dog was desperate for water.'],
+      ['def|[i]|n[ite]', 'We need a definite answer by Friday.'],
+      ['i[mm]e|d[iate]', 'The doctor gave immediate help.'],
+      ['i[mm]e|d[iate]|ly', 'Come inside immediately, it is raining!', 'immediate'],
+      ['de|ter|m[ine]d', 'She was determined to finish the race.'],
+      ['av|[er]|age', 'The average age in our class is eight.'],
+    ],
+  },
+  {
+    name: 'tricky-middles-1',
+    entries: [
+      ['cat|[e]|go|ry', 'Put each animal in the right category.'],
+      ['cem|[e]|t[e]|ry', 'Flowers grew in the old cemetery.'],
+      ['dic|[tion]|ar|y', 'Look up the word in a dictionary.'],
+      ['sec|re|t[a]|ry', 'The school secretary answered the phone.'],
+      ['tem|p[er]|a|ture', 'The temperature dropped below zero last night.'],
+      ['veg|[e]|ta|ble', 'Carrots are my favourite vegetable.'],
+      ['ve|[h]i|[cle]', 'A big vehicle blocked the narrow road.'],
+      ['var|[ie]|ty', 'The shop sells a variety of sweets.'],
+    ],
+  },
+  {
+    name: 'tricky-middles-2',
+    entries: [
+      ['i|den|[ti]|ty', 'The spy kept his identity a secret.'],
+      ['in|di|v[i]|d[ual]', 'Each individual pupil has a peg.'],
+      ['[ph][y]s|i|cal', 'Swimming is good physical exercise.'],
+      ['s[y]m|bol', 'A heart is a symbol of love.'],
+      ['s[y]s|tem', 'We have a new system for tidying up.'],
+      ['am|a|t[eur]', 'He is an amateur painter, not a professional.'],
+      ['sol|[di]er', 'A toy soldier stood on the shelf.'],
+      ['si[g]|na|ture', 'Please write your signature at the bottom.'],
+    ],
+  },
+  {
+    name: 'last-ones',
+    entries: [
+      ['a[cc]|ord|ing', 'According to the map, we are lost.'],
+      ['de|vel|[op]', 'Tadpoles develop into frogs.'],
+      ['fre|[qu]ent|ly', 'It frequently rains in April.'],
+      ['fa|mil|[iar]', 'That song sounds very familiar.'],
+      ['lan|[gua]ge', 'She speaks a second language at home.'],
+      ['priv|[i]|le[ge]', 'It was a privilege to feed the zoo animals.'],
+      ['prej|[u]|dice', 'We should treat everyone fairly, without prejudice.'],
+      ['sac|r[i]|fice', 'He made a sacrifice to help his friend.'],
+      ['con|tro|[ver]|sy', 'The new rule caused a lot of controversy.'],
+      ['e[sp]e|[cial]|ly', 'I love animals, especially dogs.'],
+    ],
+  },
+]

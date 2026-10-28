@@ -6,6 +6,7 @@ import { DAYS } from './words/days'
 import { Y2CEW } from './words/y2cew'
 import { HFW_ORDER, HFW_EXTRA } from './words/hfw'
 import { Y34_FAMILIES } from './words/y34'
+import { Y56_FAMILIES } from './words/y56'
 import { PATTERN_WORDS } from './words/pattern-words'
 import { ALL_UNIT_DEFS } from './units'
 import { STORY_SENTENCES } from './sentences'
@@ -17,14 +18,16 @@ export interface Bank {
   unitById: ReadonlyMap<string, PatternUnit>
   sentences: readonly StorySentence[]
   y34Families: readonly (readonly string[])[]
+  /** The Years 5–6 list in teaching families (unlocked from Year 5). */
+  y56Families: readonly (readonly string[])[]
   hfwOrder: readonly string[]
 }
 
-const CURRICULUM: readonly SetId[] = ['y1cew', 'days', 'hfw', 'y2cew', 'y34']
+const CURRICULUM: readonly SetId[] = ['y1cew', 'days', 'hfw', 'y2cew', 'y34', 'y56']
 
 export function buildBank(custom: readonly CustomWord[] = []): Bank {
   const words = new Map<string, Word>()
-  const setIds: Record<SetId, string[]> = { y1cew: [], days: [], hfw: [], y2cew: [], y34: [], pattern: [], school: [] }
+  const setIds: Record<SetId, string[]> = { y1cew: [], days: [], hfw: [], y2cew: [], y34: [], y56: [], pattern: [], school: [] }
 
   const addToSet = (w: Word, set: SetId) => {
     if (!w.sets.includes(set)) {
@@ -53,6 +56,7 @@ export function buildBank(custom: readonly CustomWord[] = []): Bank {
   DAYS.forEach(e => define(e, 'days'))
   Y2CEW.forEach(e => define(e, 'y2cew'))
   const y34Families = Y34_FAMILIES.map(f => f.entries.map(e => define(e, 'y34').id))
+  const y56Families = Y56_FAMILIES.map(f => f.entries.map(e => define(e, 'y56').id))
   HFW_EXTRA.forEach(e => define(e, 'hfw'))
   const hfwOrder = HFW_ORDER.map(text => {
     const w = words.get(wordId(text))
@@ -111,7 +115,7 @@ export function buildBank(custom: readonly CustomWord[] = []): Bank {
     return { id: `s-${hashString(s.text).toString(36)}`, text: s.text, level: s.level, wordIds: ids }
   })
 
-  return { words, setIds, units, unitById: new Map(units.map(u => [u.id, u])), sentences, y34Families, hfwOrder }
+  return { words, setIds, units, unitById: new Map(units.map(u => [u.id, u])), sentences, y34Families, y56Families, hfwOrder }
 }
 
 export function getWord(bank: Bank, id: string): Word {
