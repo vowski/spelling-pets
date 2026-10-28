@@ -27,7 +27,7 @@ export interface Mistake {
   meanings?: { word: string; token: string }[]
   /** Tricky and letters mistakes: each run of letters she got wrong, so the tip can talk about what she wrote. */
   letters?: LetterChunk[]
-  /** The attempt is nothing like the word: always the plain "look carefully" tip, never the AI. */
+  /** Always the plain tip, never the AI: the attempt is nothing like the word, or only says where a hyphen goes. */
   plainOnly?: true
 }
 
@@ -154,6 +154,16 @@ function tricky(word: Word, attempt: string): Mistake | null {
     quotable: [t.toLowerCase(), ...bits.map(b => b.toLowerCase()), ...chunkLetters(chunks)], letters: chunks }
 }
 
+/** A hyphenated word written without its hyphen ("coordinate", "re elect"): say where the hyphen goes, in words. */
+function hyphen(word: Word, attempt: string): Mistake | null {
+  const t = word.text
+  if (!t.includes('-') || attempt.includes('-')) return null
+  const parts = t.split('-')
+  const template = parts.length === 2 ? `"${t}" has a hyphen (-) between "${parts[0]}" and "${parts[1]}".`
+    : `"${t}" has hyphens (-) joining ${joinAnd(parts.map(p => `"${p}"`))}.`
+  return { type: 'letters', target: t, attempt, facts: [template], template, reword: template, mustMention: [], quotable: [t.toLowerCase(), ...parts.map(p => p.toLowerCase())], plainOnly: true }
+}
+
 const chunkLetters = (chunks: LetterChunk[]) => chunks.flatMap(c => [c.has, c.wrote]).filter(Boolean)
 const joinAnd = (parts: string[]) => (parts.length < 2 ? parts.join('') : `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`)
 
@@ -181,6 +191,6 @@ export function classifyMistake(word: Word, typed: string, bank: Bank): Mistake 
   if (check.correct || attempt.length > word.text.length * 2) return null
   if (check.capitalOnly) return capital(word, attempt)
   // School-list words have no tricky letters, meanings or patterns: only the safe kinds of tip.
-  if (word.custom) return apostrophe(word, attempt) ?? letters(word, attempt)
-  return homophone(word, attempt) ?? apostrophe(word, attempt) ?? suffix(word, attempt, bank) ?? ending(word, attempt) ?? tricky(word, attempt) ?? letters(word, attempt)
+  if (word.custom) return apostrophe(word, attempt) ?? hyphen(word, attempt) ?? letters(word, attempt)
+  return homophone(word, attempt) ?? apostrophe(word, attempt) ?? hyphen(word, attempt) ?? suffix(word, attempt, bank) ?? ending(word, attempt) ?? tricky(word, attempt) ?? letters(word, attempt)
 }

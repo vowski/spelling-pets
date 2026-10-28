@@ -79,6 +79,15 @@ describe('classifyMistake', () => {
     expect(classifyMistake(custom, 'crocdile', bank)).toMatchObject({ type: 'letters', template: 'In "crocodile", you missed out "o".' })
   })
 
+  // Year 6 hyphens: a tip must name the hyphen in words, never quote "-" on its own. Always plain, never the AI.
+  it('names a missing hyphen and where it goes, with a plain tip', () => {
+    expect(classifyMistake(w('co-ordinate'), 'coordinate', bank)).toMatchObject({ plainOnly: true, template: '"co-ordinate" has a hyphen (-) between "co" and "ordinate".' })
+    expect(classifyMistake(w('re-elect'), 're elect', bank)).toMatchObject({ plainOnly: true, template: '"re-elect" has a hyphen (-) between "re" and "elect".' })
+    expect(classifyMistake(w('co-own'), 'coown', bank)!.template).not.toContain('"-"')
+    const custom = buildBank([{ wordId: 'w-mother-in-law', text: 'mother-in-law' }]).words.get('w-mother-in-law')!
+    expect(classifyMistake(custom, 'mother in law', bank)).toMatchObject({ plainOnly: true, template: '"mother-in-law" has hyphens (-) joining "mother", "in" and "law".' })
+  })
+
   it('classifies the wrong form of every suffix pair in the word bank', () => {
     let checked = 0
     for (const u of bank.units) {
