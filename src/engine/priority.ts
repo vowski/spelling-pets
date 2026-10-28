@@ -1,6 +1,6 @@
 import type { Bank } from '../content'
 import { addDays, dayNumber, diffDays } from './dates'
-import { isDue } from './scheduler'
+import { isDue, isSecure } from './scheduler'
 import { getProgress, type LearnerState, type SchoolList } from './types'
 
 export function activeSchoolList(state: LearnerState): SchoolList | null {
@@ -13,6 +13,9 @@ export function practiceTestList(state: LearnerState): SchoolList | null {
   return state.schoolLists.find(l => l.testDate === tomorrow) ?? null
 }
 
+/** Most Secure-word retests in one warm-up. */
+export const MAX_RETESTS = 2
+
 export function reviewCandidates(bank: Bank, state: LearnerState, max: number): string[] {
   const out: string[] = []
   const add = (id: string) => {
@@ -22,10 +25,18 @@ export function reviewCandidates(bank: Bank, state: LearnerState, max: number): 
   if (list) for (const item of list.items) if (getProgress(state, item.wordId).box >= 1) add(item.wordId)
   const all = [...state.progress.values()]
   all.filter(p => p.focus && p.box >= 1).forEach(p => add(p.wordId))
+  // Retests of Secure words take at most MAX_RETESTS places, so words still being learnt get most of the warm-up.
+  let retests = 0
   all
     .filter(p => isDue(p, state.today))
     .sort((a, b) => a.due!.localeCompare(b.due!) || a.wordId.localeCompare(b.wordId))
-    .forEach(p => add(p.wordId))
+    .forEach(p => {
+      if (isSecure(p)) {
+        if (retests >= MAX_RETESTS) return
+        retests++
+      }
+      add(p.wordId)
+    })
   all
     .filter(p => p.lastFailedOn !== null && diffDays(p.lastFailedOn, state.today) <= 3)
     .sort((a, b) => b.lastFailedOn!.localeCompare(a.lastFailedOn!) || a.wordId.localeCompare(b.wordId))

@@ -1,7 +1,12 @@
 import { addDays, type DateStr } from './dates'
 import type { Attempt, Box, WordProgress } from './types'
 
-export const INTERVALS: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 1, 2: 2, 3: 5, 4: 14, 5: 30 }
+/**
+ * Days until the next check, by box. Secure (box 4) means spelt right from memory on different days at least a week
+ * apart; it is retested after a month, then every three months (design of 2026-10-28: successive relearning and
+ * expanding retrieval).
+ */
+export const INTERVALS: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 1, 2: 2, 3: 7, 4: 30, 5: 90 }
 const NON_RECALL_CAP = 2
 
 function promoteTo(p: WordProgress, box: Exclude<Box, 0>, today: DateStr): WordProgress {
@@ -40,12 +45,15 @@ export function applyAttempt(prev: WordProgress, a: Attempt, today: DateStr, now
   if (a.role === 'recall' || a.role === 'pretest') {
     if (a.correct) {
       if (!p.recallCorrectDays.includes(today)) p.recallCorrectDays.push(today)
-      if (p.box === 0) return promoteTo(p, 2, today)
+      // Right the first time she's ever asked, never misspelt: she knew it, so one more check a week later decides.
+      if (p.box === 0) return promoteTo(p, Object.keys(prev.misspellings).length === 0 && prev.lastFailedOn === null ? 3 : 2, today)
       if (blocked) return failedToday ? { ...p, due: addDays(today, 1) } : p
       return promoteTo(p, Math.min(p.box + 1, 5) as Exclude<Box, 0>, today)
     }
     if (a.role === 'pretest' && p.box === 0) return p
-    return { ...p, box: Math.max(p.box - 1, 1) as Box, due: today, lastFailedOn: today, introducedOn: p.introducedOn ?? today }
+    // A missed retest of a Secure word sends it back to practice, so Secure always means secure now.
+    const box = (p.box >= 4 ? 2 : Math.max(p.box - 1, 1)) as Box
+    return { ...p, box, due: today, lastFailedOn: today, introducedOn: p.introducedOn ?? today }
   }
 
   // recognise / build / pattern

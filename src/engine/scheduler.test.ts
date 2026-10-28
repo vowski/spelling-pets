@@ -7,16 +7,17 @@ const base = (over: Partial<WordProgress> = {}): WordProgress => ({ ...newProgre
 const att = (over: Partial<Attempt> = {}): Attempt => ({ wordId: 'w-said', role: 'recall', correct: true, firstTry: true, hint: false, ...over })
 
 describe('scheduler', () => {
-  it('has the spec intervals', () => {
-    expect(INTERVALS).toEqual({ 1: 1, 2: 2, 3: 5, 4: 14, 5: 30 })
+  // Design of 2026-10-28: a week between the last two learning checks, then retests after a month and every three months.
+  it('checks after 1, 2 and 7 days while learning, then a month, then every three months', () => {
+    expect(INTERVALS).toEqual({ 1: 1, 2: 2, 3: 7, 4: 30, 5: 90 })
   })
 
   it.each([
     [1, 2, '2026-10-17'],
-    [2, 3, '2026-10-20'],
-    [3, 4, '2026-10-29'],
-    [4, 5, '2026-11-14'],
-    [5, 5, '2026-11-14'],
+    [2, 3, '2026-10-22'],
+    [3, 4, '2026-11-14'],
+    [4, 5, '2027-01-13'],
+    [5, 5, '2027-01-13'],
   ])('recall success promotes box %i to %i (due %s)', (from, to, due) => {
     const p = applyAttempt(base({ box: from as Box, due: T }), att(), T, 1000)
     expect(p.box).toBe(to)
@@ -44,8 +45,15 @@ describe('scheduler', () => {
     expect(twice.recallCorrectDays).toEqual([T])
   })
 
-  it('recall success on a New word jumps to Practising', () => {
+  it('a word she spells right the first time she is asked needs only one more check, a week later', () => {
     const p = applyAttempt(base(), att(), T, 1)
+    expect(p).toMatchObject({ box: 3, due: '2026-10-22', introducedOn: T })
+    const secure = applyAttempt(p, att(), '2026-10-22', 2)
+    expect(secure).toMatchObject({ box: 4, secureOn: '2026-10-22' })
+  })
+
+  it('a word she has misspelt before takes the learning steps', () => {
+    const p = applyAttempt(base({ misspellings: { sed: 1 } }), att(), T, 1)
     expect(p).toMatchObject({ box: 2, due: '2026-10-17', introducedOn: T })
   })
 
@@ -68,8 +76,8 @@ describe('scheduler', () => {
     expect(p).toMatchObject({ box: 1, due: T, introducedOn: T, lastFailedOn: T })
   })
 
-  it('pretest: correct jumps New to Practising; wrong leaves New alone', () => {
-    expect(applyAttempt(base(), att({ role: 'pretest' }), T, 1).box).toBe(2)
+  it('pretest: correct jumps New straight to the week check; wrong leaves New alone', () => {
+    expect(applyAttempt(base(), att({ role: 'pretest' }), T, 1)).toMatchObject({ box: 3, due: '2026-10-22' })
     const wrong = applyAttempt(base(), att({ role: 'pretest', correct: false, typed: 'sed' }), T, 1)
     expect(wrong.box).toBe(0)
     expect(wrong.misspellings).toEqual({ sed: 1 })
@@ -107,12 +115,17 @@ describe('scheduler', () => {
     expect(p.misspellings).toEqual({ sed: 1 })
   })
 
-  it('sets secureOn the first time box reaches 4 and keeps it after a demotion', () => {
+  it('sets secureOn the first time box reaches 4 and keeps it if the word slips', () => {
     const secure = applyAttempt(base({ box: 3, due: T }), att(), T, 1)
     expect(secure.secureOn).toBe(T)
-    const dropped = applyAttempt(secure, att({ correct: false }), '2026-10-29', 2)
-    expect(dropped.box).toBe(3)
-    expect(dropped.secureOn).toBe(T)
+    const slipped = applyAttempt(secure, att({ correct: false }), '2026-11-14', 2)
+    expect(slipped).toMatchObject({ box: 2, due: '2026-11-14', lastFailedOn: '2026-11-14', secureOn: T })
+    expect(isSecure(slipped)).toBe(false)
+  })
+
+  it('a missed retest of a well-known word sends it back to practice too', () => {
+    const p = applyAttempt(base({ box: 5, due: T, secureOn: '2026-01-01' }), att({ correct: false, typed: 'sed' }), T, 1)
+    expect(p).toMatchObject({ box: 2, due: T, lastFailedOn: T })
   })
 
   it('clears focus once the word reaches box 3', () => {
@@ -137,7 +150,7 @@ describe('scheduler', () => {
   })
 
   it('markKnown and setFocus', () => {
-    expect(markKnown(base(), T)).toMatchObject({ box: 4, due: '2026-10-29', parentKnown: true, secureOn: T, introducedOn: T })
+    expect(markKnown(base(), T)).toMatchObject({ box: 4, due: '2026-11-14', parentKnown: true, secureOn: T, introducedOn: T })
     expect(setFocus(base(), true).focus).toBe(true)
   })
 })

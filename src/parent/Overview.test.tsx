@@ -17,6 +17,9 @@ describe('Overview', () => {
     expect(screen.getByText(/hasn't been backed up recently/)).toBeInTheDocument()
     expect(screen.getByRole('figure', { name: /Secure words over time/ })).toBeInTheDocument()
     expect(screen.queryByText(/No British voice/)).not.toBeInTheDocument()
+    // What Secure means, in one sentence, and where things stand.
+    expect(screen.getByText(/spelt it right from memory on different days at least a week apart/)).toBeInTheDocument()
+    expect(screen.getByText('Secure now: 1 · Slipped back into practice: 0 · Retests due: 0')).toBeInTheDocument()
   })
   it('warns when no voice is available', async () => {
     renderWithServices(<MemoryRouter><Overview /></MemoryRouter>, { speaker: createStubSpeaker([], false) })

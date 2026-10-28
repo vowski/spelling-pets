@@ -2,6 +2,7 @@ import type { Bank } from '../content'
 import type { Word } from '../content/types'
 import { addDays, toDateStr, weekStart, type DateStr } from '../engine/dates'
 import type { LearnerStats } from '../engine/stats'
+import { isDue, isSecure } from '../engine/scheduler'
 import type { WordProgress } from '../engine/types'
 import { weekProgress } from '../engine/weekly'
 import type { AttemptRow, SessionRow } from '../storage/db'
@@ -24,6 +25,15 @@ export function weekSummary(sessions: SessionRow[], attempts: AttemptRow[], toda
     daysPractised: week.daysPractised, goalDays, minutes,
     wordsPractised: new Set(wk.map(a => a.wordId)).size,
     accuracy: scored.length ? scored.filter(a => a.correct && !a.hint).length / scored.length : null,
+  }
+}
+
+/** Words Secure now, words that were Secure but slipped back into practice after a missed retest, and retests due. */
+export function secureSummary(progress: WordProgress[], today: DateStr): { secure: number; slipped: number; retestsDue: number } {
+  return {
+    secure: progress.filter(isSecure).length,
+    slipped: progress.filter(p => p.secureOn && !isSecure(p)).length,
+    retestsDue: progress.filter(p => isSecure(p) && isDue(p, today)).length,
   }
 }
 

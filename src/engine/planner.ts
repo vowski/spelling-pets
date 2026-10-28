@@ -130,7 +130,7 @@ export function planSession(bank: Bank, state: LearnerState, opts: PlannerOption
   if (practice) {
     push({ gameType: 'pupPost', wordIds: [...new Set(practice.items.map(i => i.wordId))].filter(id => bank.words.has(id)), practiceTest: true })
   } else {
-    const review = reviewCandidates(bank, state, Math.max(3, Math.round(6 * (minutes / 10))))
+    const review = reviewCandidates(bank, state, Math.max(3, Math.round(8 * (minutes / 10)))) // 8 checks per 10 minutes
     const sentences = dayNumber(state.today) % 2 === 1 ? pickSentences(bank, state, review, 3, rng) : []
     if (sentences.length) {
       push({ gameType: 'storyTime', wordIds: [...new Set(sentences.flatMap(s => s.wordIds))], sentenceIds: sentences.map(s => s.id) })

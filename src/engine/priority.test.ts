@@ -31,6 +31,17 @@ describe('priority', () => {
     expect(reviewCandidates(bank, s, 2)).toEqual(['w-because', 'w-friend'])
   })
 
+  it('retests at most 2 Secure words in one warm-up, so words still being learnt get most of the time', () => {
+    const s = makeState({
+      progressList: [
+        prog('w-the', { box: 4, due: '2026-10-01' }), prog('w-was', { box: 5, due: '2026-10-02' }),
+        prog('w-said', { box: 4, due: '2026-10-03' }), prog('w-friend', { box: 5, due: '2026-10-04' }),
+        prog('w-because', { box: 2, due: '2026-10-14' }), prog('w-people', { box: 1, due: '2026-10-15' }),
+      ],
+    })
+    expect(reviewCandidates(bank, s, 8)).toEqual(['w-the', 'w-was', 'w-because', 'w-people'])
+  })
+
   it('ignores school words not yet introduced and unknown ids', () => {
     const s = makeState({ schoolLists: [list('a', '2026-10-17', ['because', 'zzzz'])], progressList: [prog('w-zzzz', { box: 1, due: T })] })
     expect(reviewCandidates(bank, s, 10)).toEqual([])

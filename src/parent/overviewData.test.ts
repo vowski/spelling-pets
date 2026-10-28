@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { BUILTIN_BANK as bank, getWord } from '../content'
-import { weekSummary, secureTimeline, weeklyAccuracy, troubleSpots, homeTip, levelBars } from './overviewData'
+import { weekSummary, secureTimeline, weeklyAccuracy, troubleSpots, homeTip, levelBars, secureSummary } from './overviewData'
 import { prog } from '../engine/testing'
 import type { AttemptRow, SessionRow } from '../storage/db'
 import { computeStats } from '../engine/stats'
@@ -8,6 +8,18 @@ import { computeStats } from '../engine/stats'
 const T = '2026-10-15'
 const ms = (d: string, h = 16) => new Date(`${d}T${String(h).padStart(2, '0')}:00:00`).getTime()
 const att = (wordId: string, d: string, correct: boolean, role: AttemptRow['role'] = 'recall'): AttemptRow => ({ wordId, sessionId: 's', game: 'pupPost', role, at: ms(d), typed: '', correct, firstTry: true, hint: false })
+describe('secureSummary', () => {
+  it('counts words Secure now, words that slipped back into practice, and Secure words due a retest', () => {
+    const progress = [
+      prog('w-said', { box: 4, secureOn: '2026-09-01', due: '2026-11-01' }),
+      prog('w-was', { box: 5, secureOn: '2026-06-01', due: T }),
+      prog('w-the', { box: 2, secureOn: '2026-08-01', due: '2026-10-16' }),
+      prog('w-because', { box: 3, due: T }),
+    ]
+    expect(secureSummary(progress, T)).toEqual({ secure: 2, slipped: 1, retestsDue: 1 })
+  })
+})
+
 const sess = (d: string, mins: number): SessionRow => ({ id: d, date: d, kind: 'main', startedAt: ms(d), endedAt: ms(d) + mins * 60000, plan: { kind: 'normal', activities: [], newMaterial: { kind: 'none' } }, doneActivityIds: [], complete: true, coins: 0 })
 
 describe('overview data', () => {

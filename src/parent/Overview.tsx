@@ -6,7 +6,7 @@ import { usePersisted } from '../app/usePersisted'
 import { useSpeechAvailable } from '../speech/useSpeech'
 import { BarChart } from './charts/BarChart'
 import { LineChart } from './charts/LineChart'
-import { levelBars, secureTimeline, troubleSpots, weekSummary, weeklyAccuracy } from './overviewData'
+import { levelBars, secureSummary, secureTimeline, troubleSpots, weekSummary, weeklyAccuracy } from './overviewData'
 
 const short = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 
@@ -23,6 +23,7 @@ export function Overview() {
   const { settings, progress, units, sessions, attempts } = data
   const stats = computeStats(bank, new Map(progress.map(p => [p.wordId, p])), new Map(units.map(u => [u.unitId, u])), [])
   const week = weekSummary(sessions, attempts, today, settings.weeklyGoalDays)
+  const secure = secureSummary(progress, today)
   const autoStopped = settings.lastAutoBackup === 'needs-permission' || settings.lastAutoBackup === 'error'
   const stale = !autoStopped && (!settings.lastBackupAt || clock.now().getTime() - settings.lastBackupAt > 7 * 86_400_000)
   const voice = canSpeak ? speaker.currentVoice() : null
@@ -41,6 +42,11 @@ export function Overview() {
       </div>
       <div className="panel">
         <h2>Progress</h2>
+        <p className="muted">
+          A word is <strong>Secure</strong> once she has spelt it right from memory on different days at least a week apart.
+          Secure words are checked again after a month, then every three months; if she misses one, it goes back into practice.
+        </p>
+        <p>Secure now: {secure.secure} · Slipped back into practice: {secure.slipped} · Retests due: {secure.retestsDue}</p>
         {levelBars(stats).map(b => (
           <div key={b.label} style={{ margin: '10px 0' }}>
             <div className="row" style={{ justifyContent: 'space-between' }}><span>{b.label}</span><span>{b.secure} / {b.total}</span></div>

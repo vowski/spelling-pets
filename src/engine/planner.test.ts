@@ -92,8 +92,9 @@ describe('planSession', () => {
     const due = bank.setIds.y1cew.slice(0, 20).map(id => prog(id, { box: 2, due: evenDay }))
     const short = planSession(bank, makeState({ today: evenDay, placement: doneLevels(), progressList: due }), { seed: 1, wheelAnchors: anchors })
     const long = planSession(bank, makeState({ today: evenDay, placement: doneLevels(), progressList: due, settings: { sessionMinutes: 20, newWordsPerDay: 4 } }), { seed: 1, wheelAnchors: anchors })
-    expect(short.activities[0].wordIds).toHaveLength(6)
-    expect(long.activities[0].wordIds).toHaveLength(12)
+    // 8 checks per 10 minutes (design of 2026-10-28: more checking, so words become Secure sooner).
+    expect(short.activities[0].wordIds).toHaveLength(8)
+    expect(long.activities[0].wordIds).toHaveLength(16)
   })
 
   it('extra sessions add no new material', () => {

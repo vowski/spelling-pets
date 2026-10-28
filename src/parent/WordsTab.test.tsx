@@ -28,6 +28,14 @@ describe('WordsTab', () => {
     expect(screen.getByRole('cell', { name: /^said/ })).toBeInTheDocument() // the cell reads 'said ⭐' while focused
   })
 
+  it('calls a word one check away from Secure "Nearly secure"', async () => {
+    const services = makeTestServices()
+    await services.repo.putProgress([prog('w-was', { box: 3, due: '2026-10-20' })])
+    renderWithServices(<WordsTab />, services)
+    await userEvent.setup().selectOptions(await screen.findByLabelText('Word set'), 'y1cew')
+    expect(within(screen.getByRole('cell', { name: 'was' }).closest('tr')!).getByText('Nearly secure')).toBeInTheDocument()
+  })
+
   it('shows the last tip for a word and lets the grown-up switch it to plain tips', async () => {
     const services = await servicesWithTips(makeTestServices())
     await services.repo.putTip({ key: 'w-here|hear|shown', wordId: 'w-here', attempt: 'hear', text: 'T', source: 'ai', at: 5 })
