@@ -53,6 +53,26 @@ describe('SessionRunner', () => {
     expect(await services.repo.balance()).toBe(6)
   })
 
+  it('saves the Treasure Hunt as done when her answers appear, so pausing there does not replay it', async () => {
+    const services = makeTestServices()
+    const user = userEvent.setup()
+    const ui = <MemoryRouter initialEntries={['/session']}><Routes><Route path="/session" element={<SessionRunner kind="main" />} /><Route path="/" element={<p>home</p>} /></Routes></MemoryRouter>
+    const first = renderWithServices(ui, services)
+    expect(await screen.findByRole('heading', { name: /Treasure Hunt/ })).toBeInTheDocument()
+    const [session] = await services.repo.allSessions()
+    const hunt = session.plan.activities[0]
+    await user.click(screen.getByRole('button', { name: "Let's go!" }))
+    for (const id of hunt.wordIds) await user.type(await screen.findByLabelText('Your spelling'), `${services.bank.words.get(id)!.text}{Enter}`)
+    expect(await screen.findByRole('heading', { name: 'Your Treasure Hunt answers' })).toBeInTheDocument()
+    await waitFor(async () => expect((await services.repo.getSession(session.id))?.doneActivityIds).toContain(hunt.id))
+    await user.click(screen.getByRole('button', { name: '⏸ Pause' }))
+    expect(await screen.findByText('home')).toBeInTheDocument()
+    first.unmount()
+    renderWithServices(ui, services)
+    expect(await screen.findByRole('button', { name: "Let's go!" })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /Treasure Hunt/ })).not.toBeInTheDocument()
+  }, 30_000)
+
   it('warms the AI model up when the adventure starts', async () => {
     const services = await servicesWithTips(makeTestServices())
     const warmUp = vi.spyOn(services.tips, 'warmUp')

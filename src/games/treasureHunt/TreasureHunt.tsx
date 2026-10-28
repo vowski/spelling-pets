@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Word } from '../../content/types'
-import { diffLetters } from '../../engine/diff'
+import { checkWord } from '../../engine/checker'
 import { Button } from '../../ui/Button'
 import { LetterDiff } from '../../ui/LetterDiff'
 import { TypeAndCheck } from '../../ui/TypeAndCheck'
@@ -16,17 +16,16 @@ interface Answer { word: Word; typed: string; correct: boolean }
  * spelling, which helps her remember the right one (feedback after a test), in the app's errorless style.
  */
 function HuntAnswers({ answers, onDone }: { answers: Answer[]; onDone: () => void }) {
-  const right = answers.filter(a => a.correct).length
   return (
     <GameFrame title="Treasure Hunt" emoji="💎" done={answers.length} total={answers.length}>
       <h2>Your Treasure Hunt answers</h2>
-      <p>{right} of {answers.length} spelt right</p>
+      <p>Here are the words you wrote, next to the right spellings.</p>
       <ul aria-label="Your answers" className="hunt-answers">
         {answers.map((a, k) => (
           <li key={`${a.word.id}-${k}`}>
             {a.correct
               ? <span className="hunt-right">✓ {a.word.text}</span>
-              : <LetterDiff ops={diffLetters(a.word.text, a.typed)} />}
+              : <LetterDiff ops={checkWord(a.word, a.typed).ops} />}
           </li>
         ))}
       </ul>
@@ -35,12 +34,14 @@ function HuntAnswers({ answers, onDone }: { answers: Answer[]; onDone: () => voi
   )
 }
 
-export function TreasureHunt({ words, onAttempt, onDone }: GameProps) {
+export function TreasureHunt({ words, onAttempt, onDone, onComplete }: GameProps) {
   const [i, setI] = useState(0)
   const [answers, setAnswers] = useState<Answer[]>([])
   const [finished, setFinished] = useState(false)
   const word = words[i]
   const { canSpeak, peeking, replay } = useDictation(finished ? undefined : word)
+  // Saved as done as soon as her answers show, so pausing on them never makes her do the hunt again.
+  useEffect(() => { if (finished) onComplete?.() }, [finished]) // eslint-disable-line react-hooks/exhaustive-deps
   if (finished) return <HuntAnswers answers={answers} onDone={onDone} />
   if (!word) return null
   if (canSpeak === null) return <p>Getting ready…</p>

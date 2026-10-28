@@ -44,7 +44,7 @@ export async function playFirstSession(page: Page) {
 
   // Her answers next to the right spellings, then on with the adventure.
   await expect(page.getByRole('heading', { name: 'Your Treasure Hunt answers' })).toBeVisible()
-  await expect(page.getByText('12 of 12 spelt right')).toBeVisible()
+  await expect(page.getByText('Here are the words you wrote, next to the right spellings.')).toBeVisible()
   await page.getByRole('button', { name: 'Carry on' }).click()
   await page.getByRole('button', { name: "Let's go!" }).click()
   // Fun game on 2026-10-15 is Bubble Pop (odd day); with reduced motion the bubbles are static.

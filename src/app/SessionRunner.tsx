@@ -27,6 +27,8 @@ export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
   const [outcome, setOutcome] = useState<SessionOutcome | null>(null)
   const chain = useRef<Promise<unknown>>(Promise.resolve())
   const completing = useRef<string | null>(null)
+  const completed = useRef<Promise<SessionRow> | null>(null)
+  const advancing = useRef<string | null>(null)
   const now = () => clock.now().getTime()
   // Each time the runner opens is a new go at the current activity, so answers replayed after a pause earn no coins.
   const [run] = useState(() => `${now()}-${++runs}`)
@@ -76,10 +78,22 @@ export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
       if (c) { setEarned(e => e + c); sfx.coin() }
     })
   }
+  // Each activity is saved as done once (onComplete, or onDone if the game has no last screen) and moved on from once.
+  const complete = (s?: GameSummary): Promise<SessionRow> | null => {
+    if (!row || !activity) return null
+    if (completing.current !== activity.id) {
+      completing.current = activity.id
+      completed.current = enqueue(() => completeActivity(svc, row, activity, s, today, now()))
+    }
+    return completed.current
+  }
+  const onComplete = (s?: GameSummary) => void complete(s)
   const onDone = (s?: GameSummary) => {
-    if (!row || !activity || completing.current === activity.id) return // a game may call onDone twice; finish each activity once
-    completing.current = activity.id
-    void enqueue(async () => advance(await completeActivity(svc, row, activity, s, today, now())))
+    if (!activity || advancing.current === activity.id) return // a game may call onDone twice
+    const saved = complete(s)
+    if (!saved) return
+    advancing.current = activity.id
+    void enqueue(async () => advance(await saved))
   }
   const skip = () => onDone()
 
@@ -112,7 +126,7 @@ export function SessionRunner({ kind }: { kind: 'main' | 'extra' }) {
           key={activity!.id}
           onError={e => void repo.logError(activity!.gameType, e.message, now())}
           fallback={<section className="card"><p>Oops, that game tripped over! Let's try another.</p><Button onClick={skip}>Next</Button></section>}>
-          <Game activity={activity!} words={words} onAttempt={onAttempt} onDone={onDone} />
+          <Game activity={activity!} words={words} onAttempt={onAttempt} onDone={onDone} onComplete={onComplete} />
         </ErrorBoundary>
       )}
     </main>

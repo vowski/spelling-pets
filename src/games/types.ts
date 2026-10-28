@@ -14,4 +14,6 @@ export interface GameProps {
   words: Word[]
   onAttempt: (a: GameAttempt) => void
   onDone: (s?: GameSummary) => void
+  /** Saves the activity as done without moving on, for a game with a last screen to read (the Treasure Hunt's answers). */
+  onComplete?: (s?: GameSummary) => void
 }
