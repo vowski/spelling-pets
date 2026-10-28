@@ -64,7 +64,9 @@ describe('Repo', () => {
     expect(s.placement.map(l => l.level)).toEqual(['y1cew', 'y34'])
     expect(s.recentGames).toEqual(['wombat', 'pupPost', 'pupPost'])
     expect(s.lastNewKind).toBe('unit')
-    expect(s.settings).toEqual({ sessionMinutes: 15, newWordsPerDay: 4 })
+    expect(s.settings).toEqual({ sessionMinutes: 15, newWordsPerDay: 4, highestYear: 3 })
+    await repo.updateSettings({ highestYear: 5 })
+    expect((await repo.loadLearnerState('2026-10-16')).settings.highestYear).toBe(5)
   })
 
   it('saves school lists with their custom words', async () => {

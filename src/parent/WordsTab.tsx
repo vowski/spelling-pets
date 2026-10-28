@@ -9,7 +9,7 @@ import { Button } from '../ui/Button'
 
 /** Box 3 is one correct check (a week later) away from Secure; box 5 has passed a retest. */
 export const BOX_NAMES = ['New', 'Learning', 'Practising', 'Nearly secure', 'Secure', 'Mastered'] as const
-const SETS: [SetId | 'all', string][] = [['all', 'All'], ['y1cew', 'Year 1 tricky words'], ['days', 'Days'], ['hfw', 'High-frequency'], ['y2cew', 'Year 2 tricky words'], ['y34', 'Year 3/4 list'], ['pattern', 'Spelling patterns'], ['school', 'School words']]
+const SETS: [SetId | 'all', string][] = [['all', 'All'], ['y1cew', 'Year 1 tricky words'], ['days', 'Days'], ['hfw', 'High-frequency'], ['y2cew', 'Year 2 tricky words'], ['y34', 'Year 3/4 list'], ['y56', 'Year 5/6 list'], ['pattern', 'Spelling patterns'], ['school', 'School words']]
 const fmt = (ms: number | null) => (ms ? new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '–')
 
 export function WordsTab() {

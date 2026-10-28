@@ -76,9 +76,15 @@ export interface SchoolList {
   outOf?: number
 }
 
+/** The highest school year whose spellings the grown-up has unlocked. */
+export type UnlockYear = 3 | 4 | 5 | 6
+export const UNLOCK_YEARS: readonly UnlockYear[] = [3, 4, 5, 6]
+
 export interface PlannerSettings {
   sessionMinutes: number
   newWordsPerDay: number
+  /** Year 3 when unset: Year 4 adds the Year 4 patterns, Year 5 the Years 5–6 list and Year 5 patterns, Year 6 the rest. */
+  highestYear?: UnlockYear
 }
 
 export interface LearnerState {

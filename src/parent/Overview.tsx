@@ -47,7 +47,7 @@ export function Overview() {
           Secure words are checked again after a month, then every three months; if she misses one, it goes back into practice.
         </p>
         <p>Secure now: {secure.secure} · Slipped back into practice: {secure.slipped} · Retests due: {secure.retestsDue}</p>
-        {levelBars(stats).map(b => (
+        {levelBars(stats, settings.highestYear ?? 3).map(b => (
           <div key={b.label} style={{ margin: '10px 0' }}>
             <div className="row" style={{ justifyContent: 'space-between' }}><span>{b.label}</span><span>{b.secure} / {b.total}</span></div>
             <div className="bar" aria-label={`${b.label}: ${b.secure} of ${b.total}`}>

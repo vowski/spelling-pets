@@ -8,7 +8,7 @@ import { Button } from '../ui/Button'
 
 const EMOJI = ['🛝', '📚', '🍦', '🎬', '🧸', '🎨', '🏊', '🍕', '🎁']
 const GOALS: [RealReward['goal']['type'], string][] = [['sessions', 'Practice sessions'], ['secureWords', 'Words made Secure'], ['weeklyGoals', 'Weeks hitting the weekly goal'], ['daysPractised', 'Days practised'], ['levelComplete', 'Finish a whole word set']]
-const LEVELS: [SetId, string][] = [['y1cew', 'Year 1 tricky words'], ['days', 'Days of the week'], ['hfw', '100 high-frequency words'], ['y2cew', 'Year 2 tricky words'], ['y34', 'Year 3/4 word list']]
+const LEVELS: [SetId, string][] = [['y1cew', 'Year 1 tricky words'], ['days', 'Days of the week'], ['hfw', '100 high-frequency words'], ['y2cew', 'Year 2 tricky words'], ['y34', 'Year 3/4 word list'], ['y56', 'Year 5/6 word list']]
 
 export function RewardsTab() {
   const { repo, clock } = useServices()
@@ -30,6 +30,7 @@ export function RewardsTab() {
     await repo.saveRealReward({ id: `rw-${clock.now().getTime()}`, title: title.trim(), emoji, goal, status: 'active', createdAt: today })
     setTitle('')
   }
+  const levels = LEVELS.filter(([v]) => v !== 'y56' || (settings.highestYear ?? 3) >= 5)
   const statusText = (r: RealReward) => (r.status === 'active' ? 'Working towards it' : r.status === 'earned' ? 'Earned: give it!' : 'Given ✓')
 
   return (
@@ -49,7 +50,7 @@ export function RewardsTab() {
           <label>Emoji <select aria-label="Emoji" value={emoji} onChange={e => setEmoji(e.target.value)}>{EMOJI.map(e => <option key={e}>{e}</option>)}</select></label>
           <label>Goal <select aria-label="Goal" value={type} onChange={e => setType(e.target.value as RealReward['goal']['type'])}>{GOALS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
           {type === 'levelComplete'
-            ? <label>Word set <select aria-label="Word set" value={level} onChange={e => setLevel(e.target.value as SetId)}>{LEVELS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+            ? <label>Word set <select aria-label="Word set" value={level} onChange={e => setLevel(e.target.value as SetId)}>{levels.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
             : <label>Target <input aria-label="Target" type="number" min={1} value={target} onChange={e => setTarget(e.target.value)} style={{ width: 70 }} /></label>}
         </p>
         <p>

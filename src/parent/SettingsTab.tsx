@@ -3,6 +3,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { checkPin, hashPin, isValidPin, newSalt } from '../app/pin'
 import { useServices } from '../app/services'
 import type { TipService } from '../app/tips'
+import { UNLOCK_YEARS, type UnlockYear } from '../engine/types'
 import type { SettingsRow } from '../storage/db'
 import { Button } from '../ui/Button'
 
@@ -20,7 +21,7 @@ function AiTipsPanel({ tips }: { tips: TipService }) {
   return (
     <div className="panel">
       <h2>AI spelling tips</h2>
-      <p className="muted">After a wrong spelling she sees one short tip explaining the mistake. With AI tips on, a small AI model on this laptop rewords the tip so it sounds friendlier; every AI tip is checked, and the plain tip is shown if a check fails.</p>
+      <p className="muted">After a wrong spelling she sees one short tip explaining the mistake. With AI tips on, a small AI model on this laptop writes the tip from what she actually typed; every AI tip is checked, and a plain tip is shown if a check fails.</p>
       <p>Status:{' '}
         {status.kind === 'off' && <strong>Off</strong>}
         {status.kind === 'downloading' && <><strong>Downloading… {status.percent}%</strong> <progress max={100} value={status.percent} /></>}
@@ -59,7 +60,7 @@ export function SettingsTab() {
 
   const save = async () => {
     const { childName, petName, voiceURI, speechRate, sessionMinutes, newWordsPerDay, soundOn, musicOn, dyslexiaFont } = form
-    await repo.updateSettings({ childName, petName, voiceURI, speechRate, sessionMinutes, newWordsPerDay, soundOn, musicOn, dyslexiaFont })
+    await repo.updateSettings({ childName, petName, voiceURI, speechRate, sessionMinutes, newWordsPerDay, soundOn, musicOn, dyslexiaFont, highestYear: form.highestYear ?? 3 })
     speaker.configure({ voiceURI: form.voiceURI, rate: form.speechRate })
     setSaved('Saved ✓')
   }
@@ -104,6 +105,14 @@ export function SettingsTab() {
             {[2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n}</option>)}
           </select>
         </label>
+        <p>
+          <label>Spelling years{' '}
+            <select aria-label="Spelling years" value={form.highestYear ?? 3} onChange={e => set('highestYear', Number(e.target.value) as UnlockYear)}>
+              {UNLOCK_YEARS.map(y => <option key={y} value={y}>Up to Year {y}</option>)}
+            </select>
+          </label>
+        </p>
+        <p className="muted">Choose the highest school year she practises. Year 4 adds the Year 4 spelling patterns. Year 5 adds the Years 5–6 word list and the Year 5 patterns, and her new words then take turns between the Years 3–4 and Years 5–6 lists. Year 6 adds the Year 6 patterns. Anything she has already started stays in her practice if you choose a lower year.</p>
         <p>
           <label><input type="checkbox" aria-label="Sound effects" checked={form.soundOn} onChange={e => set('soundOn', e.target.checked)} /> Sound effects</label>{' '}
           <label><input type="checkbox" aria-label="Gentle music on the home screen" checked={form.musicOn} onChange={e => set('musicOn', e.target.checked)} /> Gentle music on the home screen</label>{' '}

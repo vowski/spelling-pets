@@ -28,6 +28,13 @@ describe('WordsTab', () => {
     expect(screen.getByRole('cell', { name: /^said/ })).toBeInTheDocument() // the cell reads 'said ⭐' while focused
   })
 
+  it('lists the Years 5–6 words as their own word set', async () => {
+    renderWithServices(<WordsTab />, makeTestServices())
+    await userEvent.setup().selectOptions(await screen.findByLabelText('Word set'), 'Year 5/6 list')
+    expect(screen.getByRole('cell', { name: 'accommodate' })).toBeInTheDocument()
+    expect(screen.queryByRole('cell', { name: 'said' })).not.toBeInTheDocument()
+  })
+
   it('calls a word one check away from Secure "Nearly secure"', async () => {
     const services = makeTestServices()
     await services.repo.putProgress([prog('w-was', { box: 3, due: '2026-10-20' })])

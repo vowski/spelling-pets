@@ -58,7 +58,7 @@ export class Repo {
       schoolLists,
       recentGames: recentGames.slice(0, 20),
       lastNewKind: settings.lastNewKind,
-      settings: { sessionMinutes: settings.sessionMinutes, newWordsPerDay: settings.newWordsPerDay },
+      settings: { sessionMinutes: settings.sessionMinutes, newWordsPerDay: settings.newWordsPerDay, highestYear: settings.highestYear ?? 3 },
     }
   }
 

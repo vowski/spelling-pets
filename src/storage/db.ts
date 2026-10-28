@@ -4,7 +4,7 @@ import type { CustomWord } from '../content/types'
 import type { DateStr } from '../engine/dates'
 import type { SessionPlan } from '../engine/planner'
 import type { AchievementSnapshot, RealReward } from '../engine/rewards'
-import type { GameType, PlacementLevelState, Role, SchoolList, UnitState, WordProgress } from '../engine/types'
+import type { GameType, PlacementLevelState, Role, SchoolList, UnitState, UnlockYear, WordProgress } from '../engine/types'
 
 export type PetSpecies = 'puppy' | 'kitten' | 'bunny' | 'fox' | 'panda'
 
@@ -28,6 +28,8 @@ export interface SettingsRow {
   lastAutoBackup?: 'written' | 'needs-permission' | 'error'
   firstRunDone: boolean
   lastNewKind: 'words' | 'unit' | null
+  /** The highest school year she practises; unset (older data) means Year 3. */
+  highestYear?: UnlockYear
   coins: number
   equipped: Partial<Record<AccessorySlot, string>>
   hatched: boolean

@@ -3,7 +3,7 @@ import type { Word } from '../content/types'
 import { addDays, toDateStr, weekStart, type DateStr } from '../engine/dates'
 import type { LearnerStats } from '../engine/stats'
 import { isDue, isSecure } from '../engine/scheduler'
-import type { WordProgress } from '../engine/types'
+import type { UnlockYear, WordProgress } from '../engine/types'
 import { weekProgress } from '../engine/weekly'
 import type { AttemptRow, SessionRow } from '../storage/db'
 
@@ -83,16 +83,19 @@ export function troubleSpots(bank: Bank, progress: WordProgress[], limit = 10): 
 
 export interface LevelBar { label: string; secure: number; total: number; markers?: number[] }
 
-export function levelBars(stats: LearnerStats): LevelBar[] {
+/** Progress bars for the word lists and patterns of the years she has unlocked (highestYear, from Settings). */
+export function levelBars(stats: LearnerStats, highestYear: UnlockYear): LevelBar[] {
   const s = stats.secureBySet
   const n = stats.sizeBySet
-  const unitsTotal = Object.values(stats.unitsByYear).reduce((a, b) => a + b, 0)
+  const years = ([1, 2, 3, 4, 5, 6] as const).filter(y => y <= highestYear)
+  const sum = (byYear: LearnerStats['unitsByYear']) => years.reduce((t, y) => t + byYear[y], 0)
   return [
     { label: 'Year 1 tricky words', secure: s.y1cew, total: n.y1cew },
     { label: 'Days of the week', secure: s.days, total: n.days },
     { label: '100 high-frequency words', secure: s.hfw, total: n.hfw },
     { label: 'Year 2 tricky words', secure: s.y2cew, total: n.y2cew },
     { label: 'Year 3/4 word list', secure: s.y34, total: n.y34, markers: [50, 70] },
-    { label: 'Spelling patterns', secure: stats.unitsDone.size, total: unitsTotal },
+    ...(highestYear >= 5 ? [{ label: 'Year 5/6 word list', secure: s.y56, total: n.y56 }] : []),
+    { label: 'Spelling patterns', secure: sum(stats.unitsDoneByYear), total: sum(stats.unitsByYear) },
   ]
 }

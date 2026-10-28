@@ -46,11 +46,19 @@ describe('overview data', () => {
     expect(homeTip(getWord(bank, 'w-hear'), bank)).toMatch(/^It sounds like here/)
     expect(homeTip(getWord(bank, 'w-because'), bank)).toMatch(/tricky bit/)
   })
-  it('lists level bars with Year 3 markers', () => {
-    const bars = levelBars(computeStats(bank, new Map(), new Map(), []))
+  it('lists level bars with Year 3 markers, counting only the patterns of the years she has unlocked', () => {
+    const stats = computeStats(bank, new Map(), new Map(), [])
+    const bars = levelBars(stats, 3)
     expect(bars.map(b => [b.label, b.total])).toEqual([
-      ['Year 1 tricky words', 45], ['Days of the week', 7], ['100 high-frequency words', 100], ['Year 2 tricky words', 64], ['Year 3/4 word list', 100], ['Spelling patterns', 81],
+      ['Year 1 tricky words', 45], ['Days of the week', 7], ['100 high-frequency words', 100], ['Year 2 tricky words', 64], ['Year 3/4 word list', 100], ['Spelling patterns', 56],
     ])
     expect(bars[4].markers).toEqual([50, 70])
+    expect(levelBars(stats, 4).at(-1)!.total).toBe(67)
+    expect(levelBars(stats, 5).slice(4).map(b => [b.label, b.total])).toEqual([['Year 3/4 word list', 100], ['Year 5/6 word list', 100], ['Spelling patterns', 75]])
+    expect(levelBars(stats, 6).at(-1)!.total).toBe(81)
+    const done = new Map(['y3-revise-suffixes', 'y5-ce-se'].map(id => [id, { unitId: id, status: 'complete' as const, startedOn: '2026-10-01', completedOn: '2026-10-02', taughtWordIds: [] }]))
+    const withDone = computeStats(bank, new Map(), done, [])
+    expect(levelBars(withDone, 3).at(-1)!.secure).toBe(1)
+    expect(levelBars(withDone, 5).at(-1)!.secure).toBe(2)
   })
 })

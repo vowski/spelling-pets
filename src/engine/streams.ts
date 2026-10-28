@@ -19,14 +19,33 @@ export function gapWordStream(bank: Bank, state: LearnerState): string[] {
   return uniq(sets.flatMap(s => bank.setIds[s])).filter(id => isNew(state, id))
 }
 
-export function y3WordStream(bank: Bank, state: LearnerState): string[] {
-  const ordered = bank.y34Families.flat()
+/** A statutory list's new words in family order, each follow-on once her headword has reached box 2. */
+function listStream(bank: Bank, state: LearnerState, families: Bank['y34Families']): string[] {
+  const ordered = families.flat()
   const followOns = ordered.filter(id => {
     const head = bank.words.get(id)?.followOnOf
     return head !== undefined && getProgress(state, head).box >= 2 && isNew(state, id)
   })
   const heads = ordered.filter(id => !bank.words.get(id)?.followOnOf && isNew(state, id))
   return [...followOns, ...heads]
+}
+
+export const y3WordStream = (bank: Bank, state: LearnerState) => listStream(bank, state, bank.y34Families)
+export const y56WordStream = (bank: Bank, state: LearnerState) => listStream(bank, state, bank.y56Families)
+
+const highestYear = (state: LearnerState) => state.settings.highestYear ?? 3
+
+/** One from each list in turn, so a newly unlocked list shows up straight away without dropping the earlier one. */
+function alternate(a: string[], b: string[]): string[] {
+  const out: string[] = []
+  for (let i = 0; i < Math.max(a.length, b.length); i++) out.push(...(i < a.length ? [a[i]] : []), ...(i < b.length ? [b[i]] : []))
+  return out
+}
+
+/** New statutory-list words: Years 3–4, alternating with Years 5–6 once Year 5 is unlocked. */
+export function listWordStream(bank: Bank, state: LearnerState): string[] {
+  const y34 = y3WordStream(bank, state)
+  return highestYear(state) >= 5 ? alternate(y34, y56WordStream(bank, state)) : y34
 }
 
 /** A unit left in 'checking' on an earlier day was abandoned before its Quick Check, so it counts as not started. */
@@ -37,10 +56,11 @@ const abandoned = (state: LearnerState, unitId: string) => {
 
 export function unitStream(bank: Bank, state: LearnerState): string[] {
   const begun = (id: string) => state.units.has(id) && !abandoned(state, id)
-  const fresh = bank.units.filter(u => !begun(u.id))
+  // A unit above the unlocked year stays only if she has already been in it (the grown-up lowered the setting).
+  const fresh = bank.units.filter(u => !begun(u.id) && (u.year <= highestYear(state) || state.units.has(u.id)))
   const gap = fresh.filter(u => u.year <= 2)
   const y3 = fresh.filter(u => u.year === 3).sort((a, b) => (a.schoolPriority ?? 0) - (b.schoolPriority ?? 0))
-  const y4 = fresh.filter(u => u.year === 4)
+  const later = fresh.filter(u => u.year >= 4).sort((a, b) => a.year - b.year)
   // Keep the two kinds balanced: whichever kind has had fewer units started goes first (Year 3 on a tie).
   const started = (pred: (year: number) => boolean) => bank.units.filter(u => pred(u.year) && begun(u.id)).length
   const y3First = started(y => y === 3) <= started(y => y <= 2)
@@ -50,7 +70,7 @@ export function unitStream(bank: Bank, state: LearnerState): string[] {
     if (first[i]) out.push(first[i].id)
     if (second[i]) out.push(second[i].id)
   }
-  return [...out, ...y4.map(u => u.id)]
+  return [...out, ...later.map(u => u.id)]
 }
 
 export function chooseNewMaterial(bank: Bank, state: LearnerState, n: number): NewMaterial {
@@ -81,9 +101,9 @@ export function chooseNewMaterial(bank: Bank, state: LearnerState, n: number): N
   if (state.lastNewKind !== 'unit' && units.length) return unitDay1()
 
   const gap = gapWordStream(bank, state)
-  const y3 = y3WordStream(bank, state)
+  const listWords = listWordStream(bank, state)
   const fromGap = gap.slice(0, Math.ceil(n / 2))
-  let ids = [...fromGap, ...y3.filter(id => !fromGap.includes(id)).slice(0, n - fromGap.length)]
+  let ids = [...fromGap, ...listWords.filter(id => !fromGap.includes(id)).slice(0, n - fromGap.length)]
   if (ids.length < n) ids = [...ids, ...gap.filter(id => !ids.includes(id)).slice(0, n - ids.length)]
   if (ids.length) return { kind: 'words', source: 'queues', wordIds: ids }
 
