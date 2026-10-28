@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { TreasureHunt } from './TreasureHunt'
 import { renderWithServices } from '../../test/render'
@@ -18,6 +18,17 @@ describe('TreasureHunt', () => {
     expect(screen.queryByText("Almost! Let's look.")).not.toBeInTheDocument()
     await user.type(await screen.findByLabelText('Your spelling'), 'was{Enter}')
     expect(onAttempt.mock.calls.map(c => [c[0].wordId, c[0].correct])).toEqual([['w-said', false], ['w-was', true]])
+
+    // At the end she sees her answers next to the right spellings, then carries on.
+    expect(await screen.findByRole('heading', { name: 'Your Treasure Hunt answers' })).toBeInTheDocument()
+    const rows = within(screen.getByRole('list', { name: 'Your answers' })).getAllByRole('listitem')
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toHaveTextContent('You wrote: s_ed') // the gap shows where a letter is missing, as on correction screens
+    expect(rows[0]).toHaveTextContent('The right way: said')
+    expect(rows[1]).toHaveTextContent('✓ was')
+    expect(screen.getByText('1 of 2 spelt right')).toBeInTheDocument()
+    expect(onDone).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Carry on' }))
     expect(onDone).toHaveBeenCalledOnce()
   })
 })

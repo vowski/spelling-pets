@@ -74,3 +74,8 @@ button { cursor: pointer; }
 .hatch-progress .bar { width: 100%; }
 .hatch-left { font-weight: 700; font-size: 1.2em; margin: 0; }
 .hatch-progress p { margin: 0; }
+
+/* Treasure Hunt answers at the end of a hunt */
+.hunt-answers { list-style: none; padding: 0; margin: 0; width: 100%; max-width: 560px; display: grid; gap: 10px; }
+.hunt-answers li { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 8px 12px; }
+.hunt-right { font-size: 1.2em; font-weight: 700; }
