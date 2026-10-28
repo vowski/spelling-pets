@@ -27,7 +27,7 @@ export const Y6_UNITS: PatternUnitDef[] = [
     words: ['ought', 'bought', 'brought', 'fought', 'rough', 'tough', 'enough', 'though', 'although', 'dough', 'plough', 'bough'],
     game: sort(['or', 'ough says "or"', ['ought', 'bought', 'brought', 'fought']], ['uff', 'ough says "uff"', ['rough', 'tough', 'enough']], ['oh', 'ough says "oh"', ['though', 'although', 'dough']], ['ow', 'ough says "ow"', ['plough', 'bough']]) },
   { id: 'y6-homophones-1', year: 6, title: 'Words that sound the same',
-    rule: 'These pairs sound the same but mean different things. Think about the meaning before you write: aloud means out loud, allowed means let.',
+    rule: 'These pairs sound the same but mean different things. Think about the meaning before you write: aloud means out loud, allowed means given permission.',
     words: ['aloud', 'allowed', 'affect', 'effect', 'past', 'passed', 'led', 'lead', 'heard', 'herd', 'guessed', 'guest', 'steal', 'steel'],
     game: homo(
       ['Read the poem ___ to the class.', 'aloud', ['aloud', 'allowed']],

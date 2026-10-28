@@ -77,6 +77,15 @@ describe('Year 5 and 6 pattern units', () => {
     checkUnits(Y6_UNITS)
     Y6_UNITS.forEach(u => expect(u.year).toBe(6))
   })
+  // Final review of 2026-10-28: every word in a sort game must fit the rule shown with it, or the rule says why not.
+  it('explains the words in each sort that the main rule does not cover', () => {
+    const rule = (id: string) => [...Y5_UNITS, ...Y6_UNITS].find(u => u.id === id)!.rule
+    expect(rule('y5-ant-ent')).toContain('after qu (frequent)')
+    expect(rule('y5-ant-ent')).toContain('assistant and obedient, just have to be learnt')
+    expect(rule('y5-able-ible')).toContain('sensible is an exception')
+    expect(rule('y6-homophones-1')).toContain('allowed means given permission')
+  })
+
   it('never uses the word builder for -fer words, so no "short sound" doubling tip is given for them', () => {
     expect(Y6_UNITS.find(u => u.id === 'y6-fer')!.game.kind).toBe('sort')
   })

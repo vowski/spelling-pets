@@ -88,6 +88,30 @@ describe('classifyMistake', () => {
     expect(classifyMistake(custom, 'mother in law', bank)).toMatchObject({ plainOnly: true, template: '"mother-in-law" has hyphens (-) joining "mother", "in" and "law".' })
   })
 
+  // Final review of 2026-10-28.
+  it('never quotes a hyphen on its own, and only gives the hyphen tip when the hyphen is all that is wrong', () => {
+    expect(classifyMistake(w('co-ordinate'), 'coo-rdinate', bank)).toMatchObject({ plainOnly: true, template: '"co-ordinate" has a hyphen (-) between "co" and "ordinate".' })
+    expect(classifyMistake(w('co-ordinate'), 'cordinate', bank)).toMatchObject({ plainOnly: true, template: 'Look carefully at each letter of "co-ordinate". It has a hyphen (-) between "co" and "ordinate".' })
+    expect(classifyMistake(w('co-ordinate'), 'co-ordinat', bank)).toMatchObject({ type: 'letters', template: 'In "co-ordinate", you missed out the end, "e".' })
+    const hyphenated = [...bank.words.values()].filter(x => x.text.includes('-'))
+    expect(hyphenated.length).toBeGreaterThanOrEqual(6)
+    for (const x of hyphenated) {
+      const t = x.text
+      for (const typed of [t.replace('-', ''), t.replace('-', ' '), t.slice(0, -1), t.replace('-', '') + 's', t.slice(0, 1) + '-' + t.slice(1).replace('-', '')]) {
+        const tip = classifyMistake(x, typed, bank)
+        expect(tip?.template ?? '', `${t} / ${typed}`).not.toContain('"-"')
+      }
+    }
+  })
+
+  it('says what past means in "we walked past the shop", not only the time before now', () => {
+    expect(classifyMistake(w('past'), 'passed', bank)!.template).toBe('"passed" means went by, or handed over. This word is "past", meaning beyond, like walking past, or the time before now.')
+  })
+
+  it('names the silent p in receipt as its tricky part', () => {
+    expect(classifyMistake(w('receipt'), 'reciept', bank)!.template).toBe('The tricky bits in "receipt" are "ei" and "p".')
+  })
+
   it('classifies the wrong form of every suffix pair in the word bank', () => {
     let checked = 0
     for (const u of bank.units) {

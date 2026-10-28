@@ -774,7 +774,7 @@ export const PATTERN_WORDS: WordEntry[] = [
   ['re|c[ei]ve', 'Did you receive my birthday card?'],
   ['per|c[ei]ve', 'Owls perceive movement in the dark.'],
   ['c[ei]l|ing', 'A spider crawled across the ceiling.'],
-  ['re|c[ei]p[t]', 'Keep the receipt in case it breaks.'],
+  ['re|c[ei][p]t', 'Keep the receipt in case it breaks.'],
   // y6-ough
   ['[ough]t', 'You ought to brush your teeth.'],
   ['b[ough]t', 'Mum bought a new kite for us.'],

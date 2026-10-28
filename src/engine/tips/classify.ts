@@ -131,7 +131,9 @@ function ending(word: Word, attempt: string): Mistake | null {
 }
 
 function tricky(word: Word, attempt: string): Mistake | null {
-  if (!word.tricky.length) return null
+  // A hyphen is never a tricky bit to quote: hyphen() talks about it in words.
+  const ranges = word.tricky.filter(([a, b]) => word.text.slice(a, b) !== '-')
+  if (!ranges.length) return null
   // Find the first letter of the word that she got wrong (case is handled by the capital rule).
   let i = 0
   let first = -1
@@ -140,8 +142,8 @@ function tricky(word: Word, attempt: string): Mistake | null {
     first = i
     break
   }
-  if (first < 0 || !word.tricky.some(([a, b]) => first >= a && first < b)) return null
-  const bits = word.tricky.map(([a, b]) => word.text.slice(a, b))
+  if (first < 0 || !ranges.some(([a, b]) => first >= a && first < b)) return null
+  const bits = ranges.map(([a, b]) => word.text.slice(a, b))
   const chunks = letterChunks(word.text, attempt)
   const t = word.text
   const lead = bits.length === 1 && bits[0] === t ? `The whole of "${t}" is tricky, so learn it by heart.`
@@ -154,13 +156,21 @@ function tricky(word: Word, attempt: string): Mistake | null {
     quotable: [t.toLowerCase(), ...bits.map(b => b.toLowerCase()), ...chunkLetters(chunks)], letters: chunks }
 }
 
-/** A hyphenated word written without its hyphen ("coordinate", "re elect"): say where the hyphen goes, in words. */
+/**
+ * A hyphenated word with its hyphen missing or in the wrong place ("coordinate", "re elect", "coo-rdinate"): say where
+ * the hyphen goes, in words. With other letters wrong too, a look-carefully tip that also says where the hyphen goes.
+ * With the hyphens where they belong, the other kinds of tip deal with her letters.
+ */
 function hyphen(word: Word, attempt: string): Mistake | null {
   const t = word.text
-  if (!t.includes('-') || attempt.includes('-')) return null
+  if (!t.includes('-')) return null
   const parts = t.split('-')
-  const template = parts.length === 2 ? `"${t}" has a hyphen (-) between "${parts[0]}" and "${parts[1]}".`
-    : `"${t}" has hyphens (-) joining ${joinAnd(parts.map(p => `"${p}"`))}.`
+  const hyphens = (s: string) => s.split('-').length - 1
+  const squash = (s: string) => s.toLowerCase().replace(/[\s-]+/g, '')
+  const onlyHyphen = squash(attempt) === squash(t)
+  if (!onlyHyphen && hyphens(attempt) === hyphens(t)) return null
+  const where = parts.length === 2 ? `has a hyphen (-) between "${parts[0]}" and "${parts[1]}"` : `has hyphens (-) joining ${joinAnd(parts.map(p => `"${p}"`))}`
+  const template = onlyHyphen ? `"${t}" ${where}.` : `Look carefully at each letter of "${t}". It ${where}.`
   return { type: 'letters', target: t, attempt, facts: [template], template, reword: template, mustMention: [], quotable: [t.toLowerCase(), ...parts.map(p => p.toLowerCase())], plainOnly: true }
 }
 
@@ -172,8 +182,8 @@ function letters(word: Word, attempt: string): Mistake {
   const t = word.text
   const chunks = letterChunks(t, attempt)
   const lower = attempt.toLowerCase()
-  const odd = (c: LetterChunk) => c.wrote === lower || `${c.has}${c.wrote}`.includes("'")
-  if (!/^[a-z']+$/i.test(attempt) || !chunks.length || chunks.length > 3 || chunks.some(odd)) {
+  const odd = (c: LetterChunk) => c.wrote === lower || /['\s-]/.test(`${c.has}${c.wrote}`)
+  if (!/^[a-z'-]+$/i.test(attempt) || !chunks.length || chunks.length > 3 || chunks.some(odd)) {
     const template = `Look carefully at each letter of "${t}".`
     return { type: 'letters', target: t, attempt, facts: [template], template, reword: template, mustMention: [], quotable: [t.toLowerCase()], plainOnly: true }
   }

@@ -68,7 +68,7 @@ export const HOMOPHONE_GLOSSES: Readonly<Record<string, string>> = {
   allowed: 'given permission',
   affect: 'to change something',
   effect: 'what happens because of a change',
-  past: 'the time before now',
+  past: 'beyond, like walking past, or the time before now',
   passed: 'went by, or handed over',
   led: 'showed the way',
   lead: 'a heavy grey metal',
