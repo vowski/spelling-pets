@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { BUILTIN_BANK as bank } from '../content'
 import { Repo } from '../storage/repo'
-import { buildSnapshot, settleAchievements, settleRealRewards } from './achievements'
+import { buildSnapshot, rewardStatsFrom, settleAchievements, settleRealRewards } from './achievements'
 import { makeRng } from '../engine/rng'
 import { prog } from '../engine/testing'
 import { buildPlacementPlan } from '../engine/placement'
@@ -9,6 +9,11 @@ import { buildPlacementPlan } from '../engine/placement'
 const T = '2026-10-15'
 
 describe('achievements', () => {
+  // Design of 2026-10-28: a word that slips back into practice still counts towards "Words made Secure" rewards.
+  it('counts words ever made Secure for real rewards, even after one slips back into practice', () => {
+    const progress = [prog('w-said', { box: 4, secureOn: T }), prog('w-was', { box: 2, secureOn: '2026-10-01' }), prog('w-the', { box: 3 })]
+    expect([...rewardStatsFrom(bank, progress, [], 5).secureOnDates].sort()).toEqual(['2026-10-01', T])
+  })
   it('builds a snapshot from stored progress and counters', async () => {
     const repo = Repo.open(`ac-${Math.random()}`)
     await repo.putProgress(bank.setIds.days.map(id => prog(id, { box: 4, secureOn: T })))

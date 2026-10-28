@@ -48,9 +48,14 @@ export function applyAttempt(prev: WordProgress, a: Attempt, today: DateStr, now
       // Right the first time she's ever asked, never misspelt: she knew it, so one more check a week later decides.
       if (p.box === 0) return promoteTo(p, Object.keys(prev.misspellings).length === 0 && prev.lastFailedOn === null ? 3 : 2, today)
       if (blocked) return failedToday ? { ...p, due: addDays(today, 1) } : p
+      // The retest brought forward by a slip (below): passing it keeps the box, with that box's full interval again.
+      const slippedSincePromoted = p.lastFailedOn !== null && (p.lastPromotedOn === null || p.lastFailedOn > p.lastPromotedOn)
+      if (p.box >= 4 && slippedSincePromoted) return promoteTo(p, p.box as Exclude<Box, 0>, today)
       return promoteTo(p, Math.min(p.box + 1, 5) as Exclude<Box, 0>, today)
     }
     if (a.role === 'pretest' && p.box === 0) return p
+    // A Secure word missed before its retest is due (a typo in Story Time) stays Secure, and is retested tomorrow.
+    if (p.box >= 4 && early) return { ...p, due: addDays(today, 1), lastFailedOn: today }
     // A missed retest of a Secure word sends it back to practice, so Secure always means secure now.
     const box = (p.box >= 4 ? 2 : Math.max(p.box - 1, 1)) as Box
     return { ...p, box, due: today, lastFailedOn: today, introducedOn: p.introducedOn ?? today }

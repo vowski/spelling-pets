@@ -128,6 +128,22 @@ describe('scheduler', () => {
     expect(p).toMatchObject({ box: 2, due: T, lastFailedOn: T })
   })
 
+  // Final review of 2026-10-28: only a missed retest makes a Secure word slip. A slip on another day (a typo in Story Time)
+  // brings its retest forward to tomorrow instead.
+  it('a miss on a Secure word that is not due yet keeps it Secure and retests it tomorrow', () => {
+    const p = applyAttempt(base({ box: 5, due: '2027-01-01', secureOn: '2026-01-01', lastPromotedOn: '2026-10-01' }), att({ correct: false, typed: 'sed' }), T, 1)
+    expect(p).toMatchObject({ box: 5, due: '2026-10-16', lastFailedOn: T, misspellings: { sed: 1 } })
+    expect(isSecure(p)).toBe(true)
+  })
+
+  it('that retest keeps the box with a fresh interval when right, and slips the word when missed', () => {
+    const early = applyAttempt(base({ box: 5, due: '2027-01-01', secureOn: '2026-01-01', lastPromotedOn: '2026-10-01' }), att({ correct: false }), T, 1)
+    expect(applyAttempt(early, att(), '2026-10-16', 2)).toMatchObject({ box: 5, due: '2027-01-14', lastPromotedOn: '2026-10-16' })
+    const four = applyAttempt(base({ box: 4, due: '2026-11-01', secureOn: '2026-10-01', lastPromotedOn: '2026-10-01' }), att({ correct: false }), T, 1)
+    expect(applyAttempt(four, att(), '2026-10-16', 2)).toMatchObject({ box: 4, due: '2026-11-15' })
+    expect(applyAttempt(early, att({ correct: false }), '2026-10-16', 2)).toMatchObject({ box: 2, due: '2026-10-16' })
+  })
+
   it('clears focus once the word reaches box 3', () => {
     const p = applyAttempt(base({ box: 2, due: T, focus: true }), att(), T, 1)
     expect(p.focus).toBe(false)

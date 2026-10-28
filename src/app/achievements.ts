@@ -35,7 +35,7 @@ export function rewardStatsFrom(bank: Bank, progress: WordProgress[], dates: Dat
   const stats = computeStats(bank, new Map(progress.map(p => [p.wordId, p])), new Map(), [])
   const levelComplete: Partial<Record<SetId, boolean>> = {}
   for (const k of Object.keys(stats.secureBySet) as SetId[]) levelComplete[k] = stats.sizeBySet[k] > 0 && stats.secureBySet[k] >= stats.sizeBySet[k]
-  return { completeSessionDates: dates, secureOnDates: progress.filter(p => p.box >= 4 && p.secureOn).map(p => p.secureOn!), weeklyGoalDays, levelComplete }
+  return { completeSessionDates: dates, secureOnDates: progress.filter(p => p.secureOn).map(p => p.secureOn!), weeklyGoalDays, levelComplete }
 }
 
 export async function settleRealRewards(repo: Repo, bank: Bank, today: DateStr): Promise<RealReward[]> {

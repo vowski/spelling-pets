@@ -25,14 +25,15 @@ export function reviewCandidates(bank: Bank, state: LearnerState, max: number): 
   if (list) for (const item of list.items) if (getProgress(state, item.wordId).box >= 1) add(item.wordId)
   const all = [...state.progress.values()]
   all.filter(p => p.focus && p.box >= 1).forEach(p => add(p.wordId))
-  // Retests of Secure words take at most MAX_RETESTS places, so words still being learnt get most of the warm-up.
+  // At most MAX_RETESTS Secure retests come before the words still being learnt; the rest wait for any spare places.
   let retests = 0
+  const waiting: string[] = []
   all
     .filter(p => isDue(p, state.today))
     .sort((a, b) => a.due!.localeCompare(b.due!) || a.wordId.localeCompare(b.wordId))
     .forEach(p => {
       if (isSecure(p)) {
-        if (retests >= MAX_RETESTS) return
+        if (retests >= MAX_RETESTS) return void waiting.push(p.wordId)
         retests++
       }
       add(p.wordId)
@@ -41,6 +42,7 @@ export function reviewCandidates(bank: Bank, state: LearnerState, max: number): 
     .filter(p => p.lastFailedOn !== null && diffDays(p.lastFailedOn, state.today) <= 3)
     .sort((a, b) => b.lastFailedOn!.localeCompare(a.lastFailedOn!) || a.wordId.localeCompare(b.wordId))
     .forEach(p => add(p.wordId))
+  waiting.forEach(add)
   return out
 }
 
