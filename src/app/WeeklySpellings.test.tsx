@@ -59,15 +59,12 @@ describe('WeeklySpellings', () => {
     expect(await screen.findByText("There are no spellings to practise yet. Ask a grown-up to add this week's list.")).toBeInTheDocument()
   })
 
-  it("is on Home only while a test is still to come", async () => {
+  // 2026-11-03: the grown-up could not find the button before any list was added, so it is always on Home.
+  it('is always on Home, even before a list has been added', async () => {
     const services = makeTestServices()
     await services.repo.updateSettings({ firstRunDone: true, petName: 'Biscuit', petSpecies: 'puppy' })
-    const home = renderWithServices(<MemoryRouter><Home /></MemoryRouter>, services)
-    expect(await screen.findByRole('button', { name: /adventure/ })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: "📝 This week's spellings" })).not.toBeInTheDocument()
-    home.unmount()
-    await services.repo.saveSchoolList({ id: 'c', createdAt: T, testDate: T, items: [{ text: 'said', wordId: 'w-said' }] }, [])
     renderWithServices(<MemoryRouter><Home /></MemoryRouter>, services)
-    expect(await screen.findByRole('button', { name: "📝 This week's spellings" })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /adventure/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: "📝 This week's spellings" })).toBeInTheDocument()
   })
 })
