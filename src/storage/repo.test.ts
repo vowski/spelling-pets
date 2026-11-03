@@ -77,6 +77,15 @@ describe('Repo', () => {
     expect(await repo.getSchoolLists()).toHaveLength(0)
   })
 
+  // Weekly spellings (2026-11-03).
+  it('saves each weekly practice and gives the best (fewest goes) for a list', async () => {
+    expect(await repo.practiceBest('l1')).toBeNull()
+    await repo.savePractice({ listId: 'l1', testDate: '2026-10-19', at: 1, goes: 3, firstScore: 6, total: 10 })
+    await repo.savePractice({ listId: 'l1', testDate: '2026-10-19', at: 2, goes: 2, firstScore: 8, total: 10 })
+    await repo.savePractice({ listId: 'l2', testDate: '2026-10-19', at: 3, goes: 1, firstScore: 5, total: 5 })
+    expect(await repo.practiceBest('l1')).toMatchObject({ goes: 2, firstScore: 8, tries: 2 })
+  })
+
   it('counts words ever made Secure, whatever their box now', async () => {
     await repo.putProgress([prog('w-said', { box: 3, secureOn: '2026-10-01' }), prog('w-was', { box: 5, secureOn: T }), prog('w-the', { box: 4 }), prog('w-a', { box: 2 })])
     expect(await repo.everSecureCount()).toBe(2)

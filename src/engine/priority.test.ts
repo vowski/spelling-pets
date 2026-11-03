@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { BUILTIN_BANK as bank } from '../content'
-import { activeSchoolList, practiceTestList, reviewCandidates, learningWords, winWord } from './priority'
+import { activeSchoolList, practiceTestList, reviewCandidates, learningWords, winWord, weekLists } from './priority'
 import { makeState, prog, T } from './testing'
 
 const list = (id: string, testDate: string, words: string[]) => ({ id, createdAt: T, testDate, items: words.map(w => ({ text: w, wordId: `w-${w}` })) })
@@ -12,6 +12,30 @@ describe('priority', () => {
     expect(practiceTestList(s)?.id).toBe('a')
     expect(practiceTestList(makeState({ schoolLists: [list('b', '2026-10-20', ['was'])] }))).toBeNull()
     expect(activeSchoolList(makeState())).toBeNull()
+  })
+
+  // Weekly spellings (2026-11-03): more than one list can share a test date.
+  it('uses every list that shares the earliest test date, and keeps each one for weekly practice', () => {
+    const lists = [{ ...list('c', '2026-10-16', ['was', 'the']), name: 'Class' }, { ...list('m', '2026-10-16', ['the', 'said']), name: 'Mine' }, list('n', '2026-10-23', ['are'])]
+    const s = makeState({ schoolLists: lists })
+    expect(activeSchoolList(s)!.items.map(i => i.wordId)).toEqual(['w-was', 'w-the', 'w-said'])
+    expect(practiceTestList(s)!.items.map(i => i.wordId)).toEqual(['w-was', 'w-the', 'w-said'])
+    expect(weekLists(s).map(l => l.id)).toEqual(['c', 'm'])
+    expect(weekLists(makeState())).toEqual([])
+  })
+
+  // Final review of 2026-11-03: a long school week must not crowd out retests and recent misses all term.
+  it('gives school words at most half the warm-up, least known first', () => {
+    const school = ['said', 'was', 'the', 'because', 'friend', 'people', 'could', 'would', 'should', 'water']
+    const boxes = [3, 3, 3, 2, 3, 1, 3, 2, 3, 3]
+    const s = makeState({
+      schoolLists: [list('a', '2026-10-19', school)],
+      progressList: [
+        ...school.map((w, i) => prog(`w-${w}`, { box: boxes[i] as 1 | 2 | 3, due: '2026-10-30' })),
+        prog('w-are', { box: 4, due: '2026-10-01' }), prog('w-one', { box: 1, due: '2026-10-14' }),
+      ],
+    })
+    expect(reviewCandidates(bank, s, 8)).toEqual(['w-people', 'w-because', 'w-would', 'w-said', 'w-are', 'w-one'])
   })
 
   it('orders reviews: school words, focus, due (oldest first), recent failures', () => {

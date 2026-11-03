@@ -69,6 +69,8 @@ export interface SchoolListItem {
 
 export interface SchoolList {
   id: string
+  /** Tells lists apart when there is more than one a week. */
+  name?: string
   createdAt: DateStr
   testDate: DateStr
   items: SchoolListItem[]

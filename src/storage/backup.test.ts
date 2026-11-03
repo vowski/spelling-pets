@@ -76,12 +76,14 @@ describe('backup', () => {
     await db.counters.put({ id: 'wheelPuzzles', value: 3 })
     await db.storyResults.add({ at: 4, wordAccuracy: 1, punctuationOk: true })
     await db.errors.add({ at: 4, where: 'test', message: 'oops' })
+    await src.savePractice({ listId: 'l1', testDate: T, at: 4, goes: 2, firstScore: 1, total: 2 })
     const parsed = parseBackup(JSON.stringify(await exportBackup(db, '2026-10-15T18:00:00.000Z')))
     expect(parsed.ok).toBe(true)
     if (!parsed.ok) return
     const dest = Repo.open(`b-${Math.random()}`)
     await importBackup(dest.db, parsed.backup)
     expect((await dest.loadLearnerState(T)).recentGames).toEqual(['workshop'])
+    expect(await dest.practiceBest('l1')).toMatchObject({ goes: 2 })
   })
   it('ignores unknown tables', () => {
     const r = parseBackup(JSON.stringify({ app: 'spelling-pets', schemaVersion: 1, exportedAt: 'x', tables: { mystery: [1], progress: [] } }))

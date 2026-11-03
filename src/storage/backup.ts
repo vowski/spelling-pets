@@ -47,6 +47,7 @@ const rowSchemas: Record<BackupTable, { key: string; row: z.ZodType }> = {
   counters: { key: 'id', row: z.looseObject({ id: z.string(), value: z.number() }) },
   storyResults: { key: 'id', row: z.looseObject({ id: autoId, at: z.number() }) },
   errors: { key: 'id', row: z.looseObject({ id: autoId, at: z.number(), where: z.string(), message: z.string() }) },
+  practice: { key: 'id', row: z.looseObject({ id: autoId, listId: z.string(), at: z.number(), goes: z.number().int().min(1), firstScore: z.number(), total: z.number() }) },
 }
 
 function tableLooksRight(name: BackupTable, rows: unknown[]): boolean {

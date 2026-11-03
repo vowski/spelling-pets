@@ -54,6 +54,8 @@ export interface AttemptRow {
 export type SessionKind = 'main' | 'extra' | 'free'
 export interface SessionRow { id: string; date: DateStr; kind: SessionKind; startedAt: number; endedAt: number | null; plan: SessionPlan; doneActivityIds: string[]; complete: boolean; coins: number; startSnapshot?: AchievementSnapshot }
 /** A spelling tip: a cached AI tip (key …|<tip version>) or the last tip shown for a word (key …|shown). */
+/** One finished weekly-spellings practice: how many goes it took to spell every word right (fewest is best). */
+export interface PracticeRow { id?: number; listId: string; testDate: DateStr; at: number; goes: number; firstScore: number; total: number }
 export interface TipRow { key: string; wordId: string; attempt: string; text: string; source: 'ai' | 'plain'; at: number }
 export interface WalletRow { id?: number; at: number; delta: number; reason: string }
 export interface InventoryRow { itemId: string; count: number }
@@ -84,6 +86,7 @@ export class SpellingDB extends Dexie {
   errors!: EntityTable<ErrorRow, 'id'>
   handles!: EntityTable<HandleRow, 'id'>
   tips!: EntityTable<TipRow, 'key'>
+  practice!: EntityTable<PracticeRow, 'id'>
 
   constructor(name = 'spelling-pets') {
     super(name)
@@ -109,11 +112,13 @@ export class SpellingDB extends Dexie {
     })
     // Version 2: spelling tips. Not in BACKUP_TABLES: tips can always be made again.
     this.version(2).stores({ tips: 'key, wordId, at' })
+    // Version 3: weekly spellings practice results.
+    this.version(3).stores({ practice: '++id, listId, at' })
   }
 }
 
 export const BACKUP_TABLES = [
   'settings', 'progress', 'attempts', 'sessions', 'placement', 'units', 'schoolLists', 'customWords', 'wallet',
-  'inventory', 'stickers', 'badges', 'friends', 'realRewards', 'counters', 'storyResults', 'errors',
+  'inventory', 'stickers', 'badges', 'friends', 'realRewards', 'counters', 'storyResults', 'errors', 'practice',
 ] as const
 export type BackupTable = (typeof BACKUP_TABLES)[number]

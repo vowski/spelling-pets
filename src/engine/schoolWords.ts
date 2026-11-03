@@ -1,6 +1,6 @@
 import type { Bank } from '../content'
 import { wordId } from '../content/parse'
-import { addDays, type DateStr } from './dates'
+import { addDays, isValidDateStr, type DateStr } from './dates'
 
 /**
  * Reads a pasted or typed school list. Each line (or comma-separated piece) may start with a number or a bullet,
@@ -30,6 +30,42 @@ export function parseSchoolWords(raw: string): { words: string[]; skipped: strin
     }
   }
   return { words, skipped }
+}
+
+export interface TermList { name: string; testDate: DateStr; words: string[]; skipped: string[] }
+
+const DATED_LINE = /^(\d{1,2})\/(\d{1,2})\/(\d{4}|\d{2})\s*[:\-–—]?\s*(.*)$/
+
+/**
+ * Reads a whole term of lists pasted by a grown-up. A line without a date names the lists that follow
+ * ("My spellings"); each dated line is one list: its test date (day/month/year, as in England) then its words.
+ * Anything else is reported rather than guessed at. With `today`, a test already past is reported too (a year typo).
+ */
+export function parseTermLists(raw: string, today?: DateStr): { lists: TermList[]; problems: string[] } {
+  const lists: TermList[] = []
+  const problems: string[] = []
+  let name = 'Spelling list'
+  for (const line of raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean)) {
+    const m = DATED_LINE.exec(line)
+    if (!m) {
+      // A name has no numbers or commas; a line with them is a list it could not read ("19.1.27: hen, pig").
+      if (/[\d,]/.test(line)) problems.push(`Could not read "${line}". Start each line with the test date, like 12/1/27: then the words.`)
+      else name = line.replace(/:$/, '').trim()
+      continue
+    }
+    const [, d, mo, y, rest] = m
+    const written = line.slice(0, line.length - rest.length).replace(/\s*[:\-–—]?\s*$/, '')
+    const testDate = `${y.length === 2 ? `20${y}` : y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`
+    if (!isValidDateStr(testDate)) { problems.push(`${written} is not a real date.`); continue }
+    if (today && testDate < today) { problems.push(`${written} is in the past. Check the year.`); continue }
+    const { words, skipped } = parseSchoolWords(rest)
+    if (!words.length) { problems.push(`No words after ${written}.`); continue }
+    // The same list given twice in one paste: the later one wins.
+    const same = lists.findIndex(l => l.name === name && l.testDate === testDate)
+    if (same >= 0) lists.splice(same, 1)
+    lists.push({ name, testDate, words, skipped })
+  }
+  return { lists, problems }
 }
 
 export function resolveSchoolWords(texts: readonly string[], bank: Bank) {

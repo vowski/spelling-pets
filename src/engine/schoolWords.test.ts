@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { BUILTIN_BANK as bank } from '../content'
-import { parseSchoolWords, resolveSchoolWords, nextFriday } from './schoolWords'
+import { parseSchoolWords, parseTermLists, resolveSchoolWords, nextFriday } from './schoolWords'
 
 describe('school words', () => {
   // Review Focus #3: messy pasted lists
@@ -37,5 +37,35 @@ describe('school words', () => {
       { text: 'volcano', wordId: 'w-volcano', inBank: false },
       { text: 'McDonald', wordId: 'w-mcdonald', inBank: false },
     ])
+  })
+})
+
+// Weekly spellings (2026-11-03): a grown-up pastes a whole term of lists at once.
+describe('parseTermLists', () => {
+  it('reads named lists with one test date per line, in British date order', () => {
+    const r = parseTermLists('Class list\n12/1/27: cat, dog, fish\n19/01/2027 - hen, pig\n\nMy words\n12/1/27: sun, run')
+    expect(r.lists).toEqual([
+      { name: 'Class list', testDate: '2027-01-12', words: ['cat', 'dog', 'fish'], skipped: [] },
+      { name: 'Class list', testDate: '2027-01-19', words: ['hen', 'pig'], skipped: [] },
+      { name: 'My words', testDate: '2027-01-12', words: ['sun', 'run'], skipped: [] },
+    ])
+    expect(r.problems).toEqual([])
+  })
+
+  it('names a list with no heading "Spelling list", and reports impossible dates and empty lines', () => {
+    const r = parseTermLists('12/1/27: cat, d0g\n31/2/27: hen\n19/1/27:')
+    expect(r.lists).toEqual([{ name: 'Spelling list', testDate: '2027-01-12', words: ['cat'], skipped: ['d0g'] }])
+    expect(r.problems).toEqual(['31/2/27 is not a real date.', 'No words after 19/1/27.'])
+  })
+
+  // Final review of 2026-11-03: a line it cannot read is reported, never quietly turned into a list name.
+  it('reports lines it cannot read, tests already past, and keeps the last of a list given twice', () => {
+    const r = parseTermLists('Class list\n19.1.27: hen, pig\nMon 12/1/27: cat\n12/1/25: old\n26/1/27: cat\n26/1/27: dog', '2027-01-01')
+    expect(r.problems).toEqual([
+      'Could not read "19.1.27: hen, pig". Start each line with the test date, like 12/1/27: then the words.',
+      'Could not read "Mon 12/1/27: cat". Start each line with the test date, like 12/1/27: then the words.',
+      '12/1/25 is in the past. Check the year.',
+    ])
+    expect(r.lists).toEqual([{ name: 'Class list', testDate: '2027-01-26', words: ['dog'], skipped: [] }])
   })
 })

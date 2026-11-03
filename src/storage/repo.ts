@@ -9,7 +9,7 @@ import {
 } from '../engine/types'
 import {
   DEFAULT_SETTINGS, SpellingDB, type AttemptRow, type CounterId, type ErrorRow, type InventoryRow,
-  type SessionKind, type SessionRow, type SettingsRow, type StoryResultRow, type TipRow,
+  type PracticeRow, type SessionKind, type SessionRow, type SettingsRow, type StoryResultRow, type TipRow,
 } from './db'
 
 const COUNTERS: CounterId[] = ['wheelPuzzles', 'wheelThreeStars', 'bonusWords', 'perfectStoryTimes', 'punctuationSentences']
@@ -203,6 +203,19 @@ export class Repo {
 
   async deleteSchoolList(id: string): Promise<void> {
     await this.db.schoolLists.delete(id)
+  }
+
+  // Weekly spellings practice
+  async savePractice(row: Omit<PracticeRow, 'id'>): Promise<void> {
+    await this.db.practice.add(row)
+  }
+
+  /** Her best practice for a list (fewest goes, then most right first time), and how many she has finished. */
+  async practiceBest(listId: string): Promise<(PracticeRow & { tries: number }) | null> {
+    const rows = await this.db.practice.where('listId').equals(listId).toArray()
+    if (!rows.length) return null
+    const best = rows.reduce((b, r) => (r.goes < b.goes || (r.goes === b.goes && r.firstScore > b.firstScore) ? r : b))
+    return { ...best, tries: rows.length }
   }
 
   async getCustomWords(): Promise<CustomWord[]> {
