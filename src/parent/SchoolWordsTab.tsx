@@ -1,9 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useServices, useToday } from '../app/services'
 import { isValidDateStr } from '../engine/dates'
-import { nextFriday, parseSchoolWords, resolveSchoolWords } from '../engine/schoolWords'
+import { nextFriday, parseSchoolWords, parseTermLists, resolveSchoolWords } from '../engine/schoolWords'
 import { newProgress, type SchoolList } from '../engine/types'
 import { Button } from '../ui/Button'
 import { BOX_NAMES } from './WordsTab'
@@ -22,6 +22,9 @@ export function SchoolWordsTab() {
   const [sentences, setSentences] = useState<Record<string, string>>({})
   const [capitals, setCapitals] = useState<Record<string, boolean>>({})
   const [scores, setScores] = useState<Record<string, { score: string; outOf: string }>>({})
+  const [termRaw, setTermRaw] = useState('')
+  const [termPreview, setTermPreview] = useState<ReturnType<typeof parseTermLists> | null>(null)
+  const savingTerm = useRef(false)
   if (!lists || !progress) return <p>Loading…</p>
 
   const check = () => {
@@ -50,13 +53,32 @@ export function SchoolWordsTab() {
     setScoreProblems({ ...scoreProblems, [l.id]: scoreProblem })
     if (!scoreProblem) void repo.saveSchoolList({ ...l, score, outOf }, [])
   }
+  const checkTerm = () => setTermPreview(parseTermLists(termRaw, today))
+  const saveTerm = async () => {
+    if (!termPreview?.lists.length || savingTerm.current) return // a double click saves once
+    savingTerm.current = true
+    const stamp = clock.now().getTime()
+    for (const [i, t] of termPreview.lists.entries()) {
+      const resolved = resolveSchoolWords(t.words, bank)
+      // The same list pasted again (same name and test date) replaces the one saved before.
+      const old = lists.find(l => l.name === t.name && l.testDate === t.testDate)
+      // A padded number keeps lists that share a date in the order they were pasted.
+      const id = old?.id ?? `list-${stamp}-${String(i).padStart(3, '0')}`
+      const list: SchoolList = { id, name: t.name, createdAt: today, testDate: t.testDate, items: resolved.map(p => ({ text: p.text, wordId: p.wordId })) }
+      await repo.saveSchoolList(list, resolved.filter(p => !p.inBank).map(p => ({ wordId: p.wordId, text: p.text })))
+    }
+    setTermRaw(''); setTermPreview(null)
+    savingTerm.current = false
+  }
+  const longDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+  const longDateYear = (d: string) => `${longDate(d)} ${d.slice(0, 4)}`
   const status = (id: string) => BOX_NAMES[(progress.get(id) ?? newProgress(id)).box]
   const upcoming = lists.filter(l => l.testDate >= today)
   const past = lists.filter(l => l.testDate < today).reverse()
 
   const listView = (l: SchoolList, isPast: boolean) => (
     <div key={l.id} className="panel">
-      <h3>Test on {new Date(`${l.testDate}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
+      <h3>{l.name ? `${l.name}: test on` : 'Test on'} {longDate(l.testDate)}</h3>
       <p>{l.items.map(i => <span key={i.wordId} className="chip" style={{ marginRight: 6 }}>{i.text} · {status(i.wordId)}</span>)}</p>
       <div className="row" style={{ justifyContent: 'flex-start' }}>
         <Link className="btn ghost" to={`/parent/print/${l.id}`}>Print practice sheet</Link>
@@ -95,6 +117,30 @@ export function SchoolWordsTab() {
             {skipped.length > 0 && <p className="muted">Left out: {skipped.join(', ')}. Use letters only, one word per line.</p>}
             {preview.length > 0 && <Button onClick={() => void save()}>Save list</Button>}
             {problem && <p role="status">{problem}</p>}
+          </div>
+        )}
+      </div>
+      <div className="panel">
+        <h2>Add a whole term's lists</h2>
+        <p className="muted">One line for each week: the test date, a colon, then the words. A line without a date names the lists under it, such as "Class spellings" or "My spellings". Pasting a list again with the same name and date replaces it.</p>
+        <label>Paste a whole term of lists<br />
+          <textarea aria-label="Paste a whole term of lists" rows={8} cols={60} value={termRaw} placeholder={'Class spellings\n12/1/27: cat, dog, fish'} onChange={e => { setTermRaw(e.target.value); setTermPreview(null) }} />
+        </label>
+        <p><Button onClick={checkTerm}>Check lists</Button></p>
+        {termPreview && (
+          <div>
+            {termPreview.lists.length === 0 && <p>No lists found. Start each line with the test date, like 12/1/27: then the words.</p>}
+            <ul>{termPreview.lists.map(t => (
+              <li key={`${t.name}-${t.testDate}`}>
+                <strong>{t.name}: test on {longDateYear(t.testDate)}, {t.words.length} {t.words.length === 1 ? 'word' : 'words'}</strong>
+                <br />{t.words.join(', ')}
+                {t.skipped.length > 0 && <span className="muted"> (Left out: {t.skipped.join(', ')})</span>}
+              </li>
+            ))}</ul>
+            {termPreview.problems.map(p => <p key={p} role="status">{p}</p>)}
+            {termPreview.lists.length > 0 && (
+              <Button onClick={() => void saveTerm()}>{termPreview.lists.length === 1 ? 'Save 1 list' : `Save all ${termPreview.lists.length} lists`}</Button>
+            )}
           </div>
         )}
       </div>

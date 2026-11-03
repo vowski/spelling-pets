@@ -81,4 +81,34 @@ describe('SchoolWordsTab', () => {
     await user.click(screen.getByRole('button', { name: 'Save score' }))
     await waitFor(async () => expect((await services.repo.getSchoolLists())[0]).toMatchObject({ score: 2, outOf: 2 }))
   })
+  // Weekly spellings (2026-11-03): a whole term pasted at once, with two named lists.
+  it('adds a whole term of named lists from one paste, and replaces a list pasted again', async () => {
+    const services = makeTestServices()
+    const user = userEvent.setup()
+    renderWithServices(<MemoryRouter><SchoolWordsTab /></MemoryRouter>, services)
+    const box = await screen.findByLabelText('Paste a whole term of lists')
+    fireEvent.change(box, { target: { value: 'Class list\n19/10/26: because, crocodile\n26/10/26: said, was\n\nMy words\n19/10/26: the, d0g\n31/2/26: hen\n12/10/25: old' } })
+    await user.click(screen.getByRole('button', { name: 'Check lists' }))
+    expect(screen.getByText('Class list: test on Monday 19 October 2026, 2 words')).toBeInTheDocument()
+    expect(screen.getByText('My words: test on Monday 19 October 2026, 1 word')).toBeInTheDocument()
+    expect(screen.getByText(/Left out: d0g/)).toBeInTheDocument()
+    expect(screen.getByText('31/2/26 is not a real date.')).toBeInTheDocument()
+    expect(screen.getByText('12/10/25 is in the past. Check the year.')).toBeInTheDocument()
+    await user.dblClick(screen.getByRole('button', { name: 'Save all 3 lists' })) // a double click saves once
+    await waitFor(async () => expect(await services.repo.getSchoolLists()).toHaveLength(3))
+    // Ids keep the pasted order, so lists sharing a date always show in the same order (list-…-002 before list-…-010).
+    expect((await services.repo.getSchoolLists()).every(l => /^list-\d+-\d{3}$/.test(l.id))).toBe(true)
+    const summary = async () => (await services.repo.getSchoolLists()).map(l => [l.name, l.testDate, l.items.map(i => i.wordId)])
+    expect(await summary()).toEqual(expect.arrayContaining([
+      ['Class list', '2026-10-19', ['w-because', 'w-crocodile']], ['My words', '2026-10-19', ['w-the']], ['Class list', '2026-10-26', ['w-said', 'w-was']],
+    ]))
+    expect(await services.repo.getCustomWords()).toEqual([{ wordId: 'w-crocodile', text: 'crocodile' }])
+    expect(await screen.findByText(/My words: test on Monday 19 October/, { selector: 'h3' })).toBeInTheDocument()
+
+    fireEvent.change(box, { target: { value: 'My words\n19/10/26: the, a' } })
+    await user.click(screen.getByRole('button', { name: 'Check lists' }))
+    await user.click(screen.getByRole('button', { name: 'Save 1 list' }))
+    await waitFor(async () => expect(await summary()).toContainEqual(['My words', '2026-10-19', ['w-the', 'w-a']]))
+    expect(await services.repo.getSchoolLists()).toHaveLength(3)
+  })
 })
