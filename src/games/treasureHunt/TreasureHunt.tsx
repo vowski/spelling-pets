@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { Word } from '../../content/types'
-import { checkWord } from '../../engine/checker'
 import { Button } from '../../ui/Button'
-import { LetterDiff } from '../../ui/LetterDiff'
+import { AnswerList, type Answer } from '../../ui/AnswerList'
 import { TypeAndCheck } from '../../ui/TypeAndCheck'
 import { WordDisplay } from '../../ui/WordDisplay'
 import { GameFrame } from '../GameFrame'
 import type { GameProps } from '../types'
 import { useDictation } from '../useDictation'
-
-interface Answer { word: Word; typed: string; correct: boolean }
 
 /**
  * The hunt stays neutral while she types (it's a placement check); at the end she sees every answer next to the right
@@ -20,15 +16,7 @@ function HuntAnswers({ answers, onDone }: { answers: Answer[]; onDone: () => voi
     <GameFrame title="Treasure Hunt" emoji="💎" done={answers.length} total={answers.length}>
       <h2>Your Treasure Hunt answers</h2>
       <p>Here are the words you wrote, next to the right spellings.</p>
-      <ul aria-label="Your answers" className="hunt-answers">
-        {answers.map((a, k) => (
-          <li key={`${a.word.id}-${k}`}>
-            {a.correct
-              ? <span className="hunt-right">✓ {a.word.text}</span>
-              : <LetterDiff ops={checkWord(a.word, a.typed).ops} />}
-          </li>
-        ))}
-      </ul>
+      <AnswerList answers={answers} />
       <Button size="big" onClick={onDone}>Carry on</Button>
     </GameFrame>
   )

@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { diffDays } from '../engine/dates'
 import { huntProgress, isPlacementDone } from '../engine/placement'
+import { weekLists } from '../engine/priority'
 import { weekProgress } from '../engine/weekly'
 import { PetSpot } from '../pet/PetSpot'
 import { Button } from '../ui/Button'
@@ -18,6 +19,7 @@ export function Home() {
   const dates = useLiveQuery(() => repo.completeSessionDates(), [repo])
   const placement = useLiveQuery(() => repo.getPlacement(), [repo])
   const secure = useLiveQuery(() => repo.everSecureCount(), [repo])
+  const spellings = useLiveQuery(async () => weekLists({ schoolLists: await repo.getSchoolLists(), today }).length > 0, [repo, today])
   useEffect(() => {
     if (settings?.musicOn) { sfx.startMusic(); return () => sfx.stopMusic() }
   }, [settings?.musicOn, sfx])
@@ -54,6 +56,7 @@ export function Home() {
           <Button onClick={() => navigate('/extra')}>Extra practice</Button>
         </>
       )}
+      {spellings && <Button variant="secondary" onClick={() => navigate('/spellings')}>📝 This week's spellings</Button>}
       <nav className="row">
         {HOME_LINKS.map(l => <Link key={l.to} className="btn secondary" to={l.to}>{l.emoji} {l.label}</Link>)}
       </nav>

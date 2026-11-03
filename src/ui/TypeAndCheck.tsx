@@ -14,12 +14,14 @@ export interface FirstResult { correct: boolean; typed: string; capitalOnly: boo
 const PRAISE = ['Brilliant!', 'Super spelling!', 'You got it!', 'Fantastic!', 'Paw-some!']
 type Phase = 'answering' | 'correcting' | 'praise' | 'neutral' | 'known' | 'learn'
 
-export function TypeAndCheck({ word, feedback = 'full', onFirstResult, onFinished, label = 'Your spelling' }: {
+export function TypeAndCheck({ word, feedback = 'full', onFirstResult, onFinished, label = 'Your spelling', neutralMessage = '💎 Treasure found!' }: {
   word: Word
   feedback?: Feedback
   onFirstResult: (r: FirstResult) => void
   onFinished: () => void
   label?: string
+  /** What a neutral answer shows (the Treasure Hunt's by default). */
+  neutralMessage?: string
 }) {
   const { sfx, delays, tips } = useServices()
   const setMood = usePetMood(s => s.setMood)
@@ -68,7 +70,7 @@ export function TypeAndCheck({ word, feedback = 'full', onFirstResult, onFinishe
   }
 
   if (phase === 'praise') return <p className="praise">✨ {praise}</p>
-  if (phase === 'neutral') return <p className="praise">💎 Treasure found!</p>
+  if (phase === 'neutral') return <p className="praise">{neutralMessage}</p>
   if (phase === 'known') return <p className="praise">🌟 Wow, you already know it!</p>
   if (phase === 'learn') return <p className="praise">Let's learn this one together!</p>
 
