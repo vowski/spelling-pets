@@ -40,7 +40,7 @@ export function Overview() {
   return (
     <section>
       <div className="row no-print" style={{ justifyContent: 'flex-end' }}>
-        <Button variant="secondary" onClick={downloadOverview}>Download overview (CSV)</Button>
+        <Button variant="ghost" onClick={downloadOverview}>Download overview (CSV)</Button>
       </div>
       {canSpeak === false && <p className="panel chip warn" style={{ display: 'block' }}>No British voice was found on this laptop, so spelling games show each word briefly instead of saying it. Check Settings → Voice.</p>}
       {notBritish && <p className="panel chip warn" style={{ display: 'block' }}>The voice being used ({voice.name}) isn't British English, so some words may sound American. Add a British English voice in Windows Settings → Time &amp; language → Speech, then choose it in Settings → Voice.</p>}

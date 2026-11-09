@@ -42,7 +42,7 @@ export function WordsTab() {
         <label>Status <select aria-label="Status" value={status} onChange={e => setStatus(e.target.value)}><option value="all">All</option>{BOX_NAMES.map(b => <option key={b} value={b}>{b}</option>)}</select></label>
         <label>Search <input aria-label="Search" value={q} onChange={e => setQ(e.target.value)} /></label>
         <span className="muted">{words.length} words</span>
-        <Button variant="secondary" onClick={() => downloadCsv(csvFileName('words', today), toCsv(wordsRows(words, get, setLabel)))}>Download these words (CSV)</Button>
+        <Button variant="ghost" onClick={() => downloadCsv(csvFileName('words', today), toCsv(wordsRows(words, get, setLabel)))}>Download these words (CSV)</Button>
       </div>
       <table>
         <thead><tr><th>Word</th><th>Sets</th><th>Status</th><th>Accuracy</th><th>Last seen</th><th>Her misspellings</th><th>Actions</th></tr></thead>

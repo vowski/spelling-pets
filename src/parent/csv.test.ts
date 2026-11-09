@@ -28,7 +28,7 @@ describe('downloadCsv', () => {
     expect(name).toBe('spelling-pets-words-2026-11-09.csv')
     expect(blob!.type).toBe('text/csv;charset=utf-8')
     const bytes = new Uint8Array(await blob!.arrayBuffer())
-    expect([...bytes.slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]) // byte order mark, so Excel reads it as UTF-8
+    expect(Array.from(bytes.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]) // byte order mark, so Excel reads it as UTF-8
     expect(new TextDecoder().decode(bytes.slice(3))).toBe('Word\r\nsaid ✓')
   })
 

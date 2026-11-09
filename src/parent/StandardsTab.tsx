@@ -19,7 +19,7 @@ export function StandardsTab() {
   return (
     <section>
       <div className="row no-print" style={{ justifyContent: 'flex-end' }}>
-        <Button variant="secondary" onClick={() => downloadCsv(csvFileName('standards', today), toCsv(standardsRows(stats)))}>Download standards (CSV)</Button>
+        <Button variant="ghost" onClick={() => downloadCsv(csvFileName('standards', today), toCsv(standardsRows(stats)))}>Download standards (CSV)</Button>
       </div>
       {([3, 2, 1] as const).map(grid => {
         const band = gridBand(STANDARDS, stats, grid)
