@@ -6,10 +6,12 @@ import { markKnown, setFocus } from '../engine/scheduler'
 import { newProgress, type WordProgress } from '../engine/types'
 import type { AttemptRow, TipRow } from '../storage/db'
 import { Button } from '../ui/Button'
+import { BOX_NAMES } from './boxNames'
+import { csvFileName, downloadCsv, toCsv } from './csv'
+import { wordsRows } from './exports'
 
-/** Box 3 is one correct check (a week later) away from Secure; box 5 has passed a retest. */
-export const BOX_NAMES = ['New', 'Learning', 'Practising', 'Nearly secure', 'Secure', 'Mastered'] as const
 const SETS: [SetId | 'all', string][] = [['all', 'All'], ['y1cew', 'Year 1 tricky words'], ['days', 'Days'], ['hfw', 'High-frequency'], ['y2cew', 'Year 2 tricky words'], ['y34', 'Year 3/4 list'], ['y56', 'Year 5/6 list'], ['pattern', 'Spelling patterns'], ['school', 'School words']]
+const setLabel = (set: string) => SETS.find(([v]) => v === set)?.[1] ?? set
 const fmt = (ms: number | null) => (ms ? new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '–')
 
 export function WordsTab() {
@@ -40,6 +42,7 @@ export function WordsTab() {
         <label>Status <select aria-label="Status" value={status} onChange={e => setStatus(e.target.value)}><option value="all">All</option>{BOX_NAMES.map(b => <option key={b} value={b}>{b}</option>)}</select></label>
         <label>Search <input aria-label="Search" value={q} onChange={e => setQ(e.target.value)} /></label>
         <span className="muted">{words.length} words</span>
+        <Button variant="secondary" onClick={() => downloadCsv(csvFileName('words', today), toCsv(wordsRows(words, get, setLabel)))}>Download these words (CSV)</Button>
       </div>
       <table>
         <thead><tr><th>Word</th><th>Sets</th><th>Status</th><th>Accuracy</th><th>Last seen</th><th>Her misspellings</th><th>Actions</th></tr></thead>

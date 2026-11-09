@@ -6,6 +6,9 @@ import { usePersisted } from '../app/usePersisted'
 import { useSpeechAvailable } from '../speech/useSpeech'
 import { BarChart } from './charts/BarChart'
 import { LineChart } from './charts/LineChart'
+import { Button } from '../ui/Button'
+import { csvFileName, downloadCsv, toCsv } from './csv'
+import { overviewRows } from './exports'
 import { levelBars, secureSummary, secureTimeline, troubleSpots, weekSummary, weeklyAccuracy } from './overviewData'
 
 const short = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
@@ -29,8 +32,16 @@ export function Overview() {
   const voice = canSpeak ? speaker.currentVoice() : null
   const notBritish = !!voice && !/^en[-_]GB$/i.test(voice.lang)
 
+  const downloadOverview = () => downloadCsv(csvFileName('overview', today), toCsv(overviewRows({
+    today, week, secure, bars: levelBars(stats, settings.highestYear ?? 3), timeline: secureTimeline(progress, today),
+    accuracy: weeklyAccuracy(attempts, today), trouble: troubleSpots(bank, progress),
+  })))
+
   return (
     <section>
+      <div className="row no-print" style={{ justifyContent: 'flex-end' }}>
+        <Button variant="secondary" onClick={downloadOverview}>Download overview (CSV)</Button>
+      </div>
       {canSpeak === false && <p className="panel chip warn" style={{ display: 'block' }}>No British voice was found on this laptop, so spelling games show each word briefly instead of saying it. Check Settings → Voice.</p>}
       {notBritish && <p className="panel chip warn" style={{ display: 'block' }}>The voice being used ({voice.name}) isn't British English, so some words may sound American. Add a British English voice in Windows Settings → Time &amp; language → Speech, then choose it in Settings → Voice.</p>}
       {persisted === false && <p className="panel">This browser may clear saved progress if the laptop runs low on space. Turn on automatic backup in the Data tab.</p>}

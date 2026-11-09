@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { catchCsvDownload } from '../test/csvDownload'
 import { MemoryRouter } from 'react-router'
 import { Overview } from './Overview'
 import { renderWithServices, makeTestServices } from '../test/render'
@@ -20,6 +22,18 @@ describe('Overview', () => {
     // What Secure means, in one sentence, and where things stand.
     expect(screen.getByText(/spelt it right from memory on different days at least a week apart/)).toBeInTheDocument()
     expect(screen.getByText('Secure now: 1 · Slipped back into practice: 0 · Retests due: 0')).toBeInTheDocument()
+  })
+  // CSV downloads (2026-11-09).
+  it('downloads the overview as a CSV file', async () => {
+    const services = makeTestServices()
+    await services.repo.putProgress([prog('w-because', { box: 1, seen: 3, correct: 1, misspellings: { becuase: 2 } })])
+    const saved = catchCsvDownload()
+    renderWithServices(<MemoryRouter><Overview /></MemoryRouter>, services)
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Download overview (CSV)' }))
+    await waitFor(async () => expect((await saved()).name).toBe('spelling-pets-overview-2026-10-15.csv'))
+    const { text } = await saved()
+    expect(text.split('\r\n')[0]).toBe('Spelling Pets overview,2026-10-15')
+    expect(text).toContain('Trouble spots\r\nWord,Mistakes,Her spellings,Home tip\r\nbecause,2,becuase,')
   })
   it('warns when no voice is available', async () => {
     renderWithServices(<MemoryRouter><Overview /></MemoryRouter>, { speaker: createStubSpeaker([], false) })

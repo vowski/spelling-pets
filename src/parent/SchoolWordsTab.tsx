@@ -6,7 +6,7 @@ import { isValidDateStr } from '../engine/dates'
 import { nextFriday, parseSchoolWords, parseTermLists, resolveSchoolWords } from '../engine/schoolWords'
 import { newProgress, type SchoolList } from '../engine/types'
 import { Button } from '../ui/Button'
-import { BOX_NAMES } from './WordsTab'
+import { BOX_NAMES } from './boxNames'
 
 export function SchoolWordsTab() {
   const { repo, bank, clock } = useServices()
